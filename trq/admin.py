@@ -17,13 +17,13 @@ class NodePropertyAdmin(admin.ModelAdmin):
 class NodeStateAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
 
-#class NodeInline(admin.TabularInline):
-#    model = Node
-#    extra = 10
+class NodeInline(admin.TabularInline):
+    model = Node
+    extra = 0
 
 class SubClusterAdmin(admin.ModelAdmin):
-    list_display = ('name')
-#    inlines = [NodeInline]
+    list_display = ('name',)
+    inlines = [NodeInline]
 
 admin.site.register(Node, NodeAdmin)
 admin.site.register(NodeProperty, NodePropertyAdmin)

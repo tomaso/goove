@@ -40,4 +40,32 @@ class SubCluster(models.Model):
     def __unicode__(self):
     	return self.name
 
+class Job(models.Model):
+    jobid = models.IntegerField()
+    server = models.ForeignKey('TorqueServer')
+    job_owner = models.ForeignKey('User')
+    cput = models.IntegerField('CPU time in seconds')
+    walltime = models.IntegerField('Wall time in seconds')
+    job_state = models.ForeignKey('JobState')
+    queue = models.ForeignKey('Queue')
+    ctime = models.DateTimeField('ctime')
+    exec_host = models.ForeignKey('Node')
+    mtime = models.DateTimeField('mtime')
+    qtime = models.DateTimeField('qtime')
+    etime = models.DateTimeField('etime')
+    start_time = models.DateTimeField('start_time')
+    
+class TorqueServer(models.Model):
+    name = models.CharField(verbose_name="Torque server name", max_length=100)
+
+class User(models.Model):
+    name = models.CharField(varbose_name="User name", max_length=100)
+
+class JobState(models.Model):
+    name = models.CharField(varbose_name="Job state name", max_length=100)
+    shortname = models.CharField(varbose_name="Abbreviation", max_length=1)
+
+class Queue(models.Model):
+    name = models.CharField(varbose_name="Queue name", max_length=100)
+
 # vi:ts=4:sw=4:expandtab

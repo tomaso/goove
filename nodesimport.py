@@ -33,7 +33,7 @@ def removeContent():
     for sc in SubCluster.objects.all():
         sc.delete()
 
-def feedXML(x):
+def feedNodesXML(x):
     sc_regex = re.compile("(\D+)")
 
     for i in x.childNodes[0].childNodes:
@@ -76,19 +76,15 @@ def feedXML(x):
             n.state.add(state)
 
         n.save()
-        
 
-def debugPrint(x):
+def feedJobsXML(x):
+    jobid_regex = re.compile("(\d+)")
+
     for i in x.childNodes[0].childNodes:
-        name=i.getElementsByTagName("name")[0].childNodes[0].nodeValue
-        np=i.getElementsByTagName("np")[0].childNodes[0].nodeValue
-        properties=i.getElementsByTagName("properties")[0].childNodes[0].nodeValue
-        print "name: ", name
-        print "np: ", np
-        print "properties: ", properties
-        
+        new_jobid = i.getElementsByTagName("Job_Id")[0].childNodes[0].nodeValue
     
 if __name__=="__main__":
-    x = parse("pbsnodes2.xml")
+    nodesxml = parse("pbsnodes2.xml")
+    jobsxml = parse("qstat1.xml")
 
 # vi:ts=4:sw=4:expandtab
