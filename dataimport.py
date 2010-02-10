@@ -11,6 +11,11 @@ from goove.trq.models import Node
 from goove.trq.models import NodeProperty
 from goove.trq.models import NodeState
 from goove.trq.models import SubCluster
+from goove.trq.models import Job
+from goove.trq.models import TorqueServer
+from goove.trq.models import User
+from goove.trq.models import JobState
+from goove.trq.models import Queue
 
 from xml.dom.minidom import parse, parseString
 
@@ -78,12 +83,52 @@ def feedNodesXML(x):
         n.save()
 
 def feedJobsXML(x):
-    jobid_regex = re.compile("(\d+)")
+    jobid_regex = re.compile("(\d+)\.(.*)")
 
     for i in x.childNodes[0].childNodes:
-        new_jobid = i.getElementsByTagName("Job_Id")[0].childNodes[0].nodeValue
+        new_full_jobid = i.getElementsByTagName("Job_Id")[0].childNodes[0].nodeValue
+        new_jobid_name, new_server_name = jobid_regex.search(new_full_jobid).groups()
+
+        new_server,created = TorqueServer.objects.get_or_create(name=new_server_name)
+        if created:
+            log(LOG_INFO, "new server will be created: %s" % new_server_name)
+
+        new_job,created = Job.objects.get_or_create(jobid=int(new_jobid_name), server=new_server)
+        if created:
+            log(LOG_INFO, "new job will be created: %s" % new_jobid_name)
+        else:
+            log(LOG_INFO, "job already exists (will only update data): %s" % new_jobid_name)
+
+        # used resources
+        restag = i.getElementsByTagName("resources_used")[0]
+        # cput
+        new_cput_string = restag.getElementsByTagName("cput")[0].childNodes[0].nodeValue
+        h,m,s = new_cput_string.split(":")
+        new_job.cput = (int(h)*60+int(m))*60+int(s)
+        # walltime
+        new_walltime_string = restag.getElementsByTagName("walltime")[0].childNodes[0].nodeValue
+        h,m,s = new_walltime_string.split(":")
+        new_job.walltime = (int(h)*60+int(m))*60+int(s)
+
+        new_job_owner_name = i.getElementsByTagName("Job_Owner")[0].childNodes[0].nodeValue
+        new_job_owner_name = new_job_owner_name.split("@")[0]
+        new_job_owner,created = User.objects.get_or_create(name=new_job_owner_name)
+        if created:
+            log(LOG_INFO, "new user will be created: %s" % new_job_owner_name)
+
+        new_job.job_owner = new_job_owner
+        new_job.save()
+
+
+def helper_init():
+    """ Static stuff for golias farm. Added at the beginning for testing purposes """
+    TorqueServer(name="torque.farm.particle.cz").save()
+
+
+
     
 if __name__=="__main__":
+#    helper_init()
     nodesxml = parse("pbsnodes2.xml")
     jobsxml = parse("qstat1.xml")
 
