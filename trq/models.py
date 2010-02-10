@@ -36,36 +36,43 @@ class NodeState(models.Model):
 
 class SubCluster(models.Model):
     name = models.CharField(verbose_name="Subcluster name", max_length=30)	
-    
     def __unicode__(self):
     	return self.name
 
 class Job(models.Model):
     jobid = models.IntegerField()
     server = models.ForeignKey('TorqueServer')
-    job_owner = models.ForeignKey('User')
-    cput = models.IntegerField('CPU time in seconds')
-    walltime = models.IntegerField('Wall time in seconds')
-    job_state = models.ForeignKey('JobState')
-    queue = models.ForeignKey('Queue')
-    ctime = models.DateTimeField('ctime')
-    exec_host = models.ForeignKey('Node')
-    mtime = models.DateTimeField('mtime')
-    qtime = models.DateTimeField('qtime')
-    etime = models.DateTimeField('etime')
-    start_time = models.DateTimeField('start_time')
+    job_owner = models.ForeignKey('User', null=True)
+    cput = models.IntegerField('CPU time in seconds', null=True)
+    walltime = models.IntegerField('Wall time in seconds', null=True)
+    job_state = models.ForeignKey('JobState', null=True)
+    queue = models.ForeignKey('Queue', null=True)
+    ctime = models.DateTimeField('ctime', null=True)
+    exec_host = models.ForeignKey('Node', null=True)
+    mtime = models.DateTimeField('mtime', null=True)
+    qtime = models.DateTimeField('qtime', null=True)
+    etime = models.DateTimeField('etime', null=True)
+    start_time = models.DateTimeField('start_time', null=True)
     
 class TorqueServer(models.Model):
     name = models.CharField(verbose_name="Torque server name", max_length=100)
+    def __unicode__(self):
+    	return self.name
 
 class User(models.Model):
-    name = models.CharField(varbose_name="User name", max_length=100)
+    name = models.CharField(verbose_name="User name", max_length=100)
+    def __unicode__(self):
+    	return self.name
 
 class JobState(models.Model):
-    name = models.CharField(varbose_name="Job state name", max_length=100)
-    shortname = models.CharField(varbose_name="Abbreviation", max_length=1)
+    name = models.CharField(verbose_name="Job state name", max_length=100)
+    shortname = models.CharField(verbose_name="Abbreviation", max_length=1)
+    def __unicode__(self):
+    	return self.name
 
 class Queue(models.Model):
-    name = models.CharField(varbose_name="Queue name", max_length=100)
+    name = models.CharField(verbose_name="Queue name", max_length=100)
+    def __unicode__(self):
+    	return self.name
 
 # vi:ts=4:sw=4:expandtab
