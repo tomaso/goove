@@ -18,6 +18,7 @@ from goove.trq.models import JobState
 from goove.trq.models import Queue
 
 from xml.dom.minidom import parse, parseString
+from optparse import OptionParser
 
 
 LOG_ERROR=0
@@ -25,8 +26,14 @@ LOG_WARNING=1
 LOG_INFO=2
 LOG_DEBUG=3
 
+VERSION="0.1"
+
+loglevel = 0
+
+
 def log(level, message):
-    print "<%d> %s" % (level, message)
+    if level <= loglevel:
+        print "<%d> %s" % (level, message)
 
 def removeContent():
     for ns in NodeState.objects.all():
@@ -117,19 +124,88 @@ def feedJobsXML(x):
             log(LOG_INFO, "new user will be created: %s" % new_job_owner_name)
 
         new_job.job_owner = new_job_owner
+
+        # TODO: fill the rest
+
         new_job.save()
 
+def feedJobsLog(logfile):
+    """ Insert data about jobs into database. The data are obtained from text log file
+    as described at http://www.clusterresources.com/products/torque/docs/9.1accounting.shtml
+    """
+    for line in logfile():
+        date,event,fulljobid,attrs = line.split(';')
+        if event=='Q':
+        elif event=='S':
+        elif event=='E':
+        elif event=='D':
+        else:
+            log(LOG_ERROR, "Unknown event type in accounting log file")
+    
 
-def helper_init():
+
+def BatchServerInit(servername):
     """ Static stuff for golias farm. Added at the beginning for testing purposes """
-    TorqueServer(name="torque.farm.particle.cz").save()
+    TorqueServer(name=servername).save()
 
 
 
+def main():
+    global loglevel
+
+    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE]|[-d DIR]"
+    version_string = "%%prog %s" % VERSION
+
+    opt_parser = OptionParser(usage=usage_string, version=version_string)
+    opt_parser.add_option("-l", "--loglevel", type="int", dest="loglevel", help="Log level (0-3). Default is 0, which means only errors", default=0)
+    opt_parser.add_option("-n", "--nodexml", action="append", dest="nodexmlfile", metavar="FILE", help="XML file with node data")
+    opt_parser.add_option("-j", "--jobxml", action="append", dest="jobxmlfile", metavar="FILE", help="XML file with job data")
+    opt_parser.add_option("-e", "--eventfile", action="append", dest="eventfile", metavar="FILE", 
+        help="Text file with event data in accunting log format")
+    opt_parser.add_option("-d", "--daemon", dest="daemon", metavar="DIR", 
+        help="Run in deamon node and read torque accounting logs from DIR")
+    opt_parser.add_option("-s", "--server", dest="server", metavar="BATCHSERVER", 
+        help="Name of the first batch server to be inserted in the database")
+
+    (options, args) = opt_parser.parse_args()
+
+    print options
+
+    if len(args)!=0:
+        opt_parser.error("Too many arguments")
+
+    loglevel = options.loglevel
+
+    return
+
+    # invalid combinations
+    if (options.nodexmlfile or options.jobxmlfile or options.eventfile) and options.daemon:
+        opt_parser.error("You cannot run as daemon and process data files at once. Choose only one mode of running.")
+    if not (options.nodexmlfile or options.jobxmlfile or options.eventfile or options.daemon):
+        opt_parser.error("Mode of running is missing. Please specify one of -n, -j -e or -d.")
+
+    if options.server:
+        BatchServerInit(options.server)
+
+    if options.nodexmlfile:
+        for i in options.nodexmlfile:
+            nodesxml = parse(i)
+            feednodesXML(nodesxml)
+
+    if options.jobxmlfile:
+        for i in options.jobxmlfile:
+            jobsxml = parse(i)
+            feedJobsXML(jobsxml)
+
+    if options.eventfile:
+        for i in options.eventfile:
+            logfile = file(i, "r")
+            feedJobsLog(logfile)
+        
     
 if __name__=="__main__":
-#    helper_init()
-    nodesxml = parse("pbsnodes2.xml")
-    jobsxml = parse("qstat1.xml")
+
+    main()
+
 
 # vi:ts=4:sw=4:expandtab
