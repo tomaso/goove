@@ -2,12 +2,14 @@ from django.db import models
 
 # Create your models here.
 class Node(models.Model):
-    ordering = ['name']
     name = models.CharField(verbose_name="Node name", max_length=30)
     np = models.IntegerField(verbose_name="Number of job slots")
     properties = models.ManyToManyField('NodeProperty')
     state = models.ManyToManyField('NodeState')
     subcluster = models.ForeignKey('SubCluster')
+
+    class Meta:
+        ordering = ["name"]
 
     def get_nodeproperties(self):
     	return ",".join([ i.name for i in self.properties.all() ])
