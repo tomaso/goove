@@ -142,17 +142,23 @@ def feedJobsLog(logfile):
     """ Insert data about jobs into database. The data are obtained from text log file
     as described at http://www.clusterresources.com/products/torque/docs/9.1accounting.shtml
     """
+    lineno = 0
     for line in logfile:
+        lineno += 1
         try:
             date,event,fulljobid,attrs = line.split(';')
         except ValueError:
-            log(LOG_WARNING, "skipping invalid line: '%s'" % line)
+            log(LOG_WARNING, "skipping invalid line %d: '%s'" % (lineno,line))
             continue
             
         log(LOG_DEBUG, "processing accounting line: %s:%s:%s ..." %(date, event, fulljobid))
         attrdir = {}
-        for key,val in map(lambda x: x.split('='), attrs.split()): 
-            attrdir[key] = val
+        try:
+            for key,val in map(lambda x: x.split('=',1), attrs.split()): 
+                attrdir[key] = val
+        except ValueError:
+            log(LOG_WARNING, "skipping line with invalid attribues %d: '%s'" % (lineno,attrs))
+            
         jobid_name, server_name = JOBID_REGEX.search(fulljobid).groups()
         server,created = TorqueServer.objects.get_or_create(name=server_name)
         if created:

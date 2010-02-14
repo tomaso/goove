@@ -74,6 +74,9 @@ class User(models.Model):
     def __unicode__(self):
     	return self.name
 
+    class Meta:
+        ordering = ['name']
+
 class JobState(models.Model):
     name = models.CharField(verbose_name="job state name", max_length=100)
     shortname = models.CharField(verbose_name="abbreviation", max_length=1)
