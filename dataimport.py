@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+
 import sys
 sys.path.append("..")
 import goove
 import os
+import datetime
 
 os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
 
@@ -25,6 +28,7 @@ LOG_ERROR=0
 LOG_WARNING=1
 LOG_INFO=2
 LOG_DEBUG=3
+JOBID_REGEX = re.compile("(\d+)\.(.*)")
 
 VERSION="0.1"
 
@@ -90,11 +94,11 @@ def feedNodesXML(x):
         n.save()
 
 def feedJobsXML(x):
-    jobid_regex = re.compile("(\d+)\.(.*)")
+    JOBID_REGEX = re.compile("(\d+)\.(.*)")
 
     for i in x.childNodes[0].childNodes:
         new_full_jobid = i.getElementsByTagName("Job_Id")[0].childNodes[0].nodeValue
-        new_jobid_name, new_server_name = jobid_regex.search(new_full_jobid).groups()
+        new_jobid_name, new_server_name = JOBID_REGEX.search(new_full_jobid).groups()
 
         new_server,created = TorqueServer.objects.get_or_create(name=new_server_name)
         if created:
@@ -129,19 +133,74 @@ def feedJobsXML(x):
 
         new_job.save()
 
+def translateAttrDir(attrDir):
+    """ Helper function. It translates dictionary of key,value pairs obtained from torque
+    accounting logs into a dictionary where keys are
+    """
+
 def feedJobsLog(logfile):
     """ Insert data about jobs into database. The data are obtained from text log file
     as described at http://www.clusterresources.com/products/torque/docs/9.1accounting.shtml
     """
-    for line in logfile():
-        date,event,fulljobid,attrs = line.split(';')
+    for line in logfile:
+        try:
+            date,event,fulljobid,attrs = line.split(';')
+        except ValueError:
+            log(LOG_WARNING, "skipping invalid line: '%s'" % line)
+            continue
+            
+        log(LOG_DEBUG, "processing accounting line: %s:%s:%s ..." %(date, event, fulljobid))
+        attrdir = {}
+        for key,val in map(lambda x: x.split('='), attrs.split()): 
+            attrdir[key] = val
+        jobid_name, server_name = JOBID_REGEX.search(fulljobid).groups()
+        server,created = TorqueServer.objects.get_or_create(name=server_name)
+        if created:
+            log(LOG_INFO, "new server will be created: %s" % server_name)
+        job,created = Job.objects.get_or_create(jobid=int(jobid_name), server=server)
+        if created:
+            log(LOG_INFO, "new job will be created: %s.%s" % (jobid_name, server_name))
+
+        if attrdir.has_key('user'):
+            user,created = User.objects.get_or_create(name=attrdir['user'])
+            if created:
+                log(LOG_INFO, "new user will be created: %s" % attrdir['user'])
+            job.job_owner = user
+        if attrdir.has_key('resources_used.cput'):
+            h,m,s = attrdir['resources_used.cput'].split(":")
+            job.cput = (int(h)*60+int(m))*60+int(s)
+        if attrdir.has_key('resources_used.walltime'):
+            h,m,s = attrdir['resources_used.walltime'].split(":")
+            job.walltime = (int(h)*60+int(m))*60+int(s)
         if event=='Q':
+            job.job_state = JobState.objects.get(shortname='Q')
         elif event=='S':
+            job.job_state = JobState.objects.get(shortname='R')
         elif event=='E':
+            job.job_state = JobState.objects.get(shortname='C')
         elif event=='D':
+            job.job_state = JobState.objects.get(shortname='C')
         else:
             log(LOG_ERROR, "Unknown event type in accounting log file")
+        if attrdir.has_key('queue'):
+            queue,created = Queue.objects.get_or_create(name=attrdir['queue'])
+            if created:
+                log(LOG_INFO, "new queue will be created: %s" % attrdir['queue'])
+            job.queue = queue
+        if attrdir.has_key('ctime'):
+            job.ctime = datetime.datetime.fromtimestamp(int(attrdir['ctime']))
+        if attrdir.has_key('mtime'):
+            job.mtime = datetime.datetime.fromtimestamp(int(attrdir['mtime']))
+        if attrdir.has_key('qtime'):
+            job.qtime = datetime.datetime.fromtimestamp(int(attrdir['qtime']))
+        if attrdir.has_key('etime'):
+            job.etime = datetime.datetime.fromtimestamp(int(attrdir['etime']))
+        if attrdir.has_key('start'):
+            job.start_time = datetime.datetime.fromtimestamp(int(attrdir['start']))
+        if attrdir.has_key('end'):
+            job.comp_time = datetime.datetime.fromtimestamp(int(attrdir['end']))
     
+        job.save()
 
 
 def BatchServerInit(servername):
@@ -169,14 +228,10 @@ def main():
 
     (options, args) = opt_parser.parse_args()
 
-    print options
-
     if len(args)!=0:
         opt_parser.error("Too many arguments")
 
     loglevel = options.loglevel
-
-    return
 
     # invalid combinations
     if (options.nodexmlfile or options.jobxmlfile or options.eventfile) and options.daemon:
@@ -190,7 +245,7 @@ def main():
     if options.nodexmlfile:
         for i in options.nodexmlfile:
             nodesxml = parse(i)
-            feednodesXML(nodesxml)
+            feedNodesXML(nodesxml)
 
     if options.jobxmlfile:
         for i in options.jobxmlfile:
@@ -199,12 +254,12 @@ def main():
 
     if options.eventfile:
         for i in options.eventfile:
+            log(LOG_DEBUG, "opening file %s" % i)
             logfile = file(i, "r")
             feedJobsLog(logfile)
         
     
 if __name__=="__main__":
-
     main()
 
 
