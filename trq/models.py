@@ -52,13 +52,17 @@ class Job(models.Model):
     walltime = models.IntegerField('Wall time in seconds', null=True)
     job_state = models.ForeignKey('JobState', null=True)
     queue = models.ForeignKey('Queue', null=True)
-    ctime = models.DateTimeField('ctime', null=True)
+    ctime = models.DateTimeField(verbose_name='Creation time', null=True,
+        help_text="The time that the job was created.")
     exec_host = models.ForeignKey('Node', null=True)
-    mtime = models.DateTimeField('mtime', null=True)
-    qtime = models.DateTimeField('qtime', null=True)
-    etime = models.DateTimeField('etime', null=True)
-    start_time = models.DateTimeField('start_time', null=True)
-    comp_time = models.DateTimeField('comp_time', null=True)
+    mtime = models.DateTimeField(verbose_name='modified time', null=True,
+        help_text="The time that the job was last modified, changed state or changed locations.")
+    qtime = models.DateTimeField(verbose_name='queued time', null=True,
+        help_text="The time that the job entered the current queue.")
+    etime = models.DateTimeField(verbose_name='Eligible time', null=True,
+        help_text="The time that the job became eligible to run, i.e. in a queued state while residing in an execution queue.")
+    start_time = models.DateTimeField(verbose_name='Start time', null=True)
+    comp_time = models.DateTimeField(verbose_name='Completion time', null=True)
 
     class Meta:
         ordering = ['jobid']
