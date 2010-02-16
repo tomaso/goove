@@ -19,6 +19,9 @@ class Node(models.Model):
     	return ",".join([ i.name for i in self.state.all() ])
     get_nodestates.short_description = "node state"
 
+    def get_absolute_url(self):
+        return u"/nodes/%s" % (self.name)
+
     def __unicode__(self):
     	return self.name
 
@@ -63,6 +66,9 @@ class Job(models.Model):
         help_text="The time that the job became eligible to run, i.e. in a queued state while residing in an execution queue.")
     start_time = models.DateTimeField(verbose_name='Start time', null=True)
     comp_time = models.DateTimeField(verbose_name='Completion time', null=True)
+
+    def get_absolute_url(self):
+        return u"/jobs/%s/%d" % (server,jobid)
 
     class Meta:
         ordering = ['jobid']

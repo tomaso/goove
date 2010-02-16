@@ -1,6 +1,8 @@
 from django.conf.urls.defaults import *
+from models import Node
 
-urlpatterns = patterns('goove.trq.views',
-    (r'^$', 'index'),
-    (r'^nodes/$', 'nodes'),
+nodes = Node.objects.all()
+
+urlpatterns = patterns('',
+    (r'^nodes/$', 'django.views.generic.list_detail.object_list', dict(queryset=nodes)),
 )
