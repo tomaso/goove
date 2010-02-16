@@ -2,18 +2,28 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <link rel="stylesheet" href="style.css" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" media="all" type="text/css" href="/site_media/css/style.css" />
+    <link rel="stylesheet" media="all" type="text/css" href="/site_media/css/menu_style.css" />
     <title>{% block title %}My amazing site{% endblock %}</title>
 </head>
 
 <body>
-    <div id="sidebar">
-        {% block sidebar %}
+    {% block mainmenu %}
+    <div class="menu bubplastic horizontal aqua">
         <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/blog/">Blog</a></li>
+            <li class="highlight"><span class="menu_r"><a href="/trq/"><span class="menu_ar">Overview</span></a></span></li>
+            <li><span class="menu_r"><a href="/trq/nodes/"><span class="menu_ar">Nodes</span></a></span></li>
+            <li><span class="menu_r"><a href="/trq/queues/"><span class="menu_ar">Queues</span></a></span></li>
+            <li><span class="menu_r"><a href="/trq/users/"><span class="menu_ar">Users</span></a></span></li>
+            <li><span class="menu_r"><a href="/trq/jobs/"><span class="menu_ar">Jobs</span></a></span></li>
         </ul>
-        {% endblock %}
+        <br class="clearit" />
+    </div>
+    {% endblock mainmenu %}
+
+    <div>
+        {% block submenu %}{% endblock %}
     </div>
 
     <div id="content">
@@ -21,3 +31,6 @@
     </div>
 </body>
 </html>
+<!-- 
+vi:sw=4:ts=4:et
+-->
