@@ -4,3 +4,5 @@ from django.shortcuts import render_to_response
 def index(request):
 	return render_to_response('trq/index.html', {})
 
+def nodes(request):
+	return render_to_response('trq/nodes.html', {})
