@@ -1,0 +1,36 @@
+{% extends "trq/nodes.html" %}
+
+{% block content %}
+
+<form action="" method="post">
+{{ subcluster_form.as_table }}
+{{ properties_form.as_table }}
+<input type="submit" value="Submit" />
+</form>
+
+<table cellspacing="0">
+<thead>
+<tr>
+<th>Name</th>
+<th>Job Slots</th>
+<th>Properties</th>
+<th>Current States</th>
+<th>Subcluster</th>
+</thead>
+<tbody>
+    {% for object in nodes_list %}
+        <tr>
+        <td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td>
+        <td>{{ object.np }}</td>
+        <td>{{ object.get_nodeproperties }}</td>
+        <td>{{ object.get_nodestates }}</td>
+        <td>{{ object.subcluster }}</td>
+        </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->
