@@ -1,12 +1,26 @@
-{% extends "trq/nodes.html" %}
+{% extends "trq/nodes_base.html" %}
 
 {% block content %}
 
 <form action="" method="post">
-{{ subcluster_form.as_table }}
-{{ properties_form.as_table }}
+<h3>SubCluster</h3>
+<input type="hidden" name="subcluster" id="id_subcluster" value="on" />
+{{ subcluster_form.as_ul }}
+
+<h3>Properties</h3>
+{{ properties_form.as_ul }}
 <input type="submit" value="Submit" />
 </form>
+
+<form action="" method="post">
+<h3>States</h3>
+{{ states_form.as_ul }}
+<input type="submit" value="Submit" />
+</form>
+
+<p>
+{{ request_post }}
+</p>
 
 <table cellspacing="0">
 <thead>
