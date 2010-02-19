@@ -48,6 +48,15 @@ def removeContent():
         n.delete()
     for sc in SubCluster.objects.all():
         sc.delete()
+    for j in Job.objects.all():
+        j.delete()
+#   Job states are inserted initially from initial_data.json
+#    for js in JobState.objects.all():
+#        js.delete()
+    for q in Queue.objects.all():
+        q.delete()
+    for u in User.objects.all():
+        u.delete()
 
 def feedNodesXML(x):
     sc_regex = re.compile("(\D+)")
@@ -110,6 +119,14 @@ def feedJobsXML(x):
         else:
             log(LOG_INFO, "job already exists (will only update data): %s" % new_jobid_name)
 
+        # job_owner
+        new_job_owner_name = i.getElementsByTagName("Job_Owner")[0].childNodes[0].nodeValue
+        new_job_owner_name = new_job_owner_name.split("@")[0]
+        new_job_owner,created = User.objects.get_or_create(name=new_job_owner_name)
+        if created:
+            log(LOG_INFO, "new user will be created: %s" % new_job_owner_name)
+        new_job.job_owner = new_job_owner
+
         # used resources
         restag = i.getElementsByTagName("resources_used")[0]
         # cput
@@ -121,22 +138,30 @@ def feedJobsXML(x):
         h,m,s = new_walltime_string.split(":")
         new_job.walltime = (int(h)*60+int(m))*60+int(s)
 
-        new_job_owner_name = i.getElementsByTagName("Job_Owner")[0].childNodes[0].nodeValue
-        new_job_owner_name = new_job_owner_name.split("@")[0]
-        new_job_owner,created = User.objects.get_or_create(name=new_job_owner_name)
+        # job state
+        new_job_state_abbrev = i.getElementsByTagName("job_state")[0].childNodes[0].nodeValue
+        new_job_state = Node.objects.get(shortname=new_job_state_abbrev)
+        new_job.job_state = new_job_state
+
+
+
+        # TODO: redesign for multislot jobs
+        # exec_host
+        new_exec_host_name = i.getElementsByTagName("exec_host")[0].childNodes[0].nodeValue
+        new_exec_host_name = new_exec_host_name.split("/",1)[0]
+        new_exec_host,created = Node.objects.get_or_create(name=new_exec_host_name)
         if created:
-            log(LOG_INFO, "new user will be created: %s" % new_job_owner_name)
-
-        new_job.job_owner = new_job_owner
-
-        # TODO: fill the rest
+            log(LOG_INFO, "new node (exec_host) will be created: %s" % new_exec_host_name)
+        
+        # mtime
+        new_walltime_string = restag.getElementsByTagName("walltime")[0].childNodes[0].nodeValue
+        h,m,s = new_walltime_string.split(":")
+        new_job.walltime = (int(h)*60+int(m))*60+int(s)
+        
+        
 
         new_job.save()
 
-def translateAttrDir(attrDir):
-    """ Helper function. It translates dictionary of key,value pairs obtained from torque
-    accounting logs into a dictionary where keys are
-    """
 
 def feedJobsLog(logfile):
     """ Insert data about jobs into database. The data are obtained from text log file
@@ -266,6 +291,7 @@ def main():
         
     
 if __name__=="__main__":
+    removeContent()
     main()
 
 

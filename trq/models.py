@@ -20,7 +20,7 @@ class Node(models.Model):
     get_nodestates.short_description = "node state"
 
     def get_absolute_url(self):
-        return u"/nodes/%s" % (self.name)
+        return u"/trq/nodes/%s/" % (self.name)
 
     def __unicode__(self):
     	return self.name
@@ -57,6 +57,7 @@ class Job(models.Model):
     queue = models.ForeignKey('Queue', null=True)
     ctime = models.DateTimeField(verbose_name='Creation time', null=True,
         help_text="The time that the job was created.")
+    # TODO: will not work for multinode and multislot jobs - we should redesign
     exec_host = models.ForeignKey('Node', null=True)
     mtime = models.DateTimeField(verbose_name='modified time', null=True,
         help_text="The time that the job was last modified, changed state or changed locations.")
@@ -68,7 +69,10 @@ class Job(models.Model):
     comp_time = models.DateTimeField(verbose_name='Completion time', null=True)
 
     def get_absolute_url(self):
-        return u"/jobs/%s/%d" % (server,jobid)
+        return u"/trq/jobs/%s/%d/" % (server,jobid)
+
+    def __unicode__(self):
+    	return "%s.%s" % (self.jobid, self.server)
 
     class Meta:
         ordering = ['jobid']
