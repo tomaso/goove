@@ -4,6 +4,7 @@ from models import Node
 from models import SubCluster
 from models import NodeProperty
 from models import NodeState
+from models import Job
 from django import forms
 
 class BooleanListForm(forms.Form):
@@ -26,12 +27,15 @@ class BooleanListForm(forms.Form):
             name = self.nameprefix + k
             self.fields[name] = forms.BooleanField(label=k, required=False)
 
-    def setData(self, dict):
+    def setData(self, dict, useprefix=True):
         """
-        Set boolean state according to the dictionar
+        Set boolean state according to the dictionary
         """
         for key,val in dict.items():
-            self.data[key] = val
+            if useprefix:
+                self.data[self.nameprefix+key] = val
+            else:
+                self.data[key] = val
         self.is_bound = True
 
 
@@ -42,11 +46,32 @@ def nodes(request):
 	return render_to_response('trq/nodes.html', {})
 
 def nodes_overview(request):
-#    if request.POST:
-#        Node.objects.filter(subcluster__name__in=['saltix','salix'])
-#    else:
-   
-    nodes = Node.objects.all()
+    if request.POST:
+        sc_list = []
+        prop_list = []
+        state_list = []
+        for key,val in request.POST.items():
+            prefix, attr = key.split("_", 1)
+            if prefix == "subcluster":
+                if 'on' in val:
+                    sc_list.append(attr)
+            elif prefix == "properties":
+                if 'on' in val:
+                    prop_list.append(attr)
+            elif prefix == "states":
+                if 'on' in val:
+                    state_list.append(attr)
+
+        print prop_list
+        
+        nodes = Node.objects.filter(
+            subcluster__name__in=sc_list, 
+            properties__name__in=prop_list,
+            state__name__in=state_list
+            ).distinct()
+    else:
+        nodes = Node.objects.all()
+
 
     subclusters = [x.name for x in SubCluster.objects.all()]
     properties = [x.name for x in NodeProperty.objects.all()]
@@ -62,9 +87,9 @@ def nodes_overview(request):
     states_form.setFields(states)
 
     if request.POST:
-        subcluster_form.setData(request.POST)
-        properties_form.setData(request.POST)
-        states_form.setData(request.POST)
+        subcluster_form.setData(request.POST, useprefix=False)
+        properties_form.setData(request.POST, useprefix=False)
+        states_form.setData(request.POST, useprefix=False)
     else:
         subcluster_form.setData( dict(zip(subclusters, len(subclusters)*[True])) )
         properties_form.setData( dict(zip(properties, len(properties)*[True])) )
@@ -72,8 +97,14 @@ def nodes_overview(request):
     return render_to_response(
         'trq/nodes_overview.html', 
         {'nodes_list':nodes, 'subcluster_form':subcluster_form, 
-        'properties_form':properties_form, 'states_form':states_form,
-        'request_post':request.POST}
+        'properties_form':properties_form, 'states_form':states_form}
         )
+
+
+def node_detail(request, nodename):
+    n = Node.objects.get(name=nodename)
+    js = Job.objects.filter(exec_host=n)
+    
+    return render_to_response('trq/node_detail.html', {'node':n, 'jobs': js})
 
 # vi:ts=4:sw=4:expandtab

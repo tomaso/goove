@@ -2,47 +2,60 @@
 
 {% block content %}
 
-<form action="" method="post">
-<h3>SubCluster</h3>
-<input type="hidden" name="subcluster" id="id_subcluster" value="on" />
-{{ subcluster_form.as_ul }}
+<div class="leftmenu">
 
-<h3>Properties</h3>
-{{ properties_form.as_ul }}
-<input type="submit" value="Submit" />
-</form>
+    <form action="" method="post">
+        <h3>SubCluster</h3>
+        <ol>
+        {% for field in subcluster_form %}
+            <li class="filterlist">{{ field }} {{ field.label_tag }}</li>
+        {% endfor %}
+        </ol>
 
-<form action="" method="post">
-<h3>States</h3>
-{{ states_form.as_ul }}
-<input type="submit" value="Submit" />
-</form>
+        <h3>Properties</h3>
+        <ol>
+        {% for field in properties_form %}
+            <li class="filterlist">{{ field }} {{ field.label_tag }}</li>
+        {% endfor %}
+        </ol>
 
-<p>
-{{ request_post }}
-</p>
+        <h3>States</h3>
+        <ol>
+        {% for field in states_form %}
+            <li class="filterlist">{{ field }} {{ field.label_tag }}</li>
+        {% endfor %}
+        </ol>
+        <input type="submit" value="Submit" />
+    </form>
 
-<table cellspacing="0">
-<thead>
-<tr>
-<th>Name</th>
-<th>Job Slots</th>
-<th>Properties</th>
-<th>Current States</th>
-<th>Subcluster</th>
-</thead>
-<tbody>
-    {% for object in nodes_list %}
-        <tr>
-        <td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td>
-        <td>{{ object.np }}</td>
-        <td>{{ object.get_nodeproperties }}</td>
-        <td>{{ object.get_nodestates }}</td>
-        <td>{{ object.subcluster }}</td>
-        </tr>
-    {% endfor %}
-</tbody>
-</table>
+</div>
+
+<div class="maintext">
+
+    <table cellspacing="0">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Job Slots</th>
+                <th>Properties</th>
+                <th>Current States</th>
+                <th>Subcluster</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in nodes_list %}
+            <tr>
+                <td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td>
+                <td>{{ object.np }}</td>
+                <td>{{ object.get_nodeproperties }}</td>
+                <td>{{ object.get_nodestates }}</td>
+                <td>{{ object.subcluster }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 {% endblock content %}
 
 <!-- 
