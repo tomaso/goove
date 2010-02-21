@@ -4,7 +4,10 @@ import sys
 sys.path.append("..")
 import goove
 import os
+import os.path
 import datetime
+import bz2
+import gzip
 
 os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
 
@@ -63,10 +66,13 @@ def feedNodesXML(x):
 
     for i in x.childNodes[0].childNodes:
         new_name=i.getElementsByTagName("name")[0].childNodes[0].nodeValue
+        n, created = Node.objects.get_or_create(name=new_name)
+        if created:
+            log(LOG_INFO, "new node will be created: %s" % (new_name))
+
+        # np
         new_np=int(i.getElementsByTagName("np")[0].childNodes[0].nodeValue)
-        new_properties=i.getElementsByTagName("properties")[0].childNodes[0].nodeValue
-        new_states=i.getElementsByTagName("state")[0].childNodes[0].nodeValue
-        n = Node(name=new_name, np=new_np)
+        n.np = new_np
 
         # Node's subcluster
         sc_name = sc_regex.search(new_name).groups()[0]
@@ -79,6 +85,7 @@ def feedNodesXML(x):
         log(LOG_INFO, "new node saved: %s" % (new_name))
 
         # Node properties
+        new_properties=i.getElementsByTagName("properties")[0].childNodes[0].nodeValue
         for prop_name in new_properties.split(","):
             prop, created = NodeProperty.objects.get_or_create(name=prop_name, defaults={'description':'No description yet'})
             if not prop:
@@ -90,6 +97,7 @@ def feedNodesXML(x):
             n.properties.add(prop)
 
         # Node state(s)
+        new_states=i.getElementsByTagName("state")[0].childNodes[0].nodeValue
         for state_name in new_states.split(","):
             state, created = NodeState.objects.get_or_create(name=state_name, defaults={'description':'No description yet'})
             if not state:
@@ -99,10 +107,24 @@ def feedNodesXML(x):
                 state.save()
                 log(LOG_INFO, "new state saved: %s" % (state_name))
             n.state.add(state)
-
         n.save()
 
+def getTimeOrZero(xmlnode, attrname):
+    """
+    Get attribute value from xml as integer.
+    If not present, return 0.
+    """
+    l = xmlnode.getElementsByTagName(attrname)
+    if len(l)==0:
+        return 0
+    t = l[0].childNodes[0].nodeValue
+    return datetime.datetime.fromtimestamp(int(t))
+
 def feedJobsXML(x):
+    """
+    Parse xml produces by pbsnodes -[a]x and feed the data into django
+    data structures.
+    """
     JOBID_REGEX = re.compile("(\d+)\.(.*)")
 
     for i in x.childNodes[0].childNodes:
@@ -128,38 +150,59 @@ def feedJobsXML(x):
         new_job.job_owner = new_job_owner
 
         # used resources
-        restag = i.getElementsByTagName("resources_used")[0]
-        # cput
-        new_cput_string = restag.getElementsByTagName("cput")[0].childNodes[0].nodeValue
-        h,m,s = new_cput_string.split(":")
-        new_job.cput = (int(h)*60+int(m))*60+int(s)
-        # walltime
-        new_walltime_string = restag.getElementsByTagName("walltime")[0].childNodes[0].nodeValue
-        h,m,s = new_walltime_string.split(":")
-        new_job.walltime = (int(h)*60+int(m))*60+int(s)
+        restag_list = i.getElementsByTagName("resources_used")
+        if len(restag_list)>0:
+            restag = restag_list[0]
+            # cput
+            new_cput_string = restag.getElementsByTagName("cput")[0].childNodes[0].nodeValue
+            h,m,s = new_cput_string.split(":")
+            new_job.cput = (int(h)*60+int(m))*60+int(s)
+            # walltime
+            new_walltime_string = restag.getElementsByTagName("walltime")[0].childNodes[0].nodeValue
+            h,m,s = new_walltime_string.split(":")
+            new_job.walltime = (int(h)*60+int(m))*60+int(s)
 
         # job state
         new_job_state_abbrev = i.getElementsByTagName("job_state")[0].childNodes[0].nodeValue
-        new_job_state = Node.objects.get(shortname=new_job_state_abbrev)
+        new_job_state = JobState.objects.get(shortname=new_job_state_abbrev)
         new_job.job_state = new_job_state
 
+        # queue
+        new_queue_name = i.getElementsByTagName("queue")[0].childNodes[0].nodeValue
+        new_queue,created = Queue.objects.get_or_create(name=new_queue_name)
+        if created:
+            log(LOG_INFO, "new queue will be created: %s" % new_queue_name)
+        new_job.queue = new_queue
 
+        # ctime
+        ctime = getTimeOrZero(i, "ctime")
+        # mtime
+        mtime = getTimeOrZero(i, "mtime")
+        # qtime
+        qtime = getTimeOrZero(i, "qtime")
+        # etime
+        etime = getTimeOrZero(i, "etime")
+        # start_time
+        start_time = getTimeOrZero(i, "start_time")
+        # comp_time
+        comp_time = getTimeOrZero(i, "comp_time")
 
         # TODO: redesign for multislot jobs
         # exec_host
-        new_exec_host_name = i.getElementsByTagName("exec_host")[0].childNodes[0].nodeValue
-        new_exec_host_name = new_exec_host_name.split("/",1)[0]
-        new_exec_host,created = Node.objects.get_or_create(name=new_exec_host_name)
-        if created:
-            log(LOG_INFO, "new node (exec_host) will be created: %s" % new_exec_host_name)
+        exec_host_xml = i.getElementsByTagName("exec_host")
+        if len(exec_host_xml)>0:
+            new_exec_host_name = exec_host_xml[0].childNodes[0].nodeValue
+            new_exec_host_name = new_exec_host_name.split("/",1)[0]
+            new_exec_host,created = Node.objects.get_or_create(name=new_exec_host_name)
+            if created:
+                log(LOG_INFO, "new node (exec_host) will be created: %s" % new_exec_host_name)
+            new_job.exec_host = new_exec_host
         
         # mtime
         new_walltime_string = restag.getElementsByTagName("walltime")[0].childNodes[0].nodeValue
         h,m,s = new_walltime_string.split(":")
         new_job.walltime = (int(h)*60+int(m))*60+int(s)
         
-        
-
         new_job.save()
 
 
@@ -230,7 +273,13 @@ def feedJobsLog(logfile):
             job.start_time = datetime.datetime.fromtimestamp(int(attrdir['start']))
         if attrdir.has_key('end'):
             job.comp_time = datetime.datetime.fromtimestamp(int(attrdir['end']))
-    
+        if attrdir.has_key('exec_host'):
+            exec_host_name = attrdir['exec_host'].split("/",1)[0]
+            exec_host,created = Node.objects.get_or_create(name=exec_host_name)
+            if created:
+                log(LOG_INFO, "new node (exec_host) will be created: %s" % exec_host_name)
+            job.exec_host = exec_host
+
         job.save()
 
 
@@ -238,6 +287,21 @@ def BatchServerInit(servername):
     """ Static stuff for golias farm. Added at the beginning for testing purposes """
     TorqueServer(name=servername).save()
 
+def openfile(filename):
+    """
+    Guess file type, open it appropriately
+    and return file handle
+    """
+    ending = os.path.basename(filename).split('.')[-1]
+    log(LOG_INFO, "filename: %s, ending: %s" % (filename, ending))
+    if ending=="bz2":
+        log(LOG_INFO, "opening file as bz2")
+        return bz2.BZ2File(filename)
+    elif ending=="gz":
+        log(LOG_INFO, "opening file as gzip")
+        return gzip.GzipFile(filename)
+    else:
+        return open(filename, "r")
 
 
 def main():
@@ -273,22 +337,21 @@ def main():
     if options.server:
         BatchServerInit(options.server)
 
+    if options.eventfile:
+        for i in options.eventfile:
+            log(LOG_DEBUG, "opening file %s" % i)
+            feedJobsLog(openfile(i))
+        
     if options.nodexmlfile:
         for i in options.nodexmlfile:
-            nodesxml = parse(i)
+            nodesxml = parse(openfile(i))
             feedNodesXML(nodesxml)
 
     if options.jobxmlfile:
         for i in options.jobxmlfile:
-            jobsxml = parse(i)
+            jobsxml = parse(openfile(i))
             feedJobsXML(jobsxml)
 
-    if options.eventfile:
-        for i in options.eventfile:
-            log(LOG_DEBUG, "opening file %s" % i)
-            logfile = file(i, "r")
-            feedJobsLog(logfile)
-        
     
 if __name__=="__main__":
     removeContent()

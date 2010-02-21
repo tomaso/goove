@@ -3,13 +3,44 @@
 {% block content %}
 
 <div class="maintext">
-    <h3>Node info</h3>
-    <table>
-    {{ node }}
-    </table>
+    <h2 style="background-color: cyan; color: white; text-shadow: black 0.1em 0.1em 0.1em">{{ node.name }}</h2>
     <h3>Currently associated jobs</h3>
-    <table>
-    {{ jobs }}
+    <table class="nodejoblist">
+        <tr>
+            <th>JobId</th>
+            <th>Owner</th>
+            <th>CpuTime</th>
+            <th>WallTime</th>
+            <th>Queue</th>
+        </tr>
+    {% for job in running_jobs %}
+        <tr>
+            <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
+            <td>{{ job.job_owner }}</td>
+            <td>{{ job.cput }}</td>
+            <td>{{ job.walltime }}</td>
+            <td><a href="{{ job.queue.get_absolute_url }}">{{ job.queue }}</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+    <h3>Cmpleted jobs on this node</h3>
+    <table class="nodejoblist">
+        <tr>
+            <th>JobId</th>
+            <th>Owner</th>
+            <th>CpuTime</th>
+            <th>WallTime</th>
+            <th>Queue</th>
+        </tr>
+    {% for job in completed_jobs %}
+        <tr>
+            <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
+            <td>{{ job.job_owner }}</td>
+            <td>{{ job.cput }}</td>
+            <td>{{ job.walltime }}</td>
+            <td>{{ job.queue }}</td>
+        </tr>
+    {% endfor %}
     </table>
     
 

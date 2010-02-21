@@ -103,8 +103,10 @@ def nodes_overview(request):
 
 def node_detail(request, nodename):
     n = Node.objects.get(name=nodename)
-    js = Job.objects.filter(exec_host=n)
+    running_jobs = Job.objects.filter(exec_host=n, job_state__shortname="R")
+    completed_jobs = Job.objects.filter(exec_host=n, job_state__shortname="C")
     
-    return render_to_response('trq/node_detail.html', {'node':n, 'jobs': js})
+    return render_to_response('trq/node_detail.html', 
+        {'node':n, 'running_jobs': running_jobs, 'completed_jobs': completed_jobs})
 
 # vi:ts=4:sw=4:expandtab

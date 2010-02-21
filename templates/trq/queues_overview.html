@@ -1,0 +1,27 @@
+{% extends "trq/queues_base.html" %}
+
+{% block content %}
+
+<div class="maintext">
+
+    <table cellspacing="0">
+        <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in queues_list %}
+            <tr>
+                <td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->
