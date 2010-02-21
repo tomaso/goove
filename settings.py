@@ -71,7 +71,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'goove.debug.SqlPrintingMiddleware',
+#    'goove.debug.SqlPrintingMiddleware',
 )
 
 ROOT_URLCONF = 'goove.urls'
