@@ -1,0 +1,31 @@
+{% extends "trq/queues_base.html" %}
+
+{% block content %}
+
+<div class="maintext">
+    <h2 style="background-color: blue; color: white; text-shadow: black 0.1em 0.1em 0.1em">Queue: {{ queue.name }}</h2>
+    <h3>Currently associated jobs</h3>
+    <table class="nodejoblist">
+        <tr>
+            <th>JobId</th>
+            <th>Owner</th>
+            <th>CpuTime</th>
+            <th>WallTime</th>
+        </tr>
+    {% for job in running_jobs %}
+        <tr>
+            <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
+            <td>{{ job.job_owner }}</td>
+            <td>{{ job.cput }}</td>
+            <td>{{ job.walltime }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

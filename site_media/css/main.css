@@ -32,3 +32,19 @@ li.filterlist {
 	margin: 0px;
 	padding: 0px;
 }
+
+table {
+	border-collapse:collapse;
+}
+
+table,th,td {
+	border: 1px solid black;
+}
+
+table.nodejoblist th {
+	text-align: center;
+}
+
+table.nodejoblist td {
+	text-align: right;
+}

@@ -3,10 +3,10 @@ from django.db import models
 # Create your models here.
 class Node(models.Model):
     name = models.CharField(verbose_name="node name", max_length=30)
-    np = models.IntegerField(verbose_name="number of job slots")
-    properties = models.ManyToManyField('NodeProperty')
-    state = models.ManyToManyField('NodeState')
-    subcluster = models.ForeignKey('SubCluster')
+    np = models.IntegerField(verbose_name="number of job slots", null=True)
+    properties = models.ManyToManyField('NodeProperty', null=True)
+    state = models.ManyToManyField('NodeState', null=True)
+    subcluster = models.ForeignKey('SubCluster', null=True)
 
     class Meta:
         ordering = ["name"]
@@ -54,6 +54,7 @@ class Job(models.Model):
     cput = models.IntegerField('CPU time in seconds', null=True)
     walltime = models.IntegerField('Wall time in seconds', null=True)
     job_state = models.ForeignKey('JobState', null=True)
+    # TODO: job can be moved from queue to queue during its lifetime
     queue = models.ForeignKey('Queue', null=True)
     ctime = models.DateTimeField(verbose_name='Creation time', null=True,
         help_text="The time that the job was created.")
@@ -69,7 +70,7 @@ class Job(models.Model):
     comp_time = models.DateTimeField(verbose_name='Completion time', null=True)
 
     def get_absolute_url(self):
-        return u"/trq/jobs/%s/%d/" % (server,jobid)
+        return u"/trq/jobs/%s/%d/" % (self.server,self.jobid)
 
     def __unicode__(self):
     	return "%s.%s" % (self.jobid, self.server)
@@ -88,6 +89,9 @@ class User(models.Model):
     def __unicode__(self):
     	return self.name
 
+    def get_absolute_url(self):
+        return u"/trq/users/%s/" % (self.name)
+
     class Meta:
         ordering = ['name']
 
@@ -101,5 +105,8 @@ class Queue(models.Model):
     name = models.CharField(verbose_name="queue name", max_length=100)
     def __unicode__(self):
     	return self.name
+
+    def get_absolute_url(self):
+        return u"/trq/queues/%s/" % (self.name)
 
 # vi:ts=4:sw=4:expandtab
