@@ -1,0 +1,53 @@
+{% extends "trq/jobs_base.html" %}
+
+{% block content %}
+
+<div class="maintext">
+    <h2 style="background-color: #FF0099; color: white; text-shadow: black 0.1em 0.1em 0.1em">User: {{ job.jobid }}</h2>
+    <h3>Currently associated jobs</h3>
+    <table class="jobdetail">
+        <tr>
+            <th>JobId</th><td>{{ job.jobid }}</a></td>
+        </tr>
+        <tr>
+            <th>Server</th><td>{{ job.server }}</td>
+        </tr>
+        <tr>
+            <th>Owner</th><td><a href="{{ job.job_owner.get_absolute_url }}">{{ job.job_owner }}</a></td>
+        </tr>
+        <tr>
+            <th>Queue</th><td><a href="{{ job.queue.get_absolute_url }}">{{ job.queue }}</a></td>
+        </tr>
+        <tr>
+            <th>CpuTime</th><td>{{ job.cput }}</td>
+        </tr>
+        <tr>
+            <th>WallTime</th><td>{{ job.walltime }}</td>
+        </tr>
+        <tr>
+            <th>Execution Host</th><td><a href="{{ job.exec_host.get_absolute_url }}">{{ job.exec_host }}</a></td>
+        </tr>
+        <tr>
+            <th>Modification time</th><td>{{ job.mtime }}</td>
+        </tr>
+        <tr>
+            <th>Queue time</th><td>{{ job.qtime }}</td>
+        </tr>
+        <tr>
+            <th>Eligible time</th><td>{{ job.etime }}</td>
+        </tr>
+        <tr>
+            <th>Start time</th><td>{{ job.start_time }}</td>
+        </tr>
+        <tr>
+            <th>Completion time</th><td>{{ job.comp_time }}</td>
+        </tr>
+    </table>
+
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->
