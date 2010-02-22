@@ -9,17 +9,22 @@ from helpers import BooleanListForm
 from django import forms
 
 def jobs_overview(request, page=1):
+    state_list = []
     if request.POST:
-        state_list = []
         for key,val in request.POST.items():
             prefix, attr = key.split("_", 1)
-            if prefix == "states":
+            if prefix == "jobstates":
                 if 'on' in val:
                     state_list.append(attr)
+        request.session['state_list'] = state_list
+    else:
+        state_list = request.session.get('state_list', [])
+
+    if len(state_list)==0:
+        object_list = Job.objects.all()
+    else:
         object_list = Job.objects.filter(
             job_state__name__in=state_list).distinct()
-    else:
-        object_list = Job.objects.all()
         
     paginator = Paginator(object_list, 20)
         
@@ -28,12 +33,12 @@ def jobs_overview(request, page=1):
     jobs_page = paginator.page(page)
 
     states = [x.name for x in JobState.objects.all()]
-    states_form = BooleanListForm('states_')
+    states_form = BooleanListForm('jobstates_')
     states_form.setFields(states)
     if request.POST:
         states_form.setData(request.POST, useprefix=False)
     else:
-        states_form.setData( dict(zip(states, len(states)*[True])) )
+        states_form.setData( dict(zip(state_list, len(state_list)*[True])) )
 
     return render_to_response(
         'trq/jobs_overview.html',

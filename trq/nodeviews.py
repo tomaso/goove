@@ -27,7 +27,7 @@ def nodes_overview(request):
             elif prefix == "properties":
                 if 'on' in val:
                     prop_list.append(attr)
-            elif prefix == "states":
+            elif prefix == "nodestates":
                 if 'on' in val:
                     state_list.append(attr)
 
@@ -52,7 +52,7 @@ def nodes_overview(request):
     properties_form = BooleanListForm('properties_')
     properties_form.setFields(properties)
 
-    states_form = BooleanListForm('states_')
+    states_form = BooleanListForm('nodestates_')
     states_form.setFields(states)
 
     if request.POST:
