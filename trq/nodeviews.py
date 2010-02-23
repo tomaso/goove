@@ -15,6 +15,11 @@ def nodes(request):
 	return render_to_response('trq/nodes.html', {})
 
 def nodes_overview(request):
+    for sc in SubCluster.objects.all():
+        Node.objects.filter(subcluster=sc)
+    
+
+def nodes_table_list(request):
     if request.POST:
         sc_list = []
         prop_list = []
