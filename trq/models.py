@@ -20,7 +20,7 @@ class Node(models.Model):
     get_nodestates.short_description = "node state"
 
     def get_absolute_url(self):
-        return u"/trq/nodes/%s/" % (self.name)
+        return u"/trq/nodes/detail/%s/" % (self.name)
 
     def __unicode__(self):
     	return self.name
