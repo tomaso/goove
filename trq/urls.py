@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
-    (r'^nodes/(?P<nodename>.*)/$', 'goove.trq.nodeviews.node_detail'),
+    (r'^nodes/detail/(?P<nodename>.*)/$', 'goove.trq.nodeviews.node_detail'),
     (r'^nodes/table_list/$', 'goove.trq.nodeviews.nodes_table_list'),
     (r'^nodes/$', 'goove.trq.nodeviews.nodes_overview'),
 

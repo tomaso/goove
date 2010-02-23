@@ -15,8 +15,14 @@ def nodes(request):
 	return render_to_response('trq/nodes.html', {})
 
 def nodes_overview(request):
+    sc_nodes = {}
     for sc in SubCluster.objects.all():
-        Node.objects.filter(subcluster=sc)
+        sc_nodes[sc.name] = Node.objects.filter(subcluster=sc)
+    return render_to_response(
+        'trq/nodes_overview.html', 
+        {'sc_nodes':sc_nodes}
+        )
+
     
 
 def nodes_table_list(request):
@@ -68,8 +74,9 @@ def nodes_table_list(request):
         subcluster_form.setData( dict(zip(subclusters, len(subclusters)*[True])) )
         properties_form.setData( dict(zip(properties, len(properties)*[True])) )
         states_form.setData( dict(zip(states, len(states)*[True])) )
+
     return render_to_response(
-        'trq/nodes_overview.html', 
+        'trq/nodes_table_list.html', 
         {'nodes_list':nodes, 'subcluster_form':subcluster_form, 
         'properties_form':properties_form, 'states_form':states_form}
         )
