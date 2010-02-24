@@ -1,5 +1,10 @@
+div.topmenu {
+/*	position: fixed;*/
+}
+
 div.leftmenu {
         float: left;
+/*	position: fixed;*/
         border: 1px dotted;
 	background-color: #55BB55;
 }
@@ -20,6 +25,12 @@ div.maintext {
 	width: 800px;
         margin: 0px auto;
         padding-bottom:10px;
+}
+
+div.subcluster {
+	float: top; 
+	border: 1px dotted; 
+	text-align: left;
 }
 
 ol {
@@ -48,3 +59,37 @@ table.nodejoblist th {
 table.nodejoblist td {
 	text-align: right;
 }
+
+
+.node_state_down {
+background-color: #cc0000;
+}
+
+.node_state_offline {
+background-color: #ffff00;
+color: black;
+text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
+}
+
+.node_state_offlinejobs {
+background-color: #ff9900;
+}
+
+.node_state_free {
+background-color: #00FF00;
+}
+
+.node_state_partfull {
+background-color: #4499ff;
+}
+
+.node_state_job-exclusive {
+background-color: #000099;
+color: white;
+text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.node_state_unknown {
+background-color: #9900bb;
+}
+
