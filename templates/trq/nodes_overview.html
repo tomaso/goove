@@ -14,22 +14,33 @@
 
 {% block content %}
 
-<div class="maintext">
+<div class="rightmenu">
 
-    <ol>
-    {% for sc in sc_nodes.keys %}
-        <li>
-            {{ sc }}
-            <ul>
-            {% for node in sc_nodes.saltix %}
-                <li>{{ node }}</li>
-            {% endfor %}
-            </ul>
-        </li>
-    {% endfor %}
-    </ol>
+<table>
+
+<tr><th>State</th></tr>
+{% for ns in nodestates %}
+<tr><td class="node_state_{{ ns }}">{{ ns }}</td></tr>
+{% endfor %}
+</table>
 
 </div>
+
+<div class="maintext">
+
+    <div class="subcluster">
+    {% for n in nodes %}
+
+        {% ifchanged n.subcluster %}
+            {% if not forloop.first %}
+                </div><div class="subcluster">
+            {% endif %}
+        {% endifchanged %}
+        <span class="{% for c in n.state.all %}node_state_{{ c }}{% endfor %}">{{ n.name }}</span>
+    {% endfor %}
+    </div>
+</div>
+
 
 {% endblock content %}
 

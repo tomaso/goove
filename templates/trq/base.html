@@ -9,21 +9,23 @@
 </head>
 
 <body>
-    {% block mainmenu %}
-    <div class="menu bubplastic horizontal aqua">
-        <ul>
-            <li class="highlight"><span class="menu_r"><a href="/trq/"><span class="menu_ar">Overview</span></a></span></li>
-            <li><span class="menu_r"><a href="/trq/nodes/"><span class="menu_ar">Nodes</span></a></span></li>
-            <li><span class="menu_r"><a href="/trq/queues/"><span class="menu_ar">Queues</span></a></span></li>
-            <li><span class="menu_r"><a href="/trq/users/"><span class="menu_ar">Users</span></a></span></li>
-            <li><span class="menu_r"><a href="/trq/jobs/"><span class="menu_ar">Jobs</span></a></span></li>
-        </ul>
-        <br class="clearit" />
-    </div>
-    {% endblock mainmenu %}
+    <div class="topmenu">
+        {% block mainmenu %}
+        <div class="menu bubplastic horizontal aqua">
+            <ul>
+                <li class="highlight"><span class="menu_r"><a href="/trq/"><span class="menu_ar">Overview</span></a></span></li>
+                <li><span class="menu_r"><a href="/trq/nodes/"><span class="menu_ar">Nodes</span></a></span></li>
+                <li><span class="menu_r"><a href="/trq/queues/"><span class="menu_ar">Queues</span></a></span></li>
+                <li><span class="menu_r"><a href="/trq/users/"><span class="menu_ar">Users</span></a></span></li>
+                <li><span class="menu_r"><a href="/trq/jobs/"><span class="menu_ar">Jobs</span></a></span></li>
+            </ul>
+            <br class="clearit" />
+        </div>
+        {% endblock mainmenu %}
 
-    <div>
-        {% block submenu %}{% endblock %}
+        <div>
+            {% block submenu %}{% endblock %}
+        </div>
     </div>
 
     <div id="content">
