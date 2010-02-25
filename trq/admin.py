@@ -14,7 +14,7 @@ from django.contrib import admin
 #	extra = 6
 
 class NodeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'subcluster', 'np', 'get_nodeproperties', 'get_nodestates')
+    list_display = ('name', 'subcluster', 'np', 'get_nodeproperties', 'get_nodestates', 'running_jobs_count')
 
 class NodePropertyAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')

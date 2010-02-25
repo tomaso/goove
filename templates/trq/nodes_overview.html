@@ -36,7 +36,10 @@
                 </div><div class="subcluster">
             {% endif %}
         {% endifchanged %}
-        <span class="{% for c in n.state.all %}node_state_{{ c }}{% endfor %}">{{ n.name }}</span>
+        <span class="{% for c in n.state.all %}node_state_{{ c }}{% endfor %}">
+        {{ n.name }}
+        {{ n.running_jobs_count }}
+        </span>
     {% endfor %}
     </div>
 </div>
