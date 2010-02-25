@@ -19,6 +19,12 @@ class Node(models.Model):
     	return ",".join([ i.name for i in self.state.all() ])
     get_nodestates.short_description = "node state"
 
+    def running_jobs_count(self):
+        # we relly on the fact that jobstates are filled from initial data
+        js = JobState.objects.get(shortname="R")
+        return len(self.job_set.filter(job_state=js))
+    running_jobs_count.short_description = "number of running jobs"
+
     def get_absolute_url(self):
         return u"/trq/nodes/detail/%s/" % (self.name)
 
