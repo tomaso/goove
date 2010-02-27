@@ -12,6 +12,7 @@
             <th>CpuTime</th>
             <th>WallTime</th>
             <th>Queue</th>
+            <th>Status</th>
         </tr>
     {% for job in running_jobs %}
         <tr>
@@ -20,6 +21,7 @@
             <td>{{ job.cput }}</td>
             <td>{{ job.walltime }}</td>
             <td><a href="{{ job.queue.get_absolute_url }}">{{ job.queue }}</a></td>
+            <td>{{ job.job_state }}</td>
         </tr>
     {% endfor %}
     </table>
@@ -31,6 +33,7 @@
             <th>CpuTime</th>
             <th>WallTime</th>
             <th>Queue</th>
+            <th>Status</th>
         </tr>
     {% for job in completed_jobs %}
         <tr>
@@ -39,6 +42,7 @@
             <td>{{ job.cput }}</td>
             <td>{{ job.walltime }}</td>
             <td>{{ job.queue }}</td>
+            <td>{{ job.job_state.shortname }}</td>
         </tr>
     {% endfor %}
     </table>

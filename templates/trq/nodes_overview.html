@@ -37,7 +37,7 @@
             {% endif %}
         {% endifchanged %}
         <span class="overview_node {% for c in n.state.all %}node_state_{{ c }}{% endfor %}" id="{{ n.pk }}" onmouseover='show_node_tt(event,this)' onmouseout='hide_node_tt(this)'>
-        {{ n.name }}
+        <a href="{{ n.get_absolute_url }}">{{ n.name }}</a>
         </span>
     {% endfor %}
     </div>
@@ -50,13 +50,13 @@
             <td class="tt-centerleft"></td>
             <td class="tt-centerright">
                 <table style="font-size: 6px;">
-                    <tr><th>
+                    <tr><th colspan="2">
                     {{ n.name }}
-                    </th></tr>
-                    {% for j in n.job_set.all %}
-                    <tr><td>
-                        {{ j.jobid }}
-                    </td></tr>
+                    </th><th></th></tr>
+                    {% for j in n.running_jobs %}
+                        {% cycle "<tr>" "" %}
+                        <td>{{ j.jobid }}</td>
+                        {% cycle "" "</tr>" %}
                     {% endfor %}
                 </table>
             </td>

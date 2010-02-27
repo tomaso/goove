@@ -43,16 +43,59 @@ li.filterlist {
 	padding: 0px;
 }
 
+
 table {
 	border-collapse:collapse;
 }
 
-table.nodejoblist th {
+table.jobsoverview th {
 	text-align: center;
+	background-color: #AAAAFF;
+	border: 1px;
+	border-color: #999999;
+	border-style: solid;
+}
+table.jobsoverview td {
+	text-align: right;
+	border: 1px;
+	border-color: #AAAAAA;
+	border-style: solid;
+	padding-left: 2px;
+	padding-right: 2px;
 }
 
+table.nodejoblist th {
+	text-align: center;
+	background-color: #AAAAFF;
+	border: 1px;
+	border-color: #999999;
+	border-style: solid;
+}
 table.nodejoblist td {
 	text-align: right;
+	border: 1px;
+	border-color: #AAAAAA;
+	border-style: solid;
+}
+
+table.jobdetail {
+	border-collapse: collapse;
+	border: 1px;
+	border-color: #AAAACC;
+	border-style: solid;
+}
+
+table.jobdetail th {
+	text-align: left;
+	border: 1px;
+	border-color: #AAAACC;
+	border-style: solid;
+}
+table.jobdetail td {
+	text-align: right;
+	border: 1px;
+	border-color: #AAAACC;
+	border-style: solid;
 }
 
 
