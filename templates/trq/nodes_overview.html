@@ -33,16 +33,37 @@
 
         {% ifchanged n.subcluster %}
             {% if not forloop.first %}
-                </div><div class="subcluster">
+                </div><br /><div class="subcluster">
             {% endif %}
         {% endifchanged %}
-        <span class="{% for c in n.state.all %}node_state_{{ c }}{% endfor %}">
+        <span class="overview_node {% for c in n.state.all %}node_state_{{ c }}{% endfor %}" id="{{ n.pk }}" onmouseover='show_node_tt(event,this)' onmouseout='hide_node_tt(this)'>
         {{ n.name }}
-        {{ n.running_jobs_count }}
         </span>
     {% endfor %}
     </div>
 </div>
+
+    {% for n in nodes %}
+    <table class="tooltip" id="node_tt_{{ n.pk }}">
+        <tr><td class="tt-topleft"></td><td class="tt-topright"></td></tr>
+        <tr>
+            <td class="tt-centerleft"></td>
+            <td class="tt-centerright">
+                <table style="font-size: 6px;">
+                    <tr><th>
+                    {{ n.name }}
+                    </th></tr>
+                    {% for j in n.job_set.all %}
+                    <tr><td>
+                        {{ j.jobid }}
+                    </td></tr>
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+        <tr><td class="tt-bottomleft"></td><td class="tt-bottomright"></td></tr>
+    </table>
+    {% endfor %}
 
 
 {% endblock content %}
