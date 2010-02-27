@@ -1,0 +1,34 @@
+table.tooltip {
+  display: none;
+  position: absolute;
+  border: 0; 
+  border-spacing: 0; 
+  border-collapse: collapse;
+  color: white;
+}
+
+td.tt-topleft {
+  background-image: url(/site_media/images/tooltip.png); 
+  background-position: top left;
+}
+td.tt-topright {
+  background-image: url(/site_media/images/tooltip.png); 
+  background-position: top right;
+}
+td.tt-centerleft {
+  background-image: url(/site_media/images/tooltip.png); 
+  background-position: center left;
+}
+td.tt-centerright {
+  background-image: url(/site_media/images/tooltip.png); 
+  background-position: center right;
+  padding: 3px;
+}
+td.tt-bottomleft {
+  background-image: url(/site_media/images/tooltip.png); 
+  background-position: bottom left;
+}
+td.tt-bottomright {
+  background-image: url(/site_media/images/tooltip.png); 
+  background-position: bottom right;
+}
