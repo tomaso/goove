@@ -55,4 +55,9 @@ def job_detail(request, servername, jobid):
         {'job':job}
         )
 
+def stats(request, dfrom=None, dto=None):
+    return render_to_response(
+        'trq/jobs_stats.html'
+        )
+
 # vi:ts=4:sw=4:expandtab

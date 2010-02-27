@@ -4,7 +4,6 @@
 
 <div class="maintext">
     <h2 style="background-color: #FF0077; color: white; text-shadow: black 0.1em 0.1em 0.1em">Job: {{ job.jobid }}</h2>
-    <h3>Job detail</h3>
     <table class="jobdetail">
         <tr>
             <th>JobId</th><td>{{ job.jobid }}</a></td>
@@ -19,10 +18,16 @@
             <th>Queue</th><td><a href="{{ job.queue.get_absolute_url }}">{{ job.queue }}</a></td>
         </tr>
         <tr>
+            <th>Status</th><td>{{ job.job_state }}</td>
+        </tr>
+        <tr>
             <th>CpuTime</th><td>{{ job.cput }}</td>
         </tr>
         <tr>
             <th>WallTime</th><td>{{ job.walltime }}</td>
+        </tr>
+        <tr>
+            <th>Efficiency</th><td>{{ job.efficiency }} %</td>
         </tr>
         <tr>
             <th>Execution Host</th><td><a href="{{ job.exec_host.get_absolute_url }}">{{ job.exec_host }}</a></td>

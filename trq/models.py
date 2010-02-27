@@ -25,6 +25,12 @@ class Node(models.Model):
         return len(self.job_set.filter(job_state=js))
     running_jobs_count.short_description = "number of running jobs"
 
+    def running_jobs(self):
+        # we relly on the fact that jobstates are filled from initial data
+        js = JobState.objects.get(shortname="R")
+        return self.job_set.filter(job_state=js)
+    running_jobs_count.short_description = "running jobs"
+
     def get_absolute_url(self):
         return u"/trq/nodes/detail/%s/" % (self.name)
 
@@ -80,6 +86,9 @@ class Job(models.Model):
 
     def __unicode__(self):
     	return "%s.%s" % (self.jobid, self.server)
+
+    def efficiency(self):
+        return 100*self.cput/self.walltime
 
     class Meta:
         ordering = ['jobid']

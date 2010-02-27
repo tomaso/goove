@@ -29,9 +29,13 @@ function show_node_tt(e,o) {
 
   var leftPos = mousex + 20;
   var topPos = mousey + 20;
+
+  obj.style.display="block";
+  leftPos = ( leftPos + obj.clientWidth > document.body.clientWidth ? document.body.clientWidth - obj.clientWidth : leftPos)
+  topPos = ( topPos + obj.clientHeight > document.body.clientHeight ? document.body.clientHeight - obj.clientHeight : topPos)
+
   obj.style.left = leftPos + 'px';
   obj.style.top = topPos + 'px';
-  obj.style.display="block";
 }
 
 

@@ -11,6 +11,8 @@ urlpatterns = patterns('',
     (r'^users/(?P<username>.*)/$', 'goove.trq.userviews.user_detail'),
     (r'^users/$', 'goove.trq.userviews.users_overview'),
 
+    (r'^jobs/stats/from(?P<dfrom>\d+)to(?P<dto>\d+)/$', 'goove.trq.jobviews.stats'),
+    (r'^jobs/stats/$', 'goove.trq.jobviews.stats'),
     (r'^jobs/page/(?P<page>\d+)$', 'goove.trq.jobviews.jobs_overview'),
     (r'^jobs/(?P<servername>.*)/(?P<jobid>.*)/$', 'goove.trq.jobviews.job_detail'),
     (r'^jobs/$', 'goove.trq.jobviews.jobs_overview'),
