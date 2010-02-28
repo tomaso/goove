@@ -17,5 +17,8 @@ urlpatterns = patterns('',
     (r'^jobs/(?P<servername>.*)/(?P<jobid>.*)/$', 'goove.trq.jobviews.job_detail'),
     (r'^jobs/$', 'goove.trq.jobviews.jobs_overview'),
 
+    (r'^jobs/graph/$', 'goove.trq.jobviews.graph'),
+
+
 #    (r'^nodes/$', 'django.views.generic.list_detail.object_list', dict(queryset=nodes, paginate_by=10)),
 )
