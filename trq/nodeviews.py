@@ -5,8 +5,8 @@ from models import SubCluster
 from models import NodeProperty
 from models import NodeState
 from models import Job
-from django import forms
 from helpers import BooleanListForm
+from django import forms
 
 def index(request):
     return render_to_response('trq/index.html', {})
