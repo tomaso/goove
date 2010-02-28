@@ -174,3 +174,8 @@ function getStyle(oElm, strCssRule){
     }
     return strValue;
 }
+
+// koubat:
+function gettext(msgid) {
+    return msgid;
+}
