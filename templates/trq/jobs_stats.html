@@ -15,9 +15,15 @@
 {% block content %}
 
 <form action="" method="post">
-<input type="text" class="vDateField"><br/>
-<input type="text" class="vDateField"><br/>
+<table>
+    {% for field in query_form %}
+    <tr><td>{{ field.label }}</td><td>{{ field }}</td></tr>
+    {% endfor %}
+</table>
+<input type="submit" value="Submit" />
 </form>
+
+<img src="/trq/jobs/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
 
 {% endblock content %}
 

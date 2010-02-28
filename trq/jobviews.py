@@ -3,10 +3,24 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from models import JobState
 from models import Job
+from models import Queue
 from models import User
 from models import TorqueServer
 from helpers import BooleanListForm
 from django import forms
+import matplotlib
+matplotlib.use('Agg')
+from pylab import *
+import StringIO
+
+class JobsStatsForm(forms.Form):
+    """
+    Form with options to query job statistics.
+    """
+    wfrom = forms.DateField(
+        label="Start", widget=forms.DateInput(attrs={'class':'vDateField'}))
+    wto = forms.DateField(
+        label="End", widget=forms.DateInput(attrs={'class':'vDateField'}))
 
 def jobs_overview(request, page=1):
     state_list = []
@@ -56,8 +70,38 @@ def job_detail(request, servername, jobid):
         )
 
 def stats(request, dfrom=None, dto=None):
+    jobs = dfrom = dto = None
+    if request.POST:
+        if request.POST.has_key('wfrom'):
+            dfrom = request.POST['wfrom']
+        if request.POST.has_key('wto'):
+            dto = request.POST['wto']
+    jobs=[]
+    graph_data = {}
+    if dfrom and dto:
+        jobs=Job.objects.filter(start_time__gte=dfrom, 
+            comp_time__lte=dto)
+        for q in Queue.objects.all():
+            graph_data[q.name] = jobs.filter(queue=q).count()
+    query_form = JobsStatsForm()
+    if request.POST:
+        query_form.data['wfrom'] = request.POST['wfrom']
+        query_form.data['wto'] = request.POST['wto']
+        query_form.is_bound = True
     return render_to_response(
-        'trq/jobs_stats.html'
+        'trq/jobs_stats.html', 
+        {'query_form':query_form, 'jobs':jobs, 'graph_data':graph_data}
         )
+
+def graph(request):
+    fig = figure(1, figsize=(6,6))
+    ax = axes([0.1, 0.1, 0.8, 0.8])
+    #labels = 'Frogs', 'Hogs', 'Dogs', 'Logs'
+    labels = request.GET.keys()
+    fracs = request.GET.values()
+    pie(fracs, labels=labels, autopct='%1.1f%%')
+    response = HttpResponse(mimetype='image/png')
+    fig.savefig(response)
+    return response
 
 # vi:ts=4:sw=4:expandtab
