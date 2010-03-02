@@ -1,0 +1,187 @@
+#
+# Create queues and set their attributes.
+#
+#
+# Create and define queue gridd0
+#
+create queue gridd0
+set queue gridd0 queue_type = Execution
+set queue gridd0 max_running = 0
+set queue gridd0 resources_max.walltime = 96:00:00
+set queue gridd0 resources_default.nodes = 1
+set queue gridd0 enabled = False
+set queue gridd0 started = False
+#
+# Create and define queue gridalice
+#
+create queue gridalice
+set queue gridalice queue_type = Execution
+set queue gridalice resources_max.walltime = 60:00:00
+set queue gridalice resources_default.nodes = 1
+set queue gridalice enabled = False
+set queue gridalice started = False
+#
+# Create and define queue d0prod
+#
+create queue d0prod
+set queue d0prod queue_type = Execution
+set queue d0prod resources_max.walltime = 672:00:00
+set queue d0prod resources_default.nodes = 1
+set queue d0prod enabled = False
+set queue d0prod started = False
+#
+# Create and define queue isolid
+#
+create queue isolid
+set queue isolid queue_type = Execution
+set queue isolid max_running = 0
+set queue isolid enabled = False
+set queue isolid started = False
+#
+# Create and define queue short
+#
+create queue short
+set queue short queue_type = Execution
+set queue short max_running = 0
+set queue short enabled = False
+set queue short started = False
+#
+# Create and define queue d0merge
+#
+create queue d0merge
+set queue d0merge queue_type = Execution
+set queue d0merge max_running = 0
+set queue d0merge enabled = False
+set queue d0merge started = False
+#
+# Create and define queue d0reco
+#
+create queue d0reco
+set queue d0reco queue_type = Execution
+set queue d0reco max_running = 0
+set queue d0reco enabled = False
+set queue d0reco started = False
+#
+# Create and define queue gridtest
+#
+create queue gridtest
+set queue gridtest queue_type = Execution
+set queue gridtest max_running = 0
+set queue gridtest resources_max.walltime = 02:00:00
+set queue gridtest resources_default.nodes = 1
+set queue gridtest enabled = True
+set queue gridtest started = True
+#
+# Create and define queue gridatlas
+#
+create queue gridatlas
+set queue gridatlas queue_type = Execution
+set queue gridatlas max_running = 1200
+set queue gridatlas resources_max.walltime = 180:00:00
+set queue gridatlas resources_default.nodes = 1
+set queue gridatlas enabled = False
+set queue gridatlas started = False
+#
+# Create and define queue d0
+#
+create queue d0
+set queue d0 queue_type = Execution
+set queue d0 max_running = 0
+set queue d0 enabled = False
+set queue d0 started = False
+#
+# Create and define queue infinite
+#
+create queue infinite
+set queue infinite queue_type = Execution
+set queue infinite max_running = 0
+set queue infinite enabled = False
+set queue infinite started = False
+#
+# Create and define queue long
+#
+create queue long
+set queue long queue_type = Execution
+set queue long max_running = 0
+set queue long enabled = False
+set queue long started = False
+#
+# Create and define queue star
+#
+create queue star
+set queue star queue_type = Execution
+set queue star max_running = 0
+set queue star resources_max.walltime = 672:00:00
+set queue star resources_default.nodes = 1
+set queue star enabled = False
+set queue star started = False
+#
+# Create and define queue solid
+#
+create queue solid
+set queue solid queue_type = Execution
+set queue solid max_running = 0
+set queue solid enabled = False
+set queue solid started = False
+#
+# Create and define queue starprod
+#
+create queue starprod
+set queue starprod queue_type = Execution
+set queue starprod max_running = 0
+set queue starprod enabled = False
+set queue starprod started = False
+#
+# Create and define queue batch
+#
+create queue batch
+set queue batch queue_type = Execution
+set queue batch max_running = 0
+set queue batch resources_default.nodes = 1
+set queue batch resources_default.walltime = 03:00:00
+set queue batch enabled = False
+set queue batch started = False
+#
+# Create and define queue gridauger
+#
+create queue gridauger
+set queue gridauger queue_type = Execution
+set queue gridauger max_running = 0
+set queue gridauger resources_max.walltime = 480:00:00
+set queue gridauger resources_default.nodes = 1
+set queue gridauger enabled = False
+set queue gridauger started = False
+#
+# Set server attributes.
+#
+set server scheduling = False
+set server acl_hosts = monitor.farm.particle.cz
+set server acl_hosts += sam.farm.particle.cz
+set server acl_hosts += ui5.farm.particle.cz
+set server acl_hosts += sam3.farm.particle.cz
+set server acl_hosts += prak3.farm.particle.cz
+set server acl_hosts += ce3.farm.particle.cz
+set server acl_hosts += sam2.farm.particle.cz
+set server acl_hosts += ui2.farm.particle.cz
+set server acl_hosts += ce2.farm.particle.cz
+set server acl_hosts += alicebox1.farm.particle.cz
+set server acl_hosts += cream1.farm.particle.cz
+set server acl_hosts += goliasx40.farm.particle.cz
+set server acl_hosts += torque.farm.particle.cz
+set server managers = svecj@torque.farm.particle.cz
+set server operators = rrdmonitor@monitor.farm.particle.cz
+set server operators += svecj@torque.farm.particle.cz
+set server default_queue = batch
+set server log_events = 511
+set server mail_from = adm
+set server query_other_jobs = True
+set server scheduler_iteration = 60
+set server node_check_rate = 150
+set server tcp_timeout = 20
+set server job_stat_rate = 180
+set server poll_jobs = True
+set server log_level = 1
+set server mom_job_sync = True
+set server mail_domain = never
+set server keep_completed = 10
+set server next_job_number = 1480334
