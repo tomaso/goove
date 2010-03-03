@@ -283,10 +283,6 @@ def feedJobsLog(logfile):
         job.save()
 
 
-def BatchServerInit(servername):
-    """ Static stuff for golias farm. Added at the beginning for testing purposes """
-    TorqueServer(name=servername).save()
-
 def openfile(filename):
     """
     Guess file type, open it appropriately
@@ -320,8 +316,6 @@ def main():
         help="Text file with server settings (basically output of print server command)")
     opt_parser.add_option("-d", "--daemon", dest="daemon", metavar="DIR", 
         help="Run in deamon node and read torque accounting logs from DIR")
-    opt_parser.add_option("-s", "--server", dest="server", metavar="BATCHSERVER", 
-        help="Name of the first batch server to be inserted in the database")
 
     (options, args) = opt_parser.parse_args()
 
@@ -335,9 +329,6 @@ def main():
         opt_parser.error("You cannot run as daemon and process data files at once. Choose only one mode of running.")
     if not (options.nodexmlfile or options.jobxmlfile or options.eventfile or options.serverfile or options.daemon):
         opt_parser.error("Mode of running is missing. Please specify one of -n, -j -e -s or -d.")
-
-    if options.server:
-        BatchServerInit(options.server)
 
     if options.eventfile:
         for i in options.eventfile:

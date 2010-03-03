@@ -51,7 +51,7 @@ def queues_stats(request):
         stat_form.data['wto'] = request.POST['wto']
         stat_form.is_bound = True
 
-    graph_data = None
+    graph_data = False
     if request.POST:
         graph_data = request.POST
     return render_to_response(

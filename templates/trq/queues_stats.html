@@ -27,9 +27,11 @@
 </form>
 </div>
 
+{% if graph_data %}
 <div>
 <img src="/trq/queues/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
 </div>
+{% endif %}
 
 {% endblock content %}
 
