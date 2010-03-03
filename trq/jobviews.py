@@ -8,10 +8,12 @@ from models import User
 from models import TorqueServer
 from helpers import BooleanListForm
 from django import forms
+import colorsys
 import matplotlib
 matplotlib.use('Agg')
 from pylab import *
 import StringIO
+
 
 class JobsStatsForm(forms.Form):
     """
@@ -69,7 +71,7 @@ def job_detail(request, servername, jobid):
         {'job':job}
         )
 
-def stats(request, dfrom=None, dto=None):
+def stats(request):
     jobs = dfrom = dto = None
     if request.POST:
         if request.POST.has_key('wfrom'):
@@ -81,7 +83,7 @@ def stats(request, dfrom=None, dto=None):
     if dfrom and dto:
         jobs=Job.objects.filter(start_time__gte=dfrom, 
             comp_time__lte=dto)
-        for q in Queue.objects.all():
+        for q in Queue.objects.all().order_by('name'):
             graph_data[q.name] = jobs.filter(queue=q).count()
     query_form = JobsStatsForm()
     if request.POST:
@@ -94,14 +96,30 @@ def stats(request, dfrom=None, dto=None):
         )
 
 def graph(request):
-    fig = figure(1, figsize=(6,6))
+    fig = figure(1, figsize=(4,4))
     ax = axes([0.1, 0.1, 0.8, 0.8])
-    #labels = 'Frogs', 'Hogs', 'Dogs', 'Logs'
-    labels = request.GET.keys()
-    fracs = request.GET.values()
-    pie(fracs, labels=labels, autopct='%1.1f%%')
+    labels = []
+    fracs = []
+    others = 0
+    totalval = 100
+    totalval = sum([int(i) for i in request.GET.values()])
+    for k,v in request.GET.items():
+        if float(v)<(totalval/20):
+            others += float(v)
+        else:
+            labels.append(k)
+            fracs.append(v)
+    labels.append('others')
+    fracs.append(others)
+    colors = []
+    for i in range(0,len(fracs)):
+        c = colorsys.hsv_to_rgb(float(i)/len(fracs),1,1)
+        colors.append( c )
+    pie(fracs, labels=labels, colors=colors, autopct='%1.1f%%')
+#    legend(labels, 'best')
     response = HttpResponse(mimetype='image/png')
     fig.savefig(response)
+    fig.clear()
     return response
 
 # vi:ts=4:sw=4:expandtab

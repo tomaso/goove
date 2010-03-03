@@ -307,7 +307,7 @@ def openfile(filename):
 def main():
     global loglevel
 
-    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE]|[-d DIR]"
+    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE|-s FILE]|[-d DIR]"
     version_string = "%%prog %s" % VERSION
 
     opt_parser = OptionParser(usage=usage_string, version=version_string)
@@ -316,6 +316,8 @@ def main():
     opt_parser.add_option("-j", "--jobxml", action="append", dest="jobxmlfile", metavar="FILE", help="XML file with job data")
     opt_parser.add_option("-e", "--eventfile", action="append", dest="eventfile", metavar="FILE", 
         help="Text file with event data in accunting log format")
+    opt_parser.add_option("-s", "--serverfile", action="append", dest="serverfile", metavar="FILE", 
+        help="Text file with server settings (basically output of print server command)")
     opt_parser.add_option("-d", "--daemon", dest="daemon", metavar="DIR", 
         help="Run in deamon node and read torque accounting logs from DIR")
     opt_parser.add_option("-s", "--server", dest="server", metavar="BATCHSERVER", 
@@ -329,10 +331,10 @@ def main():
     loglevel = options.loglevel
 
     # invalid combinations
-    if (options.nodexmlfile or options.jobxmlfile or options.eventfile) and options.daemon:
+    if (options.nodexmlfile or options.jobxmlfile or options.eventfile or options.serverfile) and options.daemon:
         opt_parser.error("You cannot run as daemon and process data files at once. Choose only one mode of running.")
-    if not (options.nodexmlfile or options.jobxmlfile or options.eventfile or options.daemon):
-        opt_parser.error("Mode of running is missing. Please specify one of -n, -j -e or -d.")
+    if not (options.nodexmlfile or options.jobxmlfile or options.eventfile or options.serverfile or options.daemon):
+        opt_parser.error("Mode of running is missing. Please specify one of -n, -j -e -s or -d.")
 
     if options.server:
         BatchServerInit(options.server)
@@ -351,6 +353,10 @@ def main():
         for i in options.jobxmlfile:
             jobsxml = parse(openfile(i))
             feedJobsXML(jobsxml)
+    
+    if options.serverfile:
+        log(LOG_ERROR, "Server file parsing is not supported yet")
+        sys.exit(-1)
 
     
 if __name__=="__main__":

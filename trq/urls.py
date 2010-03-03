@@ -5,13 +5,14 @@ urlpatterns = patterns('',
     (r'^nodes/table_list/$', 'goove.trq.nodeviews.nodes_table_list'),
     (r'^nodes/$', 'goove.trq.nodeviews.nodes_overview'),
 
+    (r'^queues/graph/$', 'goove.trq.queueviews.graph'),
+    (r'^queues/stats/$', 'goove.trq.queueviews.queues_stats'),
     (r'^queues/(?P<queuename>.*)/$', 'goove.trq.queueviews.queue_detail'),
     (r'^queues/$', 'goove.trq.queueviews.queues_overview'),
 
     (r'^users/(?P<username>.*)/$', 'goove.trq.userviews.user_detail'),
     (r'^users/$', 'goove.trq.userviews.users_overview'),
 
-    (r'^jobs/stats/from(?P<dfrom>\d+)to(?P<dto>\d+)/$', 'goove.trq.jobviews.stats'),
     (r'^jobs/stats/$', 'goove.trq.jobviews.stats'),
     (r'^jobs/page/(?P<page>\d+)$', 'goove.trq.jobviews.jobs_overview'),
     (r'^jobs/(?P<servername>.*)/(?P<jobid>.*)/$', 'goove.trq.jobviews.job_detail'),

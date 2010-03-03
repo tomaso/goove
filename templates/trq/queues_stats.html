@@ -1,0 +1,38 @@
+{% extends "trq/queues_base.html" %}
+
+{% block submenu %}
+
+<div class="menu bubplastic horizontal lime">
+    <ul>
+        <li><span class="menu_r"><a href="/trq/queues/"><span class="menu_ar">Overview</span></a></span></li>
+        <li class="highlight"><span class="menu_r"><a href="/trq/queues/stats/"><span class="menu_ar">Graphs</span></a></span></li>
+    </ul>
+    <br class="clearit" />
+</div>
+
+
+{% endblock submenu %}
+
+{% block content %}
+
+<div class="maintext">
+
+<div class="statform">
+<form action="" method="post">
+    <div class="statform_head">Completed jobs per queue</div>
+    {% for field in stat_form %}
+        <span>{{ field.label }}:</span><span>{{ field }}</span>
+    {% endfor %}
+    <input type="submit" value="Submit" />
+</form>
+</div>
+
+<div>
+<img src="/trq/queues/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->
