@@ -5,13 +5,15 @@ from models import SubCluster
 from models import NodeProperty
 from models import NodeState
 from models import Job
+from models import JobState
 from models import User
 
 def users_overview(request):
     users = User.objects.all()
+    job_states = JobState.objects.all()
     return render_to_response(
         'trq/users_overview.html',
-        {'users_list':users}
+        {'users_list':users, 'job_states':job_states}
         )
 
 

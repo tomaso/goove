@@ -23,7 +23,9 @@
 <input type="submit" value="Submit" />
 </form>
 
+{% if graph_data %}
 <img src="/trq/jobs/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
+{% endif %}
 
 {% endblock content %}
 

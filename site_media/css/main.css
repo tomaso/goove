@@ -48,20 +48,23 @@ table {
 	border-collapse:collapse;
 }
 
-table.jobsoverview th {
+table.overview th {
 	text-align: center;
 	background-color: #AAAAFF;
 	border: 1px;
 	border-color: #999999;
 	border-style: solid;
 }
-table.jobsoverview td {
+table.overview td {
 	text-align: right;
 	border: 1px;
 	border-color: #AAAAAA;
 	border-style: solid;
 	padding-left: 2px;
 	padding-right: 2px;
+}
+table.overview td.left {
+	text-align: left;
 }
 
 table.nodejoblist th {

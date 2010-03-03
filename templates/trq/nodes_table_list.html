@@ -44,7 +44,7 @@
 
 <div class="maintext">
 
-    <table cellspacing="0">
+    <table cellspacing="0" class="overview">
         <thead>
             <tr>
                 <th>Name</th>
@@ -57,7 +57,7 @@
         <tbody>
             {% for object in nodes_list %}
             <tr>
-                <td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td>
+                <td class="left"><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td>
                 <td>{{ object.np }}</td>
                 <td>{{ object.get_nodeproperties }}</td>
                 <td>{{ object.get_nodestates }}</td>

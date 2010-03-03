@@ -107,6 +107,13 @@ class User(models.Model):
     def get_absolute_url(self):
         return u"/trq/users/%s/" % (self.name)
 
+    def get_user_numbers(self):
+        job_states = JobState.objects.all().order_by('name')
+        unums = {}
+        for js in job_states:
+            unums[js] = Job.objects.filter(job_owner=self,job_state=js).count()
+        return unums
+
     class Meta:
         ordering = ['name']
 
@@ -116,6 +123,9 @@ class JobState(models.Model):
     def __unicode__(self):
     	return self.name
 
+    class Meta:
+        ordering = ['name']
+
 class Queue(models.Model):
     name = models.CharField(verbose_name="queue name", max_length=100)
     def __unicode__(self):
@@ -123,5 +133,13 @@ class Queue(models.Model):
 
     def get_absolute_url(self):
         return u"/trq/queues/%s/" % (self.name)
+
+    def get_queue_numbers(self):
+        job_states = JobState.objects.all().order_by('name')
+        qnums = {}
+        for js in job_states:
+            qnums[js] = Job.objects.filter(queue=self,job_state=js).count()
+        return qnums
+        
 
 # vi:ts=4:sw=4:expandtab
