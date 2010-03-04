@@ -20,6 +20,8 @@ urlpatterns = patterns('',
 
     (r'^jobs/graph/$', 'goove.trq.jobviews.graph'),
 
+    (r'^$', 'goove.trq.generalviews.overview'), 
+
 
 #    (r'^nodes/$', 'django.views.generic.list_detail.object_list', dict(queryset=nodes, paginate_by=10)),
 )

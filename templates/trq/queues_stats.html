@@ -14,25 +14,28 @@
 {% endblock submenu %}
 
 {% block content %}
+<div class="leftmenu">
+
+    <div class="statform">
+        <form action="" method="post">
+        <table>
+            {% for field in stat_form %}
+                <tr><th>{{ field.label }}:</th><td>{{ field }}</td></tr>
+            {% endfor %}
+        </table>
+        <input type="submit" value="Submit" />
+        </form>
+    </div>
+</div>
+
 
 <div class="maintext">
-
-<div class="statform">
-<form action="" method="post">
-    <div class="statform_head">Completed jobs per queue</div>
-    {% for field in stat_form %}
-        <span>{{ field.label }}:</span><span>{{ field }}</span>
-    {% endfor %}
-    <input type="submit" value="Submit" />
-</form>
-</div>
-
 {% if graph_data %}
-<div>
 <img src="/trq/queues/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
-</div>
+{% else %}
+Choose your filter in the left menu.
 {% endif %}
-
+</div>
 {% endblock content %}
 
 <!-- 
