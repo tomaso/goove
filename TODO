@@ -1,7 +1,6 @@
 Data feeder:
 
 - check consistency between not Completed jobs in database and current status
-- AccountingEvent table, that would contain every Start and Delete attempt
 - create two version of graphs - small for overviews and big for whole page
 - First page (at least proposal)
 - Reasonable initial data (let user edit it during installation)

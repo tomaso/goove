@@ -165,3 +165,10 @@ border-left-style: none;
 border-right-style: none;
 border-bottom-style: none;
 }
+
+div.statform th {
+text-align: left;
+}
+div.statform td {
+text-align: right;
+}

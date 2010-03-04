@@ -280,13 +280,14 @@ def feedJobsLog(logfile):
             if created:
                 log(LOG_INFO, "new node (exec_host) will be created: %s" % exec_host_name)
             job.exec_host = exec_host
-
         job.save()
 
         # TODO: what if we are parsing the same file again?
         d,t = date.split(' ')
         m,d,y = d.split('/')
-        ae = AccountingEvent(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+        ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+        if created:
+            log(LOG_INFO, "new account event will be created: %s" % ae.timestamp)
         ae.save()
 
 
