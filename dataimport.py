@@ -22,6 +22,7 @@ from goove.trq.models import TorqueServer
 from goove.trq.models import User
 from goove.trq.models import JobState
 from goove.trq.models import Queue
+from goove.trq.models import AccountingEvent
 
 from xml.dom.minidom import parse, parseString
 from optparse import OptionParser
@@ -281,6 +282,8 @@ def feedJobsLog(logfile):
             job.exec_host = exec_host
 
         job.save()
+
+        # TODO: what if we are parsing the same file again?
         d,t = date.split(' ')
         m,d,y = d.split('/')
         ae = AccountingEvent(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
