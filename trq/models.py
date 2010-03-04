@@ -40,6 +40,7 @@ class Node(models.Model):
 class NodeProperty(models.Model):
     name = models.CharField(verbose_name="property name", max_length=50)
     description = models.CharField(max_length=300)
+    color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
 
     def __unicode__(self):
     	return self.name
@@ -50,12 +51,14 @@ class NodeProperty(models.Model):
 class NodeState(models.Model):
     name = models.CharField(verbose_name="State name", max_length=30)	
     description = models.CharField(max_length=300)
+    color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
 
     def __unicode__(self):
     	return self.name
 
 class SubCluster(models.Model):
     name = models.CharField(verbose_name="Subcluster name", max_length=30)	
+    color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     def __unicode__(self):
     	return self.name
 
@@ -101,6 +104,7 @@ class TorqueServer(models.Model):
 
 class User(models.Model):
     name = models.CharField(verbose_name="user name", max_length=100)
+    color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     def __unicode__(self):
     	return self.name
 
@@ -120,6 +124,7 @@ class User(models.Model):
 class JobState(models.Model):
     name = models.CharField(verbose_name="job state name", max_length=100)
     shortname = models.CharField(verbose_name="abbreviation", max_length=1)
+    color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     def __unicode__(self):
     	return self.name
 
@@ -128,6 +133,7 @@ class JobState(models.Model):
 
 class Queue(models.Model):
     name = models.CharField(verbose_name="queue name", max_length=100)
+    color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     def __unicode__(self):
     	return self.name
 
@@ -140,6 +146,22 @@ class Queue(models.Model):
         for js in job_states:
             qnums[js] = Job.objects.filter(queue=self,job_state=js).count()
         return qnums
-        
 
+EVENT_CHOICES = (
+    ('Q', 'Queued'),
+    ('S', 'Started'),
+    ('E', 'Exited'),
+    ('D', 'Deleted'),
+)
+
+class AccountingEvent(models.Model):
+    """
+    Event parsed from accounting records. More than one event of the same type of the same job
+    means some kind of problems.
+    """
+    timestamp = models.DateTimeField(verbose_name='time stamp')
+    type = models.CharField(max_length=1, choices=EVENT_CHOICES)
+    job = models.ForeignKey('Job')
+
+ 
 # vi:ts=4:sw=4:expandtab
