@@ -281,6 +281,10 @@ def feedJobsLog(logfile):
             job.exec_host = exec_host
 
         job.save()
+        d,t = date.split(' ')
+        m,d,y = d.split('/')
+        ae = AccountingEvent(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+        ae.save()
 
 
 def openfile(filename):
@@ -313,7 +317,7 @@ def main():
     opt_parser.add_option("-e", "--eventfile", action="append", dest="eventfile", metavar="FILE", 
         help="Text file with event data in accunting log format")
     opt_parser.add_option("-s", "--serverfile", action="append", dest="serverfile", metavar="FILE", 
-        help="Text file with server settings (basically output of print server command)")
+        help="Text file with server settings (basically output of qmgr `print server` command)")
     opt_parser.add_option("-d", "--daemon", dest="daemon", metavar="DIR", 
         help="Run in deamon node and read torque accounting logs from DIR")
 
