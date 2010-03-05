@@ -150,8 +150,12 @@ class Queue(models.Model):
 EVENT_CHOICES = (
     ('Q', 'Queued'),
     ('S', 'Started'),
+    ('R', 'Rerun'),
+    ('C', 'Checkpoint'),
+    ('T', 'Restart'),
     ('E', 'Exited'),
     ('D', 'Deleted'),
+    ('A', 'Aborted'),
 )
 
 class AccountingEvent(models.Model):

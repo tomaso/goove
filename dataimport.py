@@ -249,14 +249,12 @@ def feedJobsLog(logfile):
             job.walltime = (int(h)*60+int(m))*60+int(s)
         if event=='Q':
             job.job_state = JobState.objects.get(shortname='Q')
-        elif event=='S':
+        elif event=='S' or event=='R' or event=='C' or event=='T':
             job.job_state = JobState.objects.get(shortname='R')
-        elif event=='E':
-            job.job_state = JobState.objects.get(shortname='C')
-        elif event=='D':
+        elif event=='E' or event=='D' or event=='A':
             job.job_state = JobState.objects.get(shortname='C')
         else:
-            log(LOG_ERROR, "Unknown event type in accounting log file")
+            log(LOG_ERROR, "Unknown event type in accounting log file: %s" % line)
         if attrdir.has_key('queue'):
             queue,created = Queue.objects.get_or_create(name=attrdir['queue'])
             if created:
