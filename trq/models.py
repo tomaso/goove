@@ -37,6 +37,14 @@ class Node(models.Model):
     def __unicode__(self):
     	return self.name
 
+    @staticmethod
+    def get_overview_name():
+        return u'worker node'
+
+    @staticmethod
+    def get_overview_url():
+        return u'/trq/nodes/'
+
 class NodeProperty(models.Model):
     name = models.CharField(verbose_name="property name", max_length=50)
     description = models.CharField(max_length=300)
@@ -47,6 +55,14 @@ class NodeProperty(models.Model):
 
     class Meta:
         verbose_name_plural = "node properties"
+
+    @staticmethod
+    def get_overview_name():
+        return u'node property'
+
+    @staticmethod
+    def get_overview_url():
+        return u'/trq/'
 
 class NodeState(models.Model):
     name = models.CharField(verbose_name="State name", max_length=30)	
@@ -61,6 +77,14 @@ class SubCluster(models.Model):
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     def __unicode__(self):
     	return self.name
+
+    @staticmethod
+    def get_overview_name():
+        return u'subcluster'
+
+    @staticmethod
+    def get_overview_url():
+        return u'/trq/'
 
 class Job(models.Model):
     jobid = models.IntegerField(db_index=True, editable=False)
@@ -96,11 +120,27 @@ class Job(models.Model):
     class Meta:
         ordering = ['jobid']
         unique_together = (('jobid', 'server'),)
+
+    @staticmethod
+    def get_overview_name():
+        return u'job'
+
+    @staticmethod
+    def get_overview_url():
+        return u'/trq/'
     
 class TorqueServer(models.Model):
     name = models.CharField(verbose_name="torque server name", max_length=100)
     def __unicode__(self):
     	return self.name
+
+    @staticmethod
+    def get_overview_name():
+        return u'batch server'
+
+    @staticmethod
+    def get_overview_url():
+        return u'/trq/'
 
 class User(models.Model):
     name = models.CharField(verbose_name="user name", max_length=100)
@@ -120,6 +160,14 @@ class User(models.Model):
 
     class Meta:
         ordering = ['name']
+
+    @staticmethod
+    def get_overview_name():
+        return u'user'
+
+    @staticmethod
+    def get_overview_url():
+        return u'/trq/'
 
 class JobState(models.Model):
     name = models.CharField(verbose_name="job state name", max_length=100)
@@ -146,6 +194,14 @@ class Queue(models.Model):
         for js in job_states:
             qnums[js] = Job.objects.filter(queue=self,job_state=js).count()
         return qnums
+
+    @staticmethod
+    def get_overview_name():
+        return u'queue'
+
+    @staticmethod
+    def get_overview_url():
+        return u'/trq/queues/'
 
 EVENT_CHOICES = (
     ('Q', 'Queued'),

@@ -62,5 +62,19 @@
       "name": "Suspended",
       "shortname": "S"
     }
+  },
+  {
+    "model" : "trq.TorqueServer",
+    "pk": 1,
+    "fields": {
+      "name": "torque.farm.particle.cz"
+    }
+  },
+  {
+    "model" : "trq.TorqueServer",
+    "pk": 2,
+    "fields": {
+      "name": "golias.farm.particle.cz"
+    }
   }
 ]
