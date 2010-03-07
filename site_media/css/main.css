@@ -1,3 +1,33 @@
+a {
+color: blue;
+text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
+}
+
+a:hover {
+color: #003366;
+}
+
+a {
+text-decoration: none;
+}
+
+a img {
+text-decoration: none;
+border-top-color: currentColor;
+border-left-color: currentColor;
+border-right-color: currentColor;
+border-bottom-color: currentColor;
+border-top-width: medium;
+border-left-width: medium;
+border-right-width: medium;
+border-bottom-width: medium;
+border-top-style: none;
+border-left-style: none;
+border-right-style: none;
+border-bottom-style: none;
+}
+
+
 div.topmenu {
 /*	position: fixed;*/
 }
@@ -140,30 +170,6 @@ width: 100px;
 display: inline-block;
 margin: 0px -2px;
 padding: 0px;
-}
-
-a:hover {
-color: #003366;
-}
-
-a {
-text-decoration: none;
-}
-
-a img {
-text-decoration: none;
-border-top-color: currentColor;
-border-left-color: currentColor;
-border-right-color: currentColor;
-border-bottom-color: currentColor;
-border-top-width: medium;
-border-left-width: medium;
-border-right-width: medium;
-border-bottom-width: medium;
-border-top-style: none;
-border-left-style: none;
-border-right-style: none;
-border-bottom-style: none;
 }
 
 div.statform th {

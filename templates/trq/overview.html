@@ -4,7 +4,17 @@
 
 <div class="maintext">
 
-What should be here? May be some interesting facts about the collected data.
+<p>
+Currently I have information about:
+</p>
+<ul>
+
+{% for item in info %}
+<li><a href="{{ item.url }}">{{ item.count }} {{ item.name }}(s)</a></li>
+{% endfor %}
+</ul>
+
+<p> and the history of jobs since ... till ... </p>
 
 </div>
 
