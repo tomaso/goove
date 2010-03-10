@@ -31,7 +31,7 @@
 
 <div class="maintext">
 {% if graph_data %}
-<img src="/trq/queues/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
+<img class="largeimage" width="400" height="400" src="/trq/queues/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
 {% else %}
 Choose your filter in the left menu.
 {% endif %}
