@@ -167,7 +167,7 @@ class User(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/'
+        return u'/trq/users/'
 
 class JobState(models.Model):
     name = models.CharField(verbose_name="job state name", max_length=100)

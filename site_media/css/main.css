@@ -178,3 +178,7 @@ text-align: left;
 div.statform td {
 text-align: right;
 }
+
+img.largeimage {
+background: transparent url(../images/loading.gif) top left no-repeat;
+}

@@ -8,6 +8,7 @@ from models import Job
 from models import User
 from models import Queue
 from models import TorqueServer
+from models import AccountingEvent
 
 
 from django import forms
@@ -23,7 +24,10 @@ def overview(request):
 
     return render_to_response(
         'trq/overview.html', 
-        { 'info': info }
+        { 'info': info,  
+          'starttime' : AccountingEvent.objects.all().order_by('timestamp')[0].timestamp,
+          'endtime' : AccountingEvent.objects.all().order_by('-timestamp')[0].timestamp
+        }
         )
 
 # vi:ts=4:sw=4:expandtab

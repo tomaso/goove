@@ -5,3 +5,5 @@ Data feeder:
 - First page (at least proposal)
 - Reasonable initial data (let user edit it during installation)
 - make colors configurable for any basic entity (queue, user, subcluster)
+
+- mysql separation on job table

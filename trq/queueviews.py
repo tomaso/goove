@@ -49,7 +49,13 @@ def queues_stats(request):
     if request.POST:
         stat_form.data['wfrom'] = request.POST['wfrom']
         stat_form.data['wto'] = request.POST['wto']
+        for q in Queue.objects.all():
+            if request.POST.has_key('queue_'+q.name):
+                stat_form.data['queue_'+q.name] = request.POST['queue_'+q.name]
+            else:
+                stat_form.data['queue_'+q.name] = False
         stat_form.is_bound = True
+        
 
     graph_data = False
     if request.POST:
@@ -73,8 +79,8 @@ def graph(request):
         if key.startswith('queue_'):
             queue_names.append(key[len('queue_'):])
 
-    fig = figure(1, figsize=(8,6))
-    ax = axes([0.1, 0.2, 0.8, 0.8])
+    fig = figure(1, figsize=(10,10))
+    ax = axes([0.1, 0.2, 0.7, 0.75])
     menMeans   = (20, 35, 30, 35, 30)
     womenMeans = (25, 32, 34, 20, 30)
     ind = np.arange(N)    # the x locations for the groups
@@ -114,9 +120,9 @@ def graph(request):
     else:
         yticks(np.arange(0, gmax, gmax/5))
     print bars
-    legend( (b[0] for b in bars), queue_names )
+    legend( (b[0] for b in bars), queue_names , (1.01, 0.0) )
     response = HttpResponse(mimetype='image/png')
-    fig.savefig(response)
+    fig.savefig(response, dpi=40)
     fig.clear()
     return response
 
