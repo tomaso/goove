@@ -36,7 +36,7 @@ JOBID_REGEX = re.compile("(\d+)\.(.*)")
 
 VERSION="0.1"
 
-loglevel = 0
+loglevel = LOG_WARNING
 
 
 def log(level, message):
@@ -128,6 +128,8 @@ def feedJobsXML(x):
     """
     JOBID_REGEX = re.compile("(\d+)\.(.*)")
 
+    updated_jobs = []
+
     for i in x.childNodes[0].childNodes:
         new_full_jobid = i.getElementsByTagName("Job_Id")[0].childNodes[0].nodeValue
         new_jobid_name, new_server_name = JOBID_REGEX.search(new_full_jobid).groups()
@@ -205,6 +207,13 @@ def feedJobsXML(x):
         new_job.walltime = (int(h)*60+int(m))*60+int(s)
         
         new_job.save()
+        updated_jobs.append(new_job)
+    # check that not finished jobs are between recently updated jobs
+    # otherwise it is kinda lost job
+    for j in Job.objects.exclude(job_state__shortname="C"):
+        if j not in updated_jobs:
+            log(LOG_WARNING, "job %d.%s is in database unfinished but not present in torque anymore" % (j.jobid, j.server.name))
+            
 
 
 def feedJobsLog(logfile):
