@@ -1,9 +1,21 @@
 Data feeder:
+------------
 
 - check consistency between not Completed jobs in database and current status
-- create two version of graphs - small for overviews and big for whole page
-- First page (at least proposal)
+  - dataimport should have feature to check if there are jobs: not Completed and not in qstat output
 - Reasonable initial data (let user edit it during installation)
-- make colors configurable for any basic entity (queue, user, subcluster)
+- node coeficients (walltime, cputime)
 
-- mysql separation on job table
+
+Web interface:
+--------------
+
+- create two version of graphs - small for overviews and big for whole page
+- make colors configurable for any basic entity (queue, user, subcluster)
+- suspicious jobs:
+  - big difference between current time - start time and walltime
+
+Database:
+---------
+
+- mysql separation on job table (not possible with the indexes, better try index on timestamps)
