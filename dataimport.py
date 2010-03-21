@@ -117,9 +117,11 @@ def getTimeOrZero(xmlnode, attrname):
     """
     l = xmlnode.getElementsByTagName(attrname)
     if len(l)==0:
-        return 0
+        return None
     t = l[0].childNodes[0].nodeValue
-    return datetime.datetime.fromtimestamp(int(t))
+    dt = datetime.datetime.fromtimestamp(int(t))
+    # YYYY-MM-DD HH:MM[:ss[.uuuuuu]]
+    return "%s-%s-%s %s:%s:%s" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
 
 def feedJobsXML(x):
     """
@@ -178,17 +180,17 @@ def feedJobsXML(x):
         new_job.queue = new_queue
 
         # ctime
-        ctime = getTimeOrZero(i, "ctime")
+        new_job.ctime = getTimeOrZero(i, "ctime")
         # mtime
-        mtime = getTimeOrZero(i, "mtime")
+        new_job.mtime = getTimeOrZero(i, "mtime")
         # qtime
-        qtime = getTimeOrZero(i, "qtime")
+        new_job.qtime = getTimeOrZero(i, "qtime")
         # etime
-        etime = getTimeOrZero(i, "etime")
+        new_job.etime = getTimeOrZero(i, "etime")
         # start_time
-        start_time = getTimeOrZero(i, "start_time")
+        new_job.start_time = getTimeOrZero(i, "start_time")
         # comp_time
-        comp_time = getTimeOrZero(i, "comp_time")
+        new_job.comp_time = getTimeOrZero(i, "comp_time")
 
         # TODO: redesign for multislot jobs
         # exec_host

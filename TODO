@@ -6,6 +6,8 @@ Data feeder:
 - Reasonable initial data (let user edit it during installation)
 - node coeficients (walltime, cputime)
 
+- ! Let the daemon run on elf !
+
 
 Web interface:
 --------------

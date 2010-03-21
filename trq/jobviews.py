@@ -12,7 +12,7 @@ import colorsys
 import matplotlib
 matplotlib.use('Agg')
 from pylab import *
-import StringIO
+import datetime
 
 
 class JobsStatsForm(forms.Form):
@@ -23,6 +23,31 @@ class JobsStatsForm(forms.Form):
         label="Start", widget=forms.DateInput(attrs={'class':'vDateField'}))
     wto = forms.DateField(
         label="End", widget=forms.DateInput(attrs={'class':'vDateField'}))
+
+class WalltimeLow():
+    description = 'Big difference between recorded walltime and current-start time'
+    label = 'Walltime'
+
+    def isProblem(self,j):
+        """
+        Test if the job j is problematic. This routine does not
+        check the status of the job (it is expected to be Running)
+        """
+        if j.walltime and j.start_time:
+            walldays = j.walltime/(60*60*24)
+            nowdays = (datetime.datetime.now() - j.start_time).days
+            return (walldays + 1 <= nowdays)
+
+        return False
+
+wl = WalltimeLow()
+
+class SuspicionForm(forms.Form):
+    """
+    Form to filter what kind of suspicious jobs user wants to see.
+    """
+    # this should be kinda dynamic
+    susp1 = forms.BooleanField(label = wl.label)
 
 def jobs_overview(request, page=1):
     state_list = []
@@ -121,5 +146,21 @@ def graph(request):
     fig.savefig(response)
     fig.clear()
     return response
+
+def suspicious(request):
+    """
+    Get lists of suspicious jobs (various reasons)
+    and render page with them.
+    """
+    current_date = datetime.date.today()
+    jobs = []
+    for j in Job.objects.filter(job_state__shortname="R"):
+        if wl.isProblem(j):
+            jobs.append(j)
+    sf = SuspicionForm()
+    return render_to_response(
+        'trq/jobs_suspicious.html', 
+        {'suspicion_form':sf, 'suspicious_jobs':jobs}
+        )
 
 # vi:ts=4:sw=4:expandtab
