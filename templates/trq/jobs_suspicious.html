@@ -4,9 +4,9 @@
 
 <div class="menu bubplastic horizontal lime">
     <ul>
-        <li class="highlight"><span class="menu_r"><a href="/trq/jobs/"><span class="menu_ar">Overview</span></a></span></li>
+        <li><span class="menu_r"><a href="/trq/jobs/"><span class="menu_ar">Overview</span></a></span></li>
         <li><span class="menu_r"><a href="/trq/jobs/stats/"><span class="menu_ar">Statistics</span></a></span></li>
-        <li><span class="menu_r"><a href="/trq/jobs/suspicious/"><span class="menu_ar">Suspicious jobs</span></a></span></li>
+        <li class="highlight"><span class="menu_r"><a href="/trq/jobs/suspicious/"><span class="menu_ar">Suspicious jobs</span></a></span></li>
     </ul>
     <br class="clearit" />
 </div>
@@ -18,9 +18,9 @@
 <div class="leftmenu">
 
     <form action="" method="post">
-        <h3>Job States</h3>
+        <h3>Suspicion type</h3>
         <ol>
-        {% for field in states_form %}
+        {% for field in suspicion_form %}
             <li class="filterlist">{{ field }} {{ field.label_tag }}</li>
         {% endfor %}
         </ol>
@@ -43,7 +43,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for object in jobs_page.object_list %}
+            {% for object in jobs %}
             <tr>
                 <td><a href="{{ object.get_absolute_url }}">{{ object.jobid }}</a></td>
                 <td><a href="{{ object.job_owner.get_absolute_url }}">{{ object.job_owner }}</a></td>
@@ -56,17 +56,6 @@
         </tbody>
     </table>
 </div>
-
-<span class="paging">
-Page: 
-{% if jobs_page.has_previous %}
-    <a href="/trq/jobs/page/{{ jobs_page.previous_page_number }}">&lt;&lt;</a>
-{% endif %}
-{{ jobs_page.number }} of {{ paginator.num_pages }}
-{% if jobs_page.has_next %}
-    <a href="/trq/jobs/page/{{ jobs_page.next_page_number }}">&gt;&gt;</a>
-{% endif %}
-</span>
 
 {% endblock content %}
 
