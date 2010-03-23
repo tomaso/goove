@@ -6,6 +6,7 @@ import goove
 import os
 import os.path
 import datetime
+import time
 import bz2
 import gzip
 
@@ -217,6 +218,84 @@ def feedJobsXML(x):
             log(LOG_WARNING, "job %d.%s is in database unfinished but not present in torque anymore" % (j.jobid, j.server.name))
             
 
+def parseOneLogLine(line,lineno):
+    """
+    Parse one line from accounting log and insert the date into DB.
+    """
+    try:
+        date,event,fulljobid,attrs = line.split(';')
+    except ValueError:
+        log(LOG_WARNING, "skipping invalid line %d: '%s'" % (lineno,line))
+        return
+        
+    log(LOG_DEBUG, "processing accounting line: %s:%s:%s ..." %(date, event, fulljobid))
+    attrdir = {}
+    try:
+        for key,val in map(lambda x: x.split('=',1), attrs.split()): 
+            attrdir[key] = val
+    except ValueError:
+        log(LOG_WARNING, "skipping line with invalid attribues %d: '%s'" % (lineno,attrs))
+        
+    jobid_name, server_name = JOBID_REGEX.search(fulljobid).groups()
+    server,created = TorqueServer.objects.get_or_create(name=server_name)
+    if created:
+        log(LOG_INFO, "new server will be created: %s" % server_name)
+    job,created = Job.objects.get_or_create(jobid=int(jobid_name), server=server)
+    if created:
+        log(LOG_INFO, "new job will be created: %s.%s" % (jobid_name, server_name))
+
+    if attrdir.has_key('user'):
+        user,created = User.objects.get_or_create(name=attrdir['user'])
+        if created:
+            log(LOG_INFO, "new user will be created: %s" % attrdir['user'])
+        job.job_owner = user
+    if attrdir.has_key('resources_used.cput'):
+        h,m,s = attrdir['resources_used.cput'].split(":")
+        job.cput = (int(h)*60+int(m))*60+int(s)
+    if attrdir.has_key('resources_used.walltime'):
+        h,m,s = attrdir['resources_used.walltime'].split(":")
+        job.walltime = (int(h)*60+int(m))*60+int(s)
+    if event=='Q':
+        job.job_state = JobState.objects.get(shortname='Q')
+    elif event=='S' or event=='R' or event=='C' or event=='T':
+        job.job_state = JobState.objects.get(shortname='R')
+    elif event=='E' or event=='D' or event=='A':
+        job.job_state = JobState.objects.get(shortname='C')
+    else:
+        log(LOG_ERROR, "Unknown event type in accounting log file: %s" % line)
+    if attrdir.has_key('queue'):
+        queue,created = Queue.objects.get_or_create(name=attrdir['queue'])
+        if created:
+            log(LOG_INFO, "new queue will be created: %s" % attrdir['queue'])
+        job.queue = queue
+    if attrdir.has_key('ctime'):
+        job.ctime = datetime.datetime.fromtimestamp(int(attrdir['ctime']))
+    if attrdir.has_key('mtime'):
+        job.mtime = datetime.datetime.fromtimestamp(int(attrdir['mtime']))
+    if attrdir.has_key('qtime'):
+        job.qtime = datetime.datetime.fromtimestamp(int(attrdir['qtime']))
+    if attrdir.has_key('etime'):
+        job.etime = datetime.datetime.fromtimestamp(int(attrdir['etime']))
+    if attrdir.has_key('start'):
+        job.start_time = datetime.datetime.fromtimestamp(int(attrdir['start']))
+    if attrdir.has_key('end'):
+        job.comp_time = datetime.datetime.fromtimestamp(int(attrdir['end']))
+    if attrdir.has_key('exec_host'):
+        exec_host_name = attrdir['exec_host'].split("/",1)[0]
+        exec_host,created = Node.objects.get_or_create(name=exec_host_name)
+        if created:
+            log(LOG_INFO, "new node (exec_host) will be created: %s" % exec_host_name)
+        job.exec_host = exec_host
+    job.save()
+
+    # TODO: what if we are parsing the same file again?
+    d,t = date.split(' ')
+    m,d,y = d.split('/')
+    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+    if created:
+        log(LOG_INFO, "new account event will be created: %s" % ae.timestamp)
+    ae.save()
+
 
 def feedJobsLog(logfile):
     """ Insert data about jobs into database. The data are obtained from text log file
@@ -225,79 +304,7 @@ def feedJobsLog(logfile):
     lineno = 0
     for line in logfile:
         lineno += 1
-        try:
-            date,event,fulljobid,attrs = line.split(';')
-        except ValueError:
-            log(LOG_WARNING, "skipping invalid line %d: '%s'" % (lineno,line))
-            continue
-            
-        log(LOG_DEBUG, "processing accounting line: %s:%s:%s ..." %(date, event, fulljobid))
-        attrdir = {}
-        try:
-            for key,val in map(lambda x: x.split('=',1), attrs.split()): 
-                attrdir[key] = val
-        except ValueError:
-            log(LOG_WARNING, "skipping line with invalid attribues %d: '%s'" % (lineno,attrs))
-            
-        jobid_name, server_name = JOBID_REGEX.search(fulljobid).groups()
-        server,created = TorqueServer.objects.get_or_create(name=server_name)
-        if created:
-            log(LOG_INFO, "new server will be created: %s" % server_name)
-        job,created = Job.objects.get_or_create(jobid=int(jobid_name), server=server)
-        if created:
-            log(LOG_INFO, "new job will be created: %s.%s" % (jobid_name, server_name))
-
-        if attrdir.has_key('user'):
-            user,created = User.objects.get_or_create(name=attrdir['user'])
-            if created:
-                log(LOG_INFO, "new user will be created: %s" % attrdir['user'])
-            job.job_owner = user
-        if attrdir.has_key('resources_used.cput'):
-            h,m,s = attrdir['resources_used.cput'].split(":")
-            job.cput = (int(h)*60+int(m))*60+int(s)
-        if attrdir.has_key('resources_used.walltime'):
-            h,m,s = attrdir['resources_used.walltime'].split(":")
-            job.walltime = (int(h)*60+int(m))*60+int(s)
-        if event=='Q':
-            job.job_state = JobState.objects.get(shortname='Q')
-        elif event=='S' or event=='R' or event=='C' or event=='T':
-            job.job_state = JobState.objects.get(shortname='R')
-        elif event=='E' or event=='D' or event=='A':
-            job.job_state = JobState.objects.get(shortname='C')
-        else:
-            log(LOG_ERROR, "Unknown event type in accounting log file: %s" % line)
-        if attrdir.has_key('queue'):
-            queue,created = Queue.objects.get_or_create(name=attrdir['queue'])
-            if created:
-                log(LOG_INFO, "new queue will be created: %s" % attrdir['queue'])
-            job.queue = queue
-        if attrdir.has_key('ctime'):
-            job.ctime = datetime.datetime.fromtimestamp(int(attrdir['ctime']))
-        if attrdir.has_key('mtime'):
-            job.mtime = datetime.datetime.fromtimestamp(int(attrdir['mtime']))
-        if attrdir.has_key('qtime'):
-            job.qtime = datetime.datetime.fromtimestamp(int(attrdir['qtime']))
-        if attrdir.has_key('etime'):
-            job.etime = datetime.datetime.fromtimestamp(int(attrdir['etime']))
-        if attrdir.has_key('start'):
-            job.start_time = datetime.datetime.fromtimestamp(int(attrdir['start']))
-        if attrdir.has_key('end'):
-            job.comp_time = datetime.datetime.fromtimestamp(int(attrdir['end']))
-        if attrdir.has_key('exec_host'):
-            exec_host_name = attrdir['exec_host'].split("/",1)[0]
-            exec_host,created = Node.objects.get_or_create(name=exec_host_name)
-            if created:
-                log(LOG_INFO, "new node (exec_host) will be created: %s" % exec_host_name)
-            job.exec_host = exec_host
-        job.save()
-
-        # TODO: what if we are parsing the same file again?
-        d,t = date.split(' ')
-        m,d,y = d.split('/')
-        ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
-        if created:
-            log(LOG_INFO, "new account event will be created: %s" % ae.timestamp)
-        ae.save()
+        parseOneLogLine(line, lineno)
 
 
 def openfile(filename):
@@ -317,6 +324,44 @@ def openfile(filename):
         return open(filename, "r")
 
 
+def getTodayFile(logdir):
+    """
+    Get the today's file in given directory
+    """
+    d=datetime.datetime.today()
+    return ("%d%02d%02d" % (d.year,d.month,d.day))
+    
+
+def runAsDaemon(logdir):
+    """
+    Monitor last file in logdir in format YYYYMMDD for appended lines and switch to new one
+    if it appears.
+    """
+    filename = os.path.join(logdir, getTodayFile(logdir))
+    log(LOG_INFO, "Starting as daemon, opening file %s" % filename)
+    f = openfile(filename)
+    if not f:
+        log(LOG_ERROR, "Unable to open file %s" % filename)
+        sys.exit(-1)
+    lineno = 0
+    while True:
+        lineno += 1
+        line = f.readline() 
+        if line=='':
+            time.sleep(5)
+            newfilename = os.path.join(logdir, getTodayFile(logdir))
+            if newfilename != filename:
+                filename = newfilename
+                log(LOG_INFO, "Last file changed, opening file %s" % filename)
+                f = openfile(filename) 
+                if not f:
+                    log(LOG_ERROR, "Unable to open file %s" % filename)
+                    sys.exit(-1)
+        else:
+            parseOneLogLine(line, lineno)
+        
+    
+
 def main():
     global loglevel
 
@@ -331,7 +376,7 @@ def main():
         help="Text file with event data in accunting log format")
     opt_parser.add_option("-s", "--serverfile", action="append", dest="serverfile", metavar="FILE", 
         help="Text file with server settings (basically output of qmgr `print server` command)")
-    opt_parser.add_option("-d", "--daemon", dest="daemon", metavar="DIR", 
+    opt_parser.add_option("-d", "--daemon", dest="daemondir", metavar="DIR", 
         help="Run in deamon node and read torque accounting logs from DIR")
 
     (options, args) = opt_parser.parse_args()
@@ -342,9 +387,9 @@ def main():
     loglevel = options.loglevel
 
     # invalid combinations
-    if (options.nodexmlfile or options.jobxmlfile or options.eventfile or options.serverfile) and options.daemon:
+    if (options.nodexmlfile or options.jobxmlfile or options.eventfile or options.serverfile) and options.daemondir:
         opt_parser.error("You cannot run as daemon and process data files at once. Choose only one mode of running.")
-    if not (options.nodexmlfile or options.jobxmlfile or options.eventfile or options.serverfile or options.daemon):
+    if not (options.nodexmlfile or options.jobxmlfile or options.eventfile or options.serverfile or options.daemondir):
         opt_parser.error("Mode of running is missing. Please specify one of -n, -j -e -s or -d.")
 
     if options.eventfile:
@@ -365,6 +410,10 @@ def main():
     if options.serverfile:
         log(LOG_ERROR, "Server file parsing is not supported yet")
         sys.exit(-1)
+
+    if options.daemondir:
+        runAsDaemon(options.daemondir)
+        
 
     
 if __name__=="__main__":
