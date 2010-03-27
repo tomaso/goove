@@ -38,17 +38,19 @@
                 <th>Owner</th>
                 <th>CpuTime</th>
                 <th>WallTime</th>
+                <th>Run secs</th>
                 <th>State</th>
                 <th>Host</th>
             </tr>
         </thead>
         <tbody>
-            {% for object in jobs %}
+            {% for object in suspicious_jobs %}
             <tr>
                 <td><a href="{{ object.get_absolute_url }}">{{ object.jobid }}</a></td>
                 <td><a href="{{ object.job_owner.get_absolute_url }}">{{ object.job_owner }}</a></td>
                 <td>{{ object.cput }}</td>
                 <td>{{ object.walltime }}</td>
+                <td>{{ object.running_seconds }}</td>
                 <td>{{ object.job_state.shortname }}</td>
                 <td><a href="{{ object.exec_host.get_absolute_url }}">{{ object.exec_host }}</a></td>
             </tr>

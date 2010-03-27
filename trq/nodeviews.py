@@ -41,8 +41,6 @@ def nodes_table_list(request):
                 if 'on' in val:
                     state_list.append(attr)
 
-        print prop_list
-        
         nodes = Node.objects.filter(
             subcluster__name__in=sc_list, 
             properties__name__in=prop_list,

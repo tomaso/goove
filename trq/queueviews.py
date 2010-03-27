@@ -119,7 +119,6 @@ def graph(request):
         yticks((0,1))
     else:
         yticks(np.arange(0, gmax, gmax/5))
-    print bars
     legend( (b[0] for b in bars), queue_names , (1.01, 0.0) )
     response = HttpResponse(mimetype='image/png')
     fig.savefig(response, dpi=40)

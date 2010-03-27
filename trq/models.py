@@ -1,4 +1,5 @@
 from django.db import models
+import datetime
 
 # Create your models here.
 class Node(models.Model):
@@ -116,6 +117,14 @@ class Job(models.Model):
 
     def efficiency(self):
         return 100*self.cput/self.walltime
+
+    def running_days(self):
+        diff = datetime.datetime.now() - self.start_time
+        return diff.days
+
+    def running_seconds(self):
+        diff = datetime.datetime.now() - self.start_time
+        return diff.days*24*60*60+diff.seconds
 
     class Meta:
         ordering = ['jobid']

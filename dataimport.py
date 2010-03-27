@@ -9,6 +9,7 @@ import datetime
 import time
 import bz2
 import gzip
+import subprocess
 
 os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
 
@@ -37,7 +38,9 @@ JOBID_REGEX = re.compile("(\d+)\.(.*)")
 
 VERSION="0.1"
 
+# TODO: make this configurable
 loglevel = LOG_WARNING
+last_updatePBSNodes = 0
 
 
 def log(level, message):
@@ -357,9 +360,29 @@ def runAsDaemon(logdir):
                 if not f:
                     log(LOG_ERROR, "Unable to open file %s" % filename)
                     sys.exit(-1)
+            updatePBSNodes()
         else:
             parseOneLogLine(line, lineno)
         
+# BIG TODO: this should be configurable (see parsing ini files)
+def updatePBSNodes():
+    """
+    Get pbsnodes info from torque server once in a while and update the info
+    """
+    global last_updatePBSNodes
+    updatePBSNodes_interval = 600
+    now = int(time.time())
+    log(LOG_INFO, "pbsnodes data check, last: %d, now: %d" % (last_updatePBSNodes, now))
+    if now - last_updatePBSNodes > updatePBSNodes_interval:
+        log(LOG_INFO, "pbsnodes data outdated - getting new")
+        for ts in TorqueServer.objects.all():
+            log(LOG_INFO, "pbsnodes data outdated - getting new for %s" % ts.name)
+            # TODO: timeout after 1min
+            p = subprocess.Popen(["pbsnodes", "-ax", "-s", ts.name], stdout=subprocess.PIPE)
+            (out,err) = p.communicate()
+            jobsxml = parseString(out)
+            feedNodesXML(jobsxml)
+        last_updatePBSNodes = now
     
 
 def main():
