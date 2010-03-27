@@ -158,6 +158,8 @@ def suspicious(request):
         if wl.isProblem(j):
             jobs.append(j)
     sf = SuspicionForm()
+    print sf
+    print jobs
     return render_to_response(
         'trq/jobs_suspicious.html', 
         {'suspicion_form':sf, 'suspicious_jobs':jobs}
