@@ -74,7 +74,7 @@
     "model" : "trq.TorqueServer",
     "pk": 2,
     "fields": {
-      "name": "golias.farm.particle.cz"
+      "name": "ce2.egee.cesnet.cz"
     }
   }
 ]
