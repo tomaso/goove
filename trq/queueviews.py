@@ -71,6 +71,12 @@ def queues_stats(request):
         {'stat_form':stat_form, 'graph_data':graph_data}
         )
 
+
+def nextmonth(indate):
+    """ Return date representing the first day of the next month.
+    """
+    
+
 # TODO: make two variants: full big pic
 # and smaller with just few values as a preview
 def graph(request):
@@ -86,7 +92,8 @@ def graph(request):
         dto = date.fromordinal(dto.toordinal()+(6-dto.weekday()))
         N = ((dto-dfrom).days+1)/7
     else: # month
-        pass
+        dfrom = date.fromordinal(dfrom.toordinal()-dfrom.day()+1)
+        dto = nextmonth(dto)
         
     figsize = 10
     dpi = 60
@@ -115,7 +122,11 @@ def graph(request):
             f = date.fromordinal(dfrom.toordinal()+j*7).isoformat()
             t = date.fromordinal(dfrom.toordinal()+(j+1)*7).isoformat()
         else:
-            pass
+            if j==0:
+                f = dfrom
+            else:
+                f = todates[-1]
+            t = nextmonth(f)
         fromdates.append(f)
         todates.append(t)
 
