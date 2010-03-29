@@ -63,7 +63,7 @@ class NodeProperty(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/'
+        return u'/trq/nodes/table_list/'
 
 class NodeState(models.Model):
     name = models.CharField(verbose_name="State name", max_length=30)	
@@ -85,7 +85,7 @@ class SubCluster(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/'
+        return u'/trq/nodes/table_list/'
 
 class Job(models.Model):
     jobid = models.IntegerField(db_index=True, editable=False)
@@ -136,7 +136,7 @@ class Job(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/'
+        return u'/trq/jobs/'
     
 class TorqueServer(models.Model):
     name = models.CharField(verbose_name="torque server name", max_length=100)

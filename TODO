@@ -5,6 +5,7 @@ Data feeder:
   - dataimport should have feature to check if there are jobs: not Completed and not in qstat output
 - Reasonable initial data (let user edit it during installation)
 - node coeficients (walltime, cputime)
+- make the daemon stuff configurable (ini file)
 
 - ! Let the daemon run on elf !
 
@@ -14,10 +15,10 @@ Web interface:
 
 - create two version of graphs - small for overviews and big for whole page
 - make colors configurable for any basic entity (queue, user, subcluster)
-- suspicious jobs:
-  - big difference between current time - start time and walltime
+- let the queue graph select between days, weeks and months aggregation
 
 Database:
 ---------
 
 - mysql separation on job table (not possible with the indexes, better try index on timestamps)
+- make sure TorqueServer is only one

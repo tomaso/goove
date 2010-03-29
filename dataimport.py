@@ -380,8 +380,11 @@ def updatePBSNodes():
             # TODO: timeout after 1min
             p = subprocess.Popen(["pbsnodes", "-ax", "-s", ts.name], stdout=subprocess.PIPE)
             (out,err) = p.communicate()
-            jobsxml = parseString(out)
-            feedNodesXML(jobsxml)
+            try:
+                jobsxml = parseString(out)
+                feedNodesXML(jobsxml)
+            except xml.parsers.expat.ExpatError:
+                log(LOG_ERROR, "Cannot parse line: %s" % (out))
         last_updatePBSNodes = now
     
 
