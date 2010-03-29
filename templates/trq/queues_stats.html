@@ -20,7 +20,7 @@
         <form action="" method="post">
         <table>
             {% for field in stat_form %}
-                <tr><th>{{ field.label }}:</th><td>{{ field }}</td></tr>
+                <tr><th>{{ field.label }}:</th><td style="text-align: left">{{ field }}</td></tr>
             {% endfor %}
         </table>
         <input type="submit" value="Submit" />
@@ -31,7 +31,7 @@
 
 <div class="maintext">
 {% if graph_data %}
-<img class="largeimage" width="400" height="400" src="/trq/queues/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
+<img class="largeimage" width="600" height="600" src="/trq/queues/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
 {% else %}
 Choose your filter in the left menu.
 {% endif %}
