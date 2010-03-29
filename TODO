@@ -16,6 +16,7 @@ Web interface:
 - create two version of graphs - small for overviews and big for whole page
 - make colors configurable for any basic entity (queue, user, subcluster)
 - let the queue graph select between days, weeks and months aggregation
+- let the user choose if she wants to see number of jobs or walltime or cputime
 
 Database:
 ---------
