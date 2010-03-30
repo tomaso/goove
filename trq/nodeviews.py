@@ -21,7 +21,6 @@ def nodes_overview(request):
         'trq/nodes_overview.html', 
         {'nodes':nodes, 'nodestates':nodestates}
         )
-
     
 
 def nodes_table_list(request):
@@ -82,7 +81,8 @@ def nodes_table_list(request):
 def node_detail(request, nodename):
     n = Node.objects.get(name=nodename)
     running_jobs = Job.objects.filter(exec_host=n, job_state__shortname="R")
-    completed_jobs = Job.objects.filter(exec_host=n, job_state__shortname="C")
+#    completed_jobs = Job.objects.filter(exec_host=n, job_state__shortname="C")
+    completed_jobs = []
     
     return render_to_response('trq/node_detail.html', 
         {'node':n, 'running_jobs': running_jobs, 'completed_jobs': completed_jobs})

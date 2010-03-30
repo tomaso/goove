@@ -36,9 +36,10 @@
                 </div><br /><div class="subcluster">
             {% endif %}
         {% endifchanged %}
-        <span class="overview_node {% for c in n.state.all %}node_state_{{ c }}{% endfor %}" id="{{ n.pk }}" onmouseover='show_node_tt(event,this)' onmouseout='hide_node_tt(this)'>
+        <span class="overview_node" id="{{ n.pk }}" onmouseover='show_node_tt(event,this)' onmouseout='hide_node_tt(this)'>
         <a href="{{ n.get_absolute_url }}">{{ n.name }}</a>
         </span>
+        <span class="{% for c in n.state.all %}node_state_{{ c }}{% endfor %}">&nbsp;</span>
     {% endfor %}
     </div>
 </div>

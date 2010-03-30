@@ -15,6 +15,7 @@ from datetime import date
 from time import time
 import numpy as np
 import colorsys
+from django.db.models import Sum
 
 def queues_overview(request):
     queues = Queue.objects.all()
@@ -43,6 +44,8 @@ class QueuesStatsForm(forms.Form):
         label="End", widget=forms.DateInput(attrs={'class':'vDateField'}))
     aggregation = forms.ChoiceField(
         label="Aggregate", choices=(('day','day'),('week','week'),('month','month')))
+    data_type = forms.ChoiceField(
+        label="Data", choices=(('jobcount','Number of jobs'),('walltime','Wall time'),('cputime','CPU time')))
     
 
 def queues_stats(request):
@@ -55,6 +58,7 @@ def queues_stats(request):
         stat_form.data['wfrom'] = request.POST['wfrom']
         stat_form.data['wto'] = request.POST['wto']
         stat_form.data['aggregation'] = request.POST['aggregation']
+        stat_form.data['data_type'] = request.POST['data_type']
         for q in Queue.objects.all():
             if request.POST.has_key('queue_'+q.name):
                 stat_form.data['queue_'+q.name] = request.POST['queue_'+q.name]
@@ -75,6 +79,12 @@ def queues_stats(request):
 def nextmonth(indate):
     """ Return date representing the first day of the next month.
     """
+    m = indate.month + 1
+    y = indate.year
+    if m > 12:
+        m = 1
+        y = y + 1
+    return date(y,m,1)
     
 
 # TODO: make two variants: full big pic
@@ -85,15 +95,17 @@ def graph(request):
     sto = request.GET['wto'].split('-')
     dto = date(int(sto[0]), int(sto[1]), int(sto[2]))
     aggregation = request.GET['aggregation']
+    data_type = request.GET['data_type']
     if aggregation=='day':
-        N = (dto-dfrom).days
+        N = (dto-dfrom).days+1
     elif aggregation=='week':
         dfrom = date.fromordinal(dfrom.toordinal()-dfrom.weekday())
         dto = date.fromordinal(dto.toordinal()+(6-dto.weekday()))
         N = ((dto-dfrom).days+1)/7
     else: # month
-        dfrom = date.fromordinal(dfrom.toordinal()-dfrom.day()+1)
+        dfrom = date(dfrom.year, dfrom.month, 1)
         dto = nextmonth(dto)
+        N = (dto.year-dfrom.year)*12+(dto.month-dfrom.month+1)
         
     figsize = 10
     dpi = 60
@@ -138,7 +150,13 @@ def graph(request):
         for j in range(0,N):
             f = fromdates[j]
             t = todates[j]
-            val = Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).count()
+            if data_type == 'jobcount':
+                val = Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).count()
+            elif data_type == 'cputime':
+                val = Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).aggregate(Sum("cput"))['cput__sum']
+            elif data_type == 'walltime':
+                val = Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).aggregate(Sum("walltime"))['walltime__sum']
+                
             values.append(val)
 
         b = bar(ind, values, width, color=c, bottom=tempsum, linewidth=0)
@@ -146,8 +164,15 @@ def graph(request):
         for j in range(0,N):
             tempsum[j] += values[j]
 
-    ylabel('Number of jobs')
-    title('Completed jobs per day')
+    if data_type == 'jobcount':
+        ylabel('Number of jobs')
+        title('Completed jobs per time unit')
+    elif data_type == 'cputime':
+        ylabel('Wall time')
+        title('Wall time of completed jobs')
+    elif data_type == 'walltime':
+        ylabel('CPU time')
+        title('CPU time of completed jobs')
     nth = int(1.0+((1.0*N)/(figsize*dpi/xtick_width)))
     arr = ind+width/2.0
     xticks(arr[::nth], fromdates[::nth], rotation=90)
