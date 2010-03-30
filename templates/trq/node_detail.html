@@ -17,7 +17,7 @@
     {% for job in running_jobs %}
         <tr>
             <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
-            <td>{{ job.job_owner }}</td>
+            <td><a href="{{ job.job_owner.absolute_url }}">{{ job.job_owner }}</a></td>
             <td>{{ job.cput }}</td>
             <td>{{ job.walltime }}</td>
             <td><a href="{{ job.queue.get_absolute_url }}">{{ job.queue }}</a></td>
@@ -38,7 +38,7 @@
     {% for job in completed_jobs %}
         <tr>
             <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
-            <td>{{ job.job_owner }}</td>
+            <td><a href="{{ job.job_owner.absolute_url }}">{{ job.job_owner }}</a></td>
             <td>{{ job.cput }}</td>
             <td>{{ job.walltime }}</td>
             <td>{{ job.queue }}</td>
