@@ -22,6 +22,8 @@ Web interface:
 - better css for overview of nodes
 - enhance detail page (for node, queue and user) with some tables and graphs
 - list completed jobs on node detail page in pages not the entire list
+- administration interface
+- better logging of events and profiling data
 
 Database:
 ---------
