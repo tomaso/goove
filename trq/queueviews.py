@@ -92,6 +92,9 @@ def nextmonth(indate):
 
 
 def graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi):
+
+    print "%f: Generating pie graph." % time()
+
     fig = figure(1, figsize=(figsize,figsize))
     ax = axes([0.1, 0.1, 0.8, 0.8])
     labels = []
@@ -99,6 +102,7 @@ def graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi):
     queue_vals = {}
     others = 0
     for q in queue_names:
+        print "%f: Obtaining queue data: %s" % (time(), q)
         if data_type == 'jobcount':
             val = Job.objects.filter(queue__name=q, comp_time__gte=dfrom, comp_time__lte=dto).count()
         elif data_type == 'cputime':
@@ -106,8 +110,8 @@ def graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi):
         elif data_type == 'walltime':
             val = (Job.objects.filter(queue__name=q, comp_time__gte=dfrom, comp_time__lte=dto).aggregate(Sum("walltime"))['walltime__sum'] or 0)
         queue_vals[q] = val
-
-    print queue_vals
+        print "%f: End of obtaining queue data: %s" % (time(), q)
+    
     totalval = sum([int(i) for i in queue_vals.values()])
     for k,v in queue_vals.items():
         if float(v)<(totalval/100):
@@ -126,6 +130,7 @@ def graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi):
     response = HttpResponse(mimetype='image/png')
     fig.savefig(response, dpi=dpi)
     fig.clear()
+    print "%f: End of generating pie graph." % time()
     return response 
 
     
