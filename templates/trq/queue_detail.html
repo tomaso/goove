@@ -4,11 +4,12 @@
 
 <div class="maintext">
     <h2 style="background-color: blue; color: white; text-shadow: black 0.1em 0.1em 0.1em">Queue: {{ queue.name }}</h2>
-    <h3>Currently associated jobs</h3>
+    <h3>Currently running jobs</h3>
     <table class="nodejoblist">
         <tr>
             <th>JobId</th>
             <th>Owner</th>
+            <th>Node</th>
             <th>CpuTime</th>
             <th>WallTime</th>
         </tr>
@@ -16,6 +17,7 @@
         <tr>
             <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
             <td><a href="{{ job.job_owner.get_absolute_url }}">{{ job.job_owner }}</a></td>
+            <td><a href="{{ job.exec_host.get_absolute_url }}">{{ job.exec_host }}</a></td>
             <td>{{ job.cput }}</td>
             <td>{{ job.walltime }}</td>
         </tr>

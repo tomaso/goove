@@ -15,6 +15,7 @@ Web interface:
 
 - create two version of graphs - small for overviews and big for whole page
 - make colors configurable for any basic entity (queue, user, subcluster)
+  - use colors when they are configured
 - let the queue graph select between days, weeks and months aggregation
 - move jobs/statistics to queues/pie chart
 - with graph, draw also html table with results

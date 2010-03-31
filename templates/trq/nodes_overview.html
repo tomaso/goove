@@ -27,30 +27,34 @@
 </div>
 
 <div class="maintext">
-
-    <div class="subcluster">
-    {% for n in nodes %}
-
-        {% ifchanged n.subcluster %}
-            {% if not forloop.first %}
-                </div><br /><div class="subcluster">
-            {% endif %}
-        {% endifchanged %}
-        <span class="overview_node" id="{{ n.pk }}" onmouseover='show_node_tt(event,this)' onmouseout='hide_node_tt(this)'>
-        <a href="{{ n.get_absolute_url }}">{{ n.name }}</a>
-        </span>
-        <span class="{% for c in n.state.all %}node_state_{{ c }}{% endfor %}">&nbsp;</span>
-    {% endfor %}
+    {% for sc_node in sc_nodes %}
+    <div class="subclusters">
+        <table class="subcluster">
+        <tr><th colspan="{{ colswidth }}">{{ sc_node.subcluster }}</th></tr>
+        {% for row in sc_node.rows %}
+            <tr>
+            {% for n in row %}
+                <td class="overview_node" id="{{ n.pk }}" onmouseover='show_node_tt(event,this)' onmouseout='hide_node_tt(this)'>
+                    <a href="{{ n.get_absolute_url }}">{{ n.name }}</a><span class="{% for c in n.state.all %}node_state_{{ c }}{% endfor %}">&nbsp;&nbsp;</span>
+                </td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+        </table>
     </div>
+    {% endfor %}
+
 </div>
 
-    {% for n in nodes %}
+    {% for sc_node in sc_nodes %}
+    {% for row in sc_node.rows %}
+    {% for n in row %}
     <table class="tooltip" id="node_tt_{{ n.pk }}">
         <tr><td class="tt-topleft"></td><td class="tt-topright"></td></tr>
         <tr>
             <td class="tt-centerleft"></td>
             <td class="tt-centerright">
-                <table style="font-size: 6px;">
+                <table>
                     <tr><th colspan="2">
                     {{ n.name }}
                     </th><th></th></tr>
@@ -64,6 +68,8 @@
         </tr>
         <tr><td class="tt-bottomleft"></td><td class="tt-bottomright"></td></tr>
     </table>
+    {% endfor %}
+    {% endfor %}
     {% endfor %}
 
 

@@ -58,11 +58,6 @@ div.maintext {
         padding-bottom:10px;
 }
 
-div.subcluster {
-	float: top; 
-	text-align: left;
-}
-
 ol {
 	margin: 0px;
 	padding: 0px;
@@ -165,12 +160,37 @@ text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 background-color: #9900bb;
 }
 
+div.subclusters {
+float: top; 
+text-align: left;
+}
+
+table.subcluster {
+border: solid 1px;
+}
+
+table.subcluster th {
+text-align: center;
+}
+
 span.overview_node {
 text-align: center;
-width: 110px;
+width: 130px;
 display: inline-block;
-margin: 0px -2px;
+margin: 0px -2px 0px 0px;
 padding: 0px;
+border: solid 1px;
+border-collapse:collapse;
+}
+
+td.overview_node {
+text-align: center;
+border: solid 1px;
+border-collapse:collapse;
+}
+
+td.overview_node a {
+color: inherit;
 }
 
 div.statform th {
