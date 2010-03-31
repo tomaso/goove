@@ -141,7 +141,6 @@ def graph(request):
         c = colorsys.hsv_to_rgb(float(i)/len(fracs),1,1)
         colors.append( c )
     pie(fracs, labels=labels, colors=colors, autopct='%1.1f%%')
-#    legend(labels, 'best')
     response = HttpResponse(mimetype='image/png')
     fig.savefig(response)
     fig.clear()

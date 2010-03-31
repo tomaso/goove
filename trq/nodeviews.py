@@ -15,11 +15,26 @@ def nodes(request):
 	return render_to_response('trq/nodes.html', {})
 
 def nodes_overview(request):
-    nodes = Node.objects.all().order_by('subcluster__name', 'name')
+#    nodes = Node.objects.all().order_by('subcluster__name', 'name')
+    cols = 10
+    sc = SubCluster.objects.all()
+    sc_nodes = []
+    for s in sc:
+        sn = { 'subcluster': s, 'rows' : [] }
+        nodes = Node.objects.filter(subcluster=s)
+        i = 0
+        while i<len(nodes):
+            sn['rows'].append(nodes[i:i+cols])
+            i = i + cols
+        sn['rows'][-1].extend([None]*(i-len(nodes)))
+        sc_nodes.append(sn)
+
+    print sc_nodes
+
     nodestates = NodeState.objects.all().order_by('name')
     return render_to_response(
         'trq/nodes_overview.html', 
-        {'nodes':nodes, 'nodestates':nodestates}
+        {'sc_nodes':sc_nodes, 'nodestates':nodestates, 'colswidth':cols}
         )
     
 

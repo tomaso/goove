@@ -28,7 +28,7 @@ def queues_overview(request):
 
 def queue_detail(request, queuename):
     queue = Queue.objects.get(name=queuename)
-    running_jobs = Job.objects.filter(queue=queue)
+    running_jobs = Job.objects.filter(queue=queue, job_state__shortname="R")
     return render_to_response(
         'trq/queue_detail.html',
         {'queue':queue, 'running_jobs':running_jobs}
@@ -38,6 +38,8 @@ class QueuesStatsForm(forms.Form):
     """
     Form with options for queues statistics.
     """
+    graph_type = forms.ChoiceField(
+        label="Graph type", choices=(('bars','Aggregated bars'),('pie','Pie chart')))
     wfrom = forms.DateField(
         label="Start", widget=forms.DateInput(attrs={'class':'vDateField'}))
     wto = forms.DateField(
@@ -55,6 +57,7 @@ def queues_stats(request):
         stat_form.data['queue_'+q.name] = True
         stat_form.is_bound = True
     if request.POST:
+        stat_form.data['graph_type'] = request.POST['graph_type']
         stat_form.data['wfrom'] = request.POST['wfrom']
         stat_form.data['wto'] = request.POST['wto']
         stat_form.data['aggregation'] = request.POST['aggregation']
@@ -85,6 +88,46 @@ def nextmonth(indate):
         m = 1
         y = y + 1
     return date(y,m,1)
+
+
+
+def graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi):
+    fig = figure(1, figsize=(figsize,figsize))
+    ax = axes([0.1, 0.1, 0.8, 0.8])
+    labels = []
+    fracs = []
+    queue_vals = {}
+    others = 0
+    for q in queue_names:
+        if data_type == 'jobcount':
+            val = Job.objects.filter(queue__name=q, comp_time__gte=dfrom, comp_time__lte=dto).count()
+        elif data_type == 'cputime':
+            val = (Job.objects.filter(queue__name=q, comp_time__gte=dfrom, comp_time__lte=dto).aggregate(Sum("cput"))['cput__sum'] or 0)
+        elif data_type == 'walltime':
+            val = (Job.objects.filter(queue__name=q, comp_time__gte=dfrom, comp_time__lte=dto).aggregate(Sum("walltime"))['walltime__sum'] or 0)
+        queue_vals[q] = val
+
+    print queue_vals
+    totalval = sum([int(i) for i in queue_vals.values()])
+    for k,v in queue_vals.items():
+        if float(v)<(totalval/100):
+            others += float(v)
+        else:
+            labels.append(k)
+            fracs.append(v)
+    labels.append('others')
+    fracs.append(others)
+    colors = []
+    for i in range(0,len(fracs)):
+        c = colorsys.hsv_to_rgb(float(i)/len(fracs),1,1)
+        colors.append( c )
+    title("Completed jobs between %s and %s" % (dto, dfrom))
+    pie(fracs, labels=labels, colors=colors, autopct='%1.1f%%')
+    response = HttpResponse(mimetype='image/png')
+    fig.savefig(response, dpi=dpi)
+    fig.clear()
+    return response 
+
     
 
 # TODO: make two variants: full big pic
@@ -94,8 +137,20 @@ def graph(request):
     dfrom = date(int(sfrom[0]), int(sfrom[1]), int(sfrom[2]))
     sto = request.GET['wto'].split('-')
     dto = date(int(sto[0]), int(sto[1]), int(sto[2]))
+    graph_type = request.GET['graph_type']
     aggregation = request.GET['aggregation']
     data_type = request.GET['data_type']
+
+    queue_names = []
+    for key,val in request.GET.items():
+        if key.startswith('queue_'):
+            queue_names.append(key[len('queue_'):])
+    figsize = 10
+    dpi = 60
+
+    if graph_type=='pie':
+        return graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi)
+
     if aggregation=='day':
         N = (dto-dfrom).days+1
     elif aggregation=='week':
@@ -107,14 +162,7 @@ def graph(request):
         dto = nextmonth(dto)
         N = (dto.year-dfrom.year)*12+(dto.month-dfrom.month+1)
         
-    figsize = 10
-    dpi = 60
     xtick_width = 30
-
-    queue_names = []
-    for key,val in request.GET.items():
-        if key.startswith('queue_'):
-            queue_names.append(key[len('queue_'):])
 
     fig = figure(1, figsize=(figsize,figsize))
     ax = axes([0.1, 0.2, 0.7, 0.75])
@@ -153,9 +201,9 @@ def graph(request):
             if data_type == 'jobcount':
                 val = Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).count()
             elif data_type == 'cputime':
-                val = Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).aggregate(Sum("cput"))['cput__sum']
+                val = (Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).aggregate(Sum("cput"))['cput__sum'] or 0)
             elif data_type == 'walltime':
-                val = Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).aggregate(Sum("walltime"))['walltime__sum']
+                val = (Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).aggregate(Sum("walltime"))['walltime__sum'] or 0)
                 
             values.append(val)
 
