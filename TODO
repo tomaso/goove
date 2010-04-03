@@ -7,8 +7,8 @@ Data feeder:
 - node coeficients (walltime, cputime)
 - make the daemon stuff configurable (ini file)
 
-- ! Let the daemon run on elf !
-
+- Let the daemon run on elf
+- check consistency between accounting events and jobs
 
 Web interface:
 --------------
