@@ -386,12 +386,21 @@ def updatePBSNodes():
             except xml.parsers.expat.ExpatError:
                 log(LOG_ERROR, "Cannot parse line: %s" % (out))
         last_updatePBSNodes = now
-    
+
+def checkEventsRunningJobs():
+    """ Check that Running jobs are running according 
+    """
+    for rj in Job.objects.filter(job_state__shortname='R'):
+        log(LOG_INFO, "Checking job id: %d" % (rj.jobid))
+        aes = AccountingEvent.objects.filter(job=rj, type__in=['E','D','A']).count()
+        if aes!=0:
+            log(LOG_ERROR, "job id: %d, db id: %d is in Running state but accounting records are finished." % (rj.jobid, rj.id))
+
 
 def main():
     global loglevel
 
-    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE|-s FILE]|[-d DIR]"
+    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE|-s FILE]|[-d DIR] [-r]"
     version_string = "%%prog %s" % VERSION
 
     opt_parser = OptionParser(usage=usage_string, version=version_string)
@@ -404,6 +413,8 @@ def main():
         help="Text file with server settings (basically output of qmgr `print server` command)")
     opt_parser.add_option("-d", "--daemon", dest="daemondir", metavar="DIR", 
         help="Run in deamon node and read torque accounting logs from DIR")
+    opt_parser.add_option("-r", "--runevents", action="store_true", dest="runevents", default=False, 
+        help="Test if running jobs are not completed in Accounting events log")
 
     (options, args) = opt_parser.parse_args()
 
@@ -411,6 +422,10 @@ def main():
         opt_parser.error("Too many arguments")
 
     loglevel = options.loglevel
+
+    if (options.runevents):
+        checkEventsRunningJobs()    
+        return
 
     # invalid combinations
     if (options.nodexmlfile or options.jobxmlfile or options.eventfile or options.serverfile) and options.daemondir:
@@ -441,7 +456,6 @@ def main():
         runAsDaemon(options.daemondir)
         
 
-    
 if __name__=="__main__":
     main()
 
