@@ -258,14 +258,21 @@ def parseOneLogLine(line,lineno):
     if attrdir.has_key('resources_used.walltime'):
         h,m,s = attrdir['resources_used.walltime'].split(":")
         job.walltime = (int(h)*60+int(m))*60+int(s)
+
+    cs = JobState.objects.get(shortname='C')
     if event=='Q':
-        job.job_state = JobState.objects.get(shortname='Q')
+        new_state = JobState.objects.get(shortname='Q')
     elif event=='S' or event=='R' or event=='C' or event=='T':
-        job.job_state = JobState.objects.get(shortname='R')
+        new_state = JobState.objects.get(shortname='R')
     elif event=='E' or event=='D' or event=='A':
-        job.job_state = JobState.objects.get(shortname='C')
+        new_state = JobState.objects.get(shortname='C')
     else:
         log(LOG_ERROR, "Unknown event type in accounting log file: %s" % line)
+    if job.job_state != cs:
+        job.job_state = new_state
+    else:
+        log(LOG_INFO, "Job %d is already finished, not changing the state." % (job.jobid))
+
     if attrdir.has_key('queue'):
         queue,created = Queue.objects.get_or_create(name=attrdir['queue'])
         if created:
@@ -424,7 +431,7 @@ def main():
     loglevel = options.loglevel
 
     if (options.runevents):
-        checkEventsRunningJobs()    
+        checkEventsRunningJobs()
         return
 
     # invalid combinations
