@@ -196,6 +196,18 @@ def graph(request):
         todates.append(t)
 
     tempsum = [0]*N
+
+    from django.db import connection, transaction
+    cursor = connection.cursor()
+    cursor.execute("SELECT year(trq_job.comp_time),month(trq_job.comp_time),day(trq_job.comp_time),count(*),trq_queue.name FROM trq_job INNER JOIN trq_queue ON trq_job.queue_id=trq_queue.id WHERE comp_time>=%s  and comp_time<=%s GROUP BY TO_DAYS(trq_job.comp_time),trq_queue.name", [fromdates[0],todates[-1]])
+    rawresult = cursor.fetchall()
+    rr = {}
+    for y,m,d,v,q in rawresult:
+        if not rr.has_key(q):
+            rr[q]={}
+        rr[q]["%s-%02d-%02d" % (y,int(m),int(d))]=v
+        
+
     for q in queue_names:
         c = colorsys.hsv_to_rgb(float(i)/len(queue_names),1,1)
         i += 1
@@ -203,13 +215,17 @@ def graph(request):
         for j in range(0,N):
             f = fromdates[j]
             t = todates[j]
-            if data_type == 'jobcount':
-                val = Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).count()
-            elif data_type == 'cputime':
-                val = (Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).aggregate(Sum("cput"))['cput__sum'] or 0)
-            elif data_type == 'walltime':
-                val = (Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).aggregate(Sum("walltime"))['walltime__sum'] or 0)
-                
+            if (not rr.has_key(q)) or (not rr[q].has_key(f)):
+                val = 0
+            else:
+                val = rr[q][f]
+#            if data_type == 'jobcount':
+#                val = Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).count()
+#            elif data_type == 'cputime':
+#                val = (Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).aggregate(Sum("cput"))['cput__sum'] or 0)
+#            elif data_type == 'walltime':
+#                val = (Job.objects.filter(queue__name=q, comp_time__gte=f, comp_time__lte=t).aggregate(Sum("walltime"))['walltime__sum'] or 0)
+#                
             values.append(val)
 
         b = bar(ind, values, width, color=c, bottom=tempsum, linewidth=0)
