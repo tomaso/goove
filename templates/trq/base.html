@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" media="all" type="text/css" href="/site_media/css/layout.css" />
     <link rel="stylesheet" media="all" type="text/css" href="/site_media/css/main.css" />
     <link rel="stylesheet" media="all" type="text/css" href="/site_media/css/menu_style.css" />
     <link rel="stylesheet" media="all" type="text/css" href="/site_media/css/tooltip.css" />
@@ -15,6 +16,9 @@
 </head>
 
 <body>
+    <div class="page">
+    <div class="header">
+    </div>
     <div class="topmenu">
         {% block mainmenu %}
         <div class="menu bubplastic horizontal aqua">
@@ -37,6 +41,8 @@
     <div id="content">
         {% block content %}{% endblock %}
     </div>
+
+    </div> <!-- class page -->
 </body>
 </html>
 <!-- 

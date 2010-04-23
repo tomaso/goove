@@ -395,13 +395,16 @@ def updatePBSNodes():
         last_updatePBSNodes = now
 
 def checkEventsRunningJobs():
-    """ Check that Running jobs are running according 
+    """ Check that Running jobs are running according to the event log
     """
+    comp_state = JobState.objects.get(shortname='C')
     for rj in Job.objects.filter(job_state__shortname='R'):
         log(LOG_INFO, "Checking job id: %d" % (rj.jobid))
         aes = AccountingEvent.objects.filter(job=rj, type__in=['E','D','A']).count()
         if aes!=0:
-            log(LOG_ERROR, "job id: %d, db id: %d is in Running state but accounting records are finished." % (rj.jobid, rj.id))
+            log(LOG_ERROR, "job id: %d, db id: %d is in Running state but accounting records are finished - fixing it." % (rj.jobid, rj.id))
+            rj.job_state = comp_state
+            rj.save()
 
 
 def main():

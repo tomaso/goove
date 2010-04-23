@@ -1,0 +1,57 @@
+body {
+	margin: 0;
+	padding: 0;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	background-attachment: scroll;
+
+	font-family:Arial,Verdana,Geneva,Helvetica,sans-serif;
+	font-size:10pt;
+	font-size-adjust:none;
+	font-style:normal;
+	font-variant:normal;
+	font-weight:normal;
+	text-align:left;
+}
+
+div.header, div.page, div.topmenu, div.footer
+{
+	width: 900px;
+}
+
+div.header {
+	background: url(../images/logo.png);
+	background-repeat: no-repeat;
+/*	background-position: 170px 0;*/
+	height: 100px;
+	width: 900px;
+	margin:0px;
+
+}
+
+div.page {
+	margin: auto;
+}
+
+div.infopanel {
+        float: left;
+	margin-right:15px;
+	padding:5px;
+/*	position: fixed;*/
+	background: transparent url(../images/green_gradient.png) repeat-x scroll 0 0;
+}
+
+
+div.infopanel td.coldesc {
+	text-align: left;
+}
+
+div.infopanel td.colnumber {
+	text-align: right;
+}
+
+div.infopanel h3 {
+	border-bottom:1px dotted #AAAAAA;
+	font-size:15px;
+	font-weight:bold;
+}
