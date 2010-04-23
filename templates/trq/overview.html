@@ -4,17 +4,42 @@
 
 <div class="maintext">
 
-<p>
-Currently I have information about:
-</p>
-<ul>
+    <div class="infopanel">
 
+
+<h3>Database content</h3>
+<table>
 {% for item in info %}
-<li><a href="{{ item.url }}">{{ item.count }} {{ item.name }}(s)</a></li>
+<tr>
+<td class="coldesc"><a href="{{ item.url }}">{{ item.name }}s</a></td>
+<td class="colnumber">{{ item.count }}</a></td>
+</tr>
 {% endfor %}
-</ul>
 
-<p> and the history of jobs since {{ starttime }} till {{ endtime }} </p>
+</table>
+<a href="">more ...</a>
+        
+    </div>
+
+    <div class="infopanel">
+
+<h3>Queues</h3>
+<table class="overview">
+<tr><th>&nbsp;</th><th>Q</th><th>R</th><th>C (24h)</th><th>C (week)</th></tr>
+{% for q in queues  %}
+<tr>
+<td class="coldesc">{{ q.name }}</td>
+<td class="colnumber">{{ q.Q }}</a></td>
+<td class="colnumber">{{ q.R }}</a></td>
+<td class="colnumber">{{ q.C_in_last_24h }}</a></td>
+<td class="colnumber">{{ q.C_in_last_week }}</a></td>
+</tr>
+{% endfor %}
+
+</table>
+<a href="">more ...</a>
+        
+    </div>
 
 </div>
 
