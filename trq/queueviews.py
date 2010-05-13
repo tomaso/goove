@@ -125,7 +125,7 @@ def graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi):
     for i in range(0,len(fracs)):
         c = colorsys.hsv_to_rgb(float(i)/len(fracs),1,1)
         colors.append( c )
-    title("Completed jobs between %s and %s" % (dto, dfrom))
+    title("Completed jobs between %s and %s" % (dfrom, dto))
     pie(fracs, labels=labels, colors=colors, autopct='%1.1f%%')
     response = HttpResponse(mimetype='image/png')
     fig.savefig(response, dpi=dpi)

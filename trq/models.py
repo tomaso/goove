@@ -137,6 +137,10 @@ class Job(models.Model):
     @staticmethod
     def get_overview_url():
         return u'/trq/jobs/'
+
+# Kind of a view to Job table - so we can quickly obtain not finished jobs
+class RunningJob(models.Model):
+    mainjob = models.ForeignKey('Job', db_index=True)
     
 class TorqueServer(models.Model):
     name = models.CharField(verbose_name="torque server name", max_length=100)
