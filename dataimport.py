@@ -20,6 +20,7 @@ from goove.trq.models import NodeProperty
 from goove.trq.models import NodeState
 from goove.trq.models import SubCluster
 from goove.trq.models import Job
+from goove.trq.models import RunningJob
 from goove.trq.models import TorqueServer
 from goove.trq.models import User
 from goove.trq.models import JobState
@@ -35,6 +36,11 @@ LOG_WARNING=1
 LOG_INFO=2
 LOG_DEBUG=3
 JOBID_REGEX = re.compile("(\d+)\.(.*)")
+JobStateCache = {}
+QueueCache = {}
+NodeCache = {}
+TorqueServerCache = {}
+UserCache = {}
 
 VERSION="0.1"
 
@@ -56,6 +62,8 @@ def removeContent():
         n.delete()
     for sc in SubCluster.objects.all():
         sc.delete()
+    for rj in RunningJob.objects.all():
+        rj.delete()
     for j in Job.objects.all():
         j.delete()
 #   Job states are inserted initially from initial_data.json
@@ -65,6 +73,52 @@ def removeContent():
         q.delete()
     for u in User.objects.all():
         u.delete()
+
+#
+# Caching functions, we do not have one for Jobs as there are too many of them
+#
+
+def getJobState(state):
+    """
+    Get JobState db object (from cache or database). Valid states are: Q,R,C
+    """
+    global JobStateCache
+    if not JobStateCache.has_key(state):
+        JobStateCache[state] =  JobState.objects.get(shortname=state)
+    return JobStateCache[state]
+
+
+def getQueue(qname):
+    """
+    Return tuple (queue object, created)
+    """
+    global QueueCache
+    created = False
+    if not QueueCache.has_key(qname):
+        QueueCache[qname],created = Queue.objects.get_or_create(name=qname)
+    return (QueueCache[qname],created)
+
+def getNode(nname):
+    global NodeCache
+    created = False
+    if not NodeCache.has_key(nname):
+        NodeCache[nname],created = Node.objects.get_or_create(name=nname)
+    return (NodeCache[nname],created)
+
+def getTorqueServer(tsname):
+    global TorqueServerCache
+    created = False
+    if not TorqueServerCache.has_key(tsname):
+        TorqueServerCache[tsname],created = TorqueServer.objects.get_or_create(name=tsname)
+    return (TorqueServerCache[tsname],created)
+
+def getUser(uname):
+    global UserCache
+    created = False
+    if not UserCache.has_key(uname):
+        UserCache[uname],created = User.objects.get_or_create(name=uname)
+    return (UserCache[uname],created)
+
 
 def feedNodesXML(x):
     sc_regex = re.compile("(\D+)")
@@ -216,9 +270,11 @@ def feedJobsXML(x):
         updated_jobs.append(new_job)
     # check that not finished jobs are between recently updated jobs
     # otherwise it is kinda lost job
-    for j in Job.objects.exclude(job_state__shortname="C"):
+    ljs = JobState.objects.get(shortname="L")
+    for j in Job.objects.exclude(job_state__shortname="C").exclude(job_state__shortname="L"):
         if j not in updated_jobs:
-            log(LOG_WARNING, "job %d.%s is in database unfinished but not present in torque anymore" % (j.jobid, j.server.name))
+            log(LOG_WARNING, "job %d.%s is in database unfinished but not present in torque anymore - job is Lost" % (j.jobid, j.server.name))
+            
             
 
 def parseOneLogLine(line,lineno):
@@ -238,17 +294,18 @@ def parseOneLogLine(line,lineno):
             attrdir[key] = val
     except ValueError:
         log(LOG_WARNING, "skipping line with invalid attribues %d: '%s'" % (lineno,attrs))
-        
+
     jobid_name, server_name = JOBID_REGEX.search(fulljobid).groups()
-    server,created = TorqueServer.objects.get_or_create(name=server_name)
+    server,created = getTorqueServer(server_name)
     if created:
         log(LOG_INFO, "new server will be created: %s" % server_name)
+
     job,created = Job.objects.get_or_create(jobid=int(jobid_name), server=server)
     if created:
         log(LOG_INFO, "new job will be created: %s.%s" % (jobid_name, server_name))
 
     if attrdir.has_key('user'):
-        user,created = User.objects.get_or_create(name=attrdir['user'])
+        user,created = getUser(attrdir['user'])
         if created:
             log(LOG_INFO, "new user will be created: %s" % attrdir['user'])
         job.job_owner = user
@@ -259,22 +316,21 @@ def parseOneLogLine(line,lineno):
         h,m,s = attrdir['resources_used.walltime'].split(":")
         job.walltime = (int(h)*60+int(m))*60+int(s)
 
-    cs = JobState.objects.get(shortname='C')
     if event=='Q':
-        new_state = JobState.objects.get(shortname='Q')
+        new_state = getJobState('Q')
     elif event=='S' or event=='R' or event=='C' or event=='T':
-        new_state = JobState.objects.get(shortname='R')
+        new_state = getJobState('R')
     elif event=='E' or event=='D' or event=='A':
-        new_state = JobState.objects.get(shortname='C')
+        new_state = getJobState('C')
     else:
         log(LOG_ERROR, "Unknown event type in accounting log file: %s" % line)
-    if job.job_state != cs:
+    if job.job_state != getJobState('C'):
         job.job_state = new_state
     else:
         log(LOG_INFO, "Job %d is already finished, not changing the state." % (job.jobid))
 
     if attrdir.has_key('queue'):
-        queue,created = Queue.objects.get_or_create(name=attrdir['queue'])
+        queue,created = getQueue(attrdir['queue'])
         if created:
             log(LOG_INFO, "new queue will be created: %s" % attrdir['queue'])
         job.queue = queue
@@ -292,7 +348,7 @@ def parseOneLogLine(line,lineno):
         job.comp_time = datetime.datetime.fromtimestamp(int(attrdir['end']))
     if attrdir.has_key('exec_host'):
         exec_host_name = attrdir['exec_host'].split("/",1)[0]
-        exec_host,created = Node.objects.get_or_create(name=exec_host_name)
+        exec_host,created = getNode(exec_host_name)
         if created:
             log(LOG_INFO, "new node (exec_host) will be created: %s" % exec_host_name)
         job.exec_host = exec_host
@@ -304,8 +360,8 @@ def parseOneLogLine(line,lineno):
     ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
     if created:
         log(LOG_INFO, "new account event will be created: %s" % ae.timestamp)
-    ae.save()
-
+        ae.save()
+        
 
 def feedJobsLog(logfile):
     """ Insert data about jobs into database. The data are obtained from text log file
@@ -394,6 +450,20 @@ def updatePBSNodes():
                 log(LOG_ERROR, "Cannot parse line: %s" % (out))
         last_updatePBSNodes = now
 
+def updateRunningJobs():
+    """
+    Fill "cache" table with RunningJob - many queries are for running jobs, the table will speed those up
+    """
+    # TODO: this is an offline operation, we should update RunningJob online as accounting events arrive
+    #       but we should do that only when running as daemon, it is useless to do it when parsing old accounting events
+    for rj in RunningJob.objects.all():
+        rj.delete()
+    for rj in Job.objects.filter(job_state__shortname='R'):
+        newrj = RunningJob.objects.create(mainjob=rj)
+        log(LOG_INFO, "Creating RunningJob: %s for Job: %s" % (newrj, rj))
+        newrj.save()
+    
+
 def checkEventsRunningJobs():
     """ Check that Running jobs are running according to the event log
     """
@@ -425,6 +495,10 @@ def main():
         help="Run in deamon node and read torque accounting logs from DIR")
     opt_parser.add_option("-r", "--runevents", action="store_true", dest="runevents", default=False, 
         help="Test if running jobs are not completed in Accounting events log")
+    opt_parser.add_option("-u", "--updaterj", action="store_true", dest="updateRJ", default=False, 
+        help="Update cache table with running jobs from the main jobs table")
+    opt_parser.add_option("-x", "--removeall", action="store_true", dest="removeall", default=False, 
+        help="Remove everything from tables (debug option, use with care)")
 
     (options, args) = opt_parser.parse_args()
 
@@ -435,6 +509,14 @@ def main():
 
     if (options.runevents):
         checkEventsRunningJobs()
+        return
+
+    if (options.updateRJ):
+        updateRunningJobs()
+        return
+
+    if (options.removeall):
+        removeContent()
         return
 
     # invalid combinations

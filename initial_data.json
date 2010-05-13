@@ -64,17 +64,18 @@
     }
   },
   {
-    "model" : "trq.TorqueServer",
-    "pk": 1,
+    "model" : "trq.jobstate",
+    "pk": 9,
     "fields": {
-      "name": "torque.farm.particle.cz"
+      "name": "Lost",
+      "shortname": "L"
     }
   },
   {
     "model" : "trq.TorqueServer",
-    "pk": 2,
+    "pk": 1,
     "fields": {
-      "name": "ce2.egee.cesnet.cz"
+      "name": "torque.farm.particle.cz"
     }
   }
 ]

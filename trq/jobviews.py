@@ -6,6 +6,7 @@ from models import Job
 from models import Queue
 from models import User
 from models import TorqueServer
+from models import AccountingEvent
 from helpers import BooleanListForm
 from django import forms
 import colorsys
@@ -91,9 +92,10 @@ def jobs_overview(request, page=1):
 def job_detail(request, servername, jobid):
     server = TorqueServer.objects.get(name=servername)
     job = Job.objects.get(jobid=jobid, server=server)
+    accevents = AccountingEvent.objects.filter(job=job)
     return render_to_response(
         'trq/job_detail.html',
-        {'job':job}
+        {'job':job, 'accevents':accevents}
         )
 
 def stats(request):
