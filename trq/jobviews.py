@@ -5,6 +5,7 @@ from models import JobState
 from models import Job
 from models import Queue
 from models import User
+from models import Node
 from models import TorqueServer
 from models import AccountingEvent
 from helpers import BooleanListForm
@@ -14,6 +15,7 @@ import matplotlib
 matplotlib.use('Agg')
 from pylab import *
 import datetime
+from datetime import date
 
 
 class JobsStatsForm(forms.Form):
@@ -41,6 +43,7 @@ class WalltimeLow():
 
         return False
 
+
 wl = WalltimeLow()
 
 class SuspicionForm(forms.Form):
@@ -48,54 +51,160 @@ class SuspicionForm(forms.Form):
     Form to filter what kind of suspicious jobs user wants to see.
     """
     # this should be kinda dynamic
-    susp1 = forms.BooleanField(label = wl.label)
+    susp1 = forms.BooleanField(
+        label=wl.label,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={'title':wl.description})
+    )
 
-def jobs_overview(request, page=1):
-    state_list = []
-    if request.POST:
-        for key,val in request.POST.items():
-            prefix, attr = key.split("_", 1)
-            if prefix == "jobstates":
-                if 'on' in val:
-                    state_list.append(attr)
-        request.session['state_list'] = state_list
-    else:
-        state_list = request.session.get('state_list', [])
 
-    if len(state_list)==0:
-        object_list = Job.objects.all()
-    else:
-        object_list = Job.objects.filter(
-            job_state__name__in=state_list).distinct()
+class CompletedForm(forms.Form):
+    """
+    Form with filters on completed jobs.
+    """
+    # TODO: many more fields here
+    wfrom = forms.DateField(
+        label="Completed after", 
+        initial=date.fromordinal(date.today().toordinal()-1).isoformat(),
+        widget=forms.DateInput(attrs={'class':'vDateField'})
+    )
+    wto = forms.DateField(
+        label="Completed before", 
+        initial=date.today().isoformat(),
+        widget=forms.DateInput(attrs={'class':'vDateField'})
+    )
+    mineff = forms.IntegerField(
+        label="Minimum Efficiency",
+        initial=0
+    )
+    maxeff = forms.IntegerField(
+        label="Maximum Efficiency",
+        initial=100
+    )
+    minwalltime = forms.IntegerField(
+        label="Minimum Walltime", 
+        initial=0,
+        widget=forms.TextInput(attrs={'title':'Minimum walltime in seconds'})
+    )
+    mincput = forms.IntegerField(
+        label="Minimum CPUTime",
+        initial=0,
+        widget=forms.TextInput(attrs={'title':'Minimum CPU time in seconds'})
+    )
+    queue = forms.ChoiceField(
+        label="Queue", 
+        initial=0,
+        choices=[ (0,'All') ]+[ (q.pk,q.name) for q in Queue.objects.all() ]
+    )
+    user = forms.ChoiceField(
+        label="User",
+        initial=0,
+        choices=[ (0,'All') ]+[ (u.pk,u.name) for u in User.objects.all() ]
+    )
+    node = forms.ChoiceField(
+        label="Node",
+        initial=0,
+        choices=[ (0,'All') ]+[ (n.pk,n.name) for n in Node.objects.all() ]
+    )
+    page = forms.IntegerField(
+        initial=1,
+        widget=forms.HiddenInput()
+    )
+
+class JobSelectForm(forms.Form):
+    server = forms.ChoiceField(
+        label="Server",
+        initial=TorqueServer.objects.all()[0],
+        choices=[ (ts.pk,ts.name) for ts in TorqueServer.objects.all() ]
+    )
+    jobid = forms.IntegerField(
+        label="Job ID",
+        initial=1
+    )
+    
+
+
+def jobs_completed_listing(request):
+    comp_form = CompletedForm()
+    if not request.POST:
+        return render_to_response(
+            'trq/jobs_completed_listing.html',
+            {'jobs_page':[], 'paginator':None,
+            'comp_form':comp_form}
+        )
+
+    comp_form.data['wfrom'] = request.POST['wfrom']
+    comp_form.data['wto'] = request.POST['wto']
+    comp_form.data['mineff'] = request.POST['mineff']
+    comp_form.data['maxeff'] = request.POST['maxeff']
+    comp_form.data['minwalltime'] = request.POST['minwalltime']
+    comp_form.data['mincput'] = request.POST['mincput']
+    comp_form.data['queue'] = request.POST['queue']
+    comp_form.data['user'] = request.POST['user']
+    comp_form.data['node'] = request.POST['node']
+    comp_form.data['page'] = request.POST['page']
+    if request.POST['submit']=='>>':
+        comp_form.data['page'] = int(comp_form.data['page']) + 1
+    elif request.POST['submit']=='<<':
+        comp_form.data['page'] = int(comp_form.data['page']) - 1
+
+    comp_form.is_bound = True
+
+    args = { 
+        'job_state__shortname':'C', 
+        'comp_time__range':(comp_form.data['wfrom'], comp_form.data['wto']), 
+        'efficiency__range':(comp_form.data['mineff'], comp_form.data['maxeff']),
+        'walltime__gte':comp_form.data['minwalltime'],
+        'cput__gte':comp_form.data['mincput']
+    }
+    if comp_form.data['queue'] != '0':
+        args['queue__pk'] = comp_form.data['queue']
+
+    if comp_form.data['user'] != '0':
+        args['job_owner__pk'] = comp_form.data['user']
+
+    if comp_form.data['node'] != '0':
+        args['exec_host__pk'] = comp_form.data['node']
+
+    object_list = Job.objects.filter(**args)
         
-    paginator = Paginator(object_list, 20)
-        
-    if int(page)>paginator.num_pages:
+    page = int(comp_form.data['page'])
+    paginator = Paginator(object_list, 50)
+    if page>paginator.num_pages:
         page=1
     jobs_page = paginator.page(page)
 
-    states = [x.name for x in JobState.objects.all()]
-    states_form = BooleanListForm('jobstates_')
-    states_form.setFields(states)
-    if request.POST:
-        states_form.setData(request.POST, useprefix=False)
-    else:
-        states_form.setData( dict(zip(state_list, len(state_list)*[True])) )
-
     return render_to_response(
-        'trq/jobs_overview.html',
+        'trq/jobs_completed_listing.html',
         {'jobs_page':jobs_page, 'paginator':paginator,
-        'states_form':states_form}
+        'comp_form':comp_form}
         )
 
 
-def job_detail(request, servername, jobid):
-    server = TorqueServer.objects.get(name=servername)
-    job = Job.objects.get(jobid=jobid, server=server)
+def job_detail(request, servername=None, jobid=None):
+    select_form = JobSelectForm()
+    if not request.POST and jobid==None:
+        return render_to_response(
+            'trq/job_detail.html',
+            {'select_form':select_form, 'job':None, 'accevents':[]}
+        )
+
+    if request.POST:
+        server = TorqueServer.objects.get(pk=request.POST['server'])
+        job = Job.objects.get(jobid=request.POST['jobid'], server=server)
+        select_form.data['server'] = request.POST['server']
+        select_form.data['jobid'] = request.POST['jobid']
+    else:
+        server = TorqueServer.objects.get(name=servername)
+        job = Job.objects.get(jobid=jobid, server=server)
+        select_form.data['server'] = server.pk
+        select_form.data['jobid'] = jobid
+    select_form.is_bound = True
+
     accevents = AccountingEvent.objects.filter(job=job)
     return render_to_response(
         'trq/job_detail.html',
-        {'job':job, 'accevents':accevents}
+        {'select_form':select_form, 'job':job, 'accevents':accevents}
         )
 
 def stats(request):

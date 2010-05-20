@@ -2,19 +2,22 @@
 
 {% block content %}
 
+<form action="" method="post">
+
 <div class="leftmenu">
 
-    <form action="" method="post">
-        <h3>Suspicion type</h3>
+        <h3>Job States</h3>
         <table>
-        {% for field in suspicion_form %}
+        {% for field in comp_form.visible_fields %}
         <tr>
             <th>{{ field.label_tag }}</th><td>{{ field }}</td>
         </tr>
         {% endfor %}
         </table>
-        <input type="submit" value="Submit" />
-    </form>
+        {% for field in comp_form.hidden_fields %}
+        {{ field }}
+        {% endfor %}
+        <input type="submit" value="Submit" name="submit" />
 
 </div>
 
@@ -25,28 +28,46 @@
             <tr>
                 <th>JobId</th>
                 <th>Owner</th>
+                <th>Queue</th>
                 <th>CpuTime</th>
                 <th>WallTime</th>
-                <th>Run secs</th>
+                <th>Efficiency</th>
                 <th>State</th>
+                <th>Completion time</th>
                 <th>Host</th>
             </tr>
         </thead>
         <tbody>
-            {% for object in suspicious_jobs %}
+            {% for object in jobs_page.object_list %}
             <tr>
                 <td><a href="{{ object.get_absolute_url }}">{{ object.jobid }}</a></td>
                 <td><a href="{{ object.job_owner.get_absolute_url }}">{{ object.job_owner }}</a></td>
+                <td><a href="{{ object.queue.get_absolute_url }}">{{ object.queue }}</a></td>
                 <td>{{ object.cput }}</td>
                 <td>{{ object.walltime }}</td>
-                <td>{{ object.running_seconds }}</td>
+                <td>{{ object.efficiency }}</td>
                 <td>{{ object.job_state.shortname }}</td>
+                <td>{{ object.comp_time }}</td>
                 <td><a href="{{ object.exec_host.get_absolute_url }}">{{ object.exec_host }}</a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    {% if paginator %}
+        <span class="paging">
+        Page: 
+        {% if jobs_page.has_previous %}
+        <input type="submit" value="<<" name="submit" />
+        {% endif %}
+        {{ jobs_page.number }} of {{ paginator.num_pages }}
+        {% if jobs_page.has_next %}
+        <input type="submit" value=">>" name="submit" />
+        {% endif %}
+        </span>
+    {% endif %}
 </div>
+
+</form>
 
 {% endblock content %}
 
