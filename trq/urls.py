@@ -8,8 +8,9 @@ urlpatterns = patterns('',
 
     (r'^queues/graph/$', 'goove.trq.queueviews.graph'),
     (r'^queues/stats/$', 'goove.trq.queueviews.queues_stats'),
-    (r'^queues/(?P<queuename>.*)/$', 'goove.trq.queueviews.queue_detail'),
-    (r'^queues/$', 'goove.trq.queueviews.queues_overview'),
+    (r'^queues/detail/(?P<queuename>.*)/$', 'goove.trq.queueviews.queue_detail'),
+    (r'^queues/detail/$', 'goove.trq.queueviews.queue_detail'),
+    (r'^queues/table/$', 'goove.trq.queueviews.queues_overview'),
 
     (r'^users/(?P<username>.*)/$', 'goove.trq.userviews.user_detail'),
     (r'^users/$', 'goove.trq.userviews.users_overview'),

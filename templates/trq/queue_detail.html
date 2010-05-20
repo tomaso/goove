@@ -2,7 +2,28 @@
 
 {% block content %}
 
+<div class="leftmenu">
+
+        <form action="" method="post">
+
+        <h3>Queue selection</h3>
+        <table>
+        {% for field in queue_form.visible_fields %}
+        <tr>
+            <th>{{ field.label_tag }}</th><td>{{ field }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+        <input type="submit" value="Submit" name="submit" />
+
+        </form>
+</div>
+
+
 <div class="maintext">
+
+    {% if queue %}
+
     <h2 style="background-color: blue; color: white; text-shadow: black 0.1em 0.1em 0.1em">Queue: {{ queue.name }}</h2>
     <h3>Currently running jobs</h3>
     <table class="nodejoblist">
@@ -23,6 +44,8 @@
         </tr>
     {% endfor %}
     </table>
+
+    {% endif %}
 
 </div>
 

@@ -7,6 +7,7 @@ from models import NodeState
 from models import Job
 from helpers import BooleanListForm
 from django import forms
+from datetime import date
 
 ################
 # Form classes #
@@ -111,28 +112,29 @@ def nodes_listing(request):
 
 
 def node_detail(request, nodename=None):
-    # TODO: tady chci jednoduchou stranku s formularem na vlozeni (pripadne
-    # vybrani ze seznamu) jmena hledaneho uzlu
-    # zaroven pokud nodename neni prazdny, tak tato stranka zobrazi detail uzlu:
-    # - prave bezici ulohy (k nim frontu, uzivatele, stav, start, dobu behu)
-    # - dokoncene ulohy z posledni den, tyden, mesic dle front
+    # TODO:     
+    # co dalsiho by u uzlu mohlo byt?
     # formular na vyber je tradicne vlevo a mohl by obsahovat zatrhavaci 
     # cudliky, kde se voli, jake detaily o uzlu clovek chce videt
-    # bylo by taky fajn, mit moznost definovat obecne linky do jinych systemu
+    # bylo by fajn, mit moznost definovat obecne linky do jinych systemu
 
     node_form = NodeSelectForm()
+    if not request.POST:
+        return render_to_response('trq/node_detail.html', 
+            {'node':None, 'node_form':node_form})
+        
     if nodename:
         n = Node.objects.get(name=nodename)
-        running_jobs = Job.objects.filter(exec_host=n, job_state__shortname="R")
-#    completed_jobs = Job.objects.filter(exec_host=n, job_state__shortname="C")
-        completed_jobs = []
-    else:
-        n = None
-        running_jobs = []
-        completed_jobs = []
-    
+    if request.POST['node']:
+        n = Node.objects.get(pk=request.POST['node'])
+    node_form.data['node'] = n.pk
+    node_form.is_bound = True
+
+    running_jobs = Job.objects.filter(exec_host=n, job_state__shortname="R")
+
     return render_to_response('trq/node_detail.html', 
-        {'node':n, 'running_jobs': running_jobs, 
-        'completed_jobs': completed_jobs, 'node_form':node_form})
+        {'node':n, 'running_jobs': running_jobs, 'node_form':node_form
+        }
+    )
 
 # vi:ts=4:sw=4:expandtab
