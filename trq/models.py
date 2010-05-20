@@ -197,7 +197,7 @@ class Queue(models.Model):
     	return self.name
 
     def get_absolute_url(self):
-        return u"/trq/queues/%s/" % (self.name)
+        return u"/trq/queues/detail/%s/" % (self.name)
 
     def get_queue_numbers(self):
         job_states = JobState.objects.all().order_by('name')

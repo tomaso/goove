@@ -17,21 +17,43 @@ import numpy as np
 import colorsys
 from django.db.models import Sum
 
+class QueueSelectForm(forms.Form):
+    queue = forms.ChoiceField(
+        label="Queue",
+        initial=Queue.objects.all()[0],
+        choices=[ (q.pk,q.name) for q in Queue.objects.all() ]
+    )
+
 def queues_overview(request):
     queues = Queue.objects.all()
     job_states = JobState.objects.all()
     return render_to_response(
         'trq/queues_overview.html',
-        {'queues_list':queues, 'job_states':job_states}
-        )
+        {'queues_list':queues, 
+        'job_states':job_states
+        }
+    )
 
 
-def queue_detail(request, queuename):
-    queue = Queue.objects.get(name=queuename)
+def queue_detail(request, queuename=None):
+    queue_form = QueueSelectForm()
+    if not request.POST:
+        return render_to_response(
+            'trq/queue_detail.html',
+            {'queue':None, 'queue_form':queue_form}
+            )
+        
+    if queuename:
+        queue = Queue.objects.get(name=queuename)
+    if request.POST['queue']:
+        queue = Queue.objects.get(pk=request.POST['queue'])
+    queue_form.data['queue'] = queue.pk
+    queue_form.is_bound = True
+
     running_jobs = Job.objects.filter(queue=queue, job_state__shortname="R")
     return render_to_response(
         'trq/queue_detail.html',
-        {'queue':queue, 'running_jobs':running_jobs}
+        {'queue':queue, 'running_jobs':running_jobs, 'queue_form':queue_form}
         )
 
 class QueuesStatsForm(forms.Form):

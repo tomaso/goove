@@ -20,6 +20,9 @@
 </div>
 
 <div class="maintext">
+
+    {% if node %}
+
     <div class="infopanel">
     <h3>Currently running jobs</h3>
     <table class="nodejoblist">
@@ -45,7 +48,7 @@
     </div>
 
     <div class="infopanel">
-    <h3>Jobs completed last hour</h3>
+    <h3>Jobs completed during last hour</h3>
     <table class="nodejoblist">
         <tr>
             <th>JobId</th>
@@ -53,7 +56,6 @@
             <th>CpuTime</th>
             <th>WallTime</th>
             <th>Queue</th>
-            <th>Status</th>
         </tr>
     {% for job in completed_jobs %}
         <tr>
@@ -62,35 +64,12 @@
             <td>{{ job.cput }}</td>
             <td>{{ job.walltime }}</td>
             <td>{{ job.queue }}</td>
-            <td>{{ job.job_state.shortname }}</td>
         </tr>
     {% endfor %}
     </table>
     </div>
 
-    <div class="infopanel">
-    <h3>Jobs completed last 24 hours</h3>
-    <table class="nodejoblist">
-        <tr>
-            <th>JobId</th>
-            <th>Owner</th>
-            <th>CpuTime</th>
-            <th>WallTime</th>
-            <th>Queue</th>
-            <th>Status</th>
-        </tr>
-    {% for job in completed_jobs %}
-        <tr>
-            <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
-            <td><a href="{{ job.job_owner.absolute_url }}">{{ job.job_owner }}</a></td>
-            <td>{{ job.cput }}</td>
-            <td>{{ job.walltime }}</td>
-            <td>{{ job.queue }}</td>
-            <td>{{ job.job_state.shortname }}</td>
-        </tr>
-    {% endfor %}
-    </table>
-    </div>
+    {% endif %}
 
 </div>
 
