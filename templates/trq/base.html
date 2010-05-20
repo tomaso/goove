@@ -17,25 +17,35 @@
 
 <body>
     <div class="page">
-    <div class="header">
-    </div>
     <div class="topmenu">
         {% block mainmenu %}
-        <div class="menu bubplastic horizontal aqua">
-            <ul>
-                <li class="highlight"><span class="menu_r"><a href="/trq/"><span class="menu_ar">Overview</span></a></span></li>
-                <li><span class="menu_r"><a href="/trq/nodes/"><span class="menu_ar">Nodes</span></a></span></li>
-                <li><span class="menu_r"><a href="/trq/queues/"><span class="menu_ar">Queues</span></a></span></li>
-                <li><span class="menu_r"><a href="/trq/users/"><span class="menu_ar">Users</span></a></span></li>
-                <li><span class="menu_r"><a href="/trq/jobs/"><span class="menu_ar">Jobs</span></a></span></li>
-            </ul>
-            <br class="clearit" />
-        </div>
+
+<ul class="pureCssMenu pureCssMenum">
+	<li class="pureCssMenui"><a class="pureCssMenui" href="/trq/">Home</a></li>
+
+	<li class="pureCssMenui"><a class="pureCssMenui" href="#"><span>Nodes</span></a>
+	<ul class="pureCssMenum">
+		<li class="pureCssMenui"><a class="pureCssMenui" href="/trq/nodes/table/">Overview table</a></li>
+		<li class="pureCssMenui"><a class="pureCssMenui" href="/trq/nodes/listing/">Listing</a></li>
+		<li class="pureCssMenui"><a class="pureCssMenui" href="/trq/nodes/detail/">Detail</a></li>
+    </ul>
+	</li>
+
+	<li class="pureCssMenui"><a class="pureCssMenui" href="/trq/queues/">Queues</a></li>
+
+	<li class="pureCssMenui"><a class="pureCssMenui" href="/trq/users/">Users</a></li>
+
+	<li class="pureCssMenui"><a class="pureCssMenui" href="#"><span>Jobs</span></a>
+	<ul class="pureCssMenum">
+		<li class="pureCssMenui"><a class="pureCssMenui" href="/trq/jobs/completed_listing/">Completed listing</a></li>
+		<li class="pureCssMenui"><a class="pureCssMenui" href="/trq/jobs/suspicious/">Suspicious</a></li>
+		<li class="pureCssMenui"><a class="pureCssMenui" href="/trq/jobs/detail/">Detail</a></li>
+    </ul>
+	</li>
+</ul>
+
         {% endblock mainmenu %}
 
-        <div>
-            {% block submenu %}{% endblock %}
-        </div>
     </div>
 
     <div id="content">

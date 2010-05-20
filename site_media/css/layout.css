@@ -14,19 +14,9 @@ body {
 	text-align:left;
 }
 
-div.header, div.page, div.topmenu, div.footer
+div.page, div.topmenu, div.footer
 {
-	width: 900px;
-}
-
-div.header {
-	background: url(../images/logo.png);
-	background-repeat: no-repeat;
-/*	background-position: 170px 0;*/
-	height: 100px;
-	width: 900px;
-	margin:0px;
-
+	width: 1000px;
 }
 
 div.page {
@@ -34,10 +24,10 @@ div.page {
 }
 
 div.infopanel {
-        float: left;
+	float: left;
+	block: inline;
 	margin-right:15px;
 	padding:5px;
-/*	position: fixed;*/
 	background: transparent url(../images/green_gradient.png) repeat-x scroll 0 0;
 }
 

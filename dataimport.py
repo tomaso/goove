@@ -29,6 +29,7 @@ from goove.trq.models import AccountingEvent
 
 from xml.dom.minidom import parse, parseString
 from optparse import OptionParser
+from xml.parsers.expat import ExpatError
 
 
 LOG_ERROR=0
@@ -80,7 +81,7 @@ def removeContent():
 
 def getJobState(state):
     """
-    Get JobState db object (from cache or database). Valid states are: Q,R,C
+    Get JobState db object (from cache or database). Valid states are: Q,R,C,L
     """
     global JobStateCache
     if not JobStateCache.has_key(state):
@@ -183,7 +184,7 @@ def getTimeOrZero(xmlnode, attrname):
 
 def feedJobsXML(x):
     """
-    Parse xml produces by pbsnodes -[a]x and feed the data into django
+    Parse xml produced with qstat -fx and feed the data into django
     data structures.
     """
     JOBID_REGEX = re.compile("(\d+)\.(.*)")
@@ -224,6 +225,10 @@ def feedJobsXML(x):
             new_walltime_string = restag.getElementsByTagName("walltime")[0].childNodes[0].nodeValue
             h,m,s = new_walltime_string.split(":")
             new_job.walltime = (int(h)*60+int(m))*60+int(s)
+            if new_job.walltime!=0:
+                new_job.efficiency = 100*new_job.cput/new_job.walltime
+            else:
+                new_job.efficiency = 0
 
         # job state
         new_job_state_abbrev = i.getElementsByTagName("job_state")[0].childNodes[0].nodeValue
@@ -270,10 +275,12 @@ def feedJobsXML(x):
         updated_jobs.append(new_job)
     # check that not finished jobs are between recently updated jobs
     # otherwise it is kinda lost job
-    ljs = JobState.objects.get(shortname="L")
+    ljs = getJobState('L')
     for j in Job.objects.exclude(job_state__shortname="C").exclude(job_state__shortname="L"):
         if j not in updated_jobs:
             log(LOG_WARNING, "job %d.%s is in database unfinished but not present in torque anymore - job is Lost" % (j.jobid, j.server.name))
+            j.job_state = getJobState('L')
+            j.save()
             
             
 
@@ -315,6 +322,11 @@ def parseOneLogLine(line,lineno):
     if attrdir.has_key('resources_used.walltime'):
         h,m,s = attrdir['resources_used.walltime'].split(":")
         job.walltime = (int(h)*60+int(m))*60+int(s)
+    if attrdir.has_key('resources_used.cput') and attrdir.has_key('resources_used.walltime'):
+        if job.walltime!=0:
+            job.efficiency = 100*job.cput/job.walltime
+        else:
+            job.efficiency = 0
 
     if event=='Q':
         new_state = getJobState('Q')
@@ -325,9 +337,20 @@ def parseOneLogLine(line,lineno):
     else:
         log(LOG_ERROR, "Unknown event type in accounting log file: %s" % line)
     if job.job_state != getJobState('C'):
+        if new_state == getJobState('R') and job.job_state != getJobState('R'):
+            RunningJob.objects.get_or_create(mainjob=job)
+        elif new_state != getJobState('R') and job.job_state == getJobState('R'):
+            try:
+                rj = RunningJob.objects.get(mainjob=job)
+                rj.delete()
+            except RunningJob.DoesNotExist:
+                pass
+
         job.job_state = new_state
     else:
         log(LOG_INFO, "Job %d is already finished, not changing the state." % (job.jobid))
+    # running job cache update
+        
 
     if attrdir.has_key('queue'):
         queue,created = getQueue(attrdir['queue'])
@@ -444,9 +467,20 @@ def updatePBSNodes():
             p = subprocess.Popen(["pbsnodes", "-ax", "-s", ts.name], stdout=subprocess.PIPE)
             (out,err) = p.communicate()
             try:
+                nodesxml = parseString(out)
+                feedNodesXML(nodesxml)
+            except ExpatError:
+                log(LOG_ERROR, "Cannot parse line: %s" % (out))
+            
+            p = subprocess.Popen(["qstat", "-fx", "@%s" % ts.name], stdout=subprocess.PIPE)
+            (out,err) = p.communicate()
+            try:
                 jobsxml = parseString(out)
-                feedNodesXML(jobsxml)
-            except xml.parsers.expat.ExpatError:
+                starttime = time.time()
+                feedJobsXML(jobsxml)
+                endtime = time.time()
+                log(LOG_INFO, "feedJobsXML() took %f seconds" % (endtime-starttime))
+            except ExpatError:
                 log(LOG_ERROR, "Cannot parse line: %s" % (out))
         last_updatePBSNodes = now
 
@@ -457,7 +491,7 @@ def updateRunningJobs():
     # TODO: this is an offline operation, we should update RunningJob online as accounting events arrive
     #       but we should do that only when running as daemon, it is useless to do it when parsing old accounting events
     for rj in RunningJob.objects.all():
-        rj.delete()
+        rj.jobdelete()
     for rj in Job.objects.filter(job_state__shortname='R'):
         newrj = RunningJob.objects.create(mainjob=rj)
         log(LOG_INFO, "Creating RunningJob: %s for Job: %s" % (newrj, rj))
@@ -480,13 +514,16 @@ def checkEventsRunningJobs():
 def main():
     global loglevel
 
-    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE|-s FILE]|[-d DIR] [-r]"
+    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE|-s FILE]|[-d DIR] [-r] [-m FILE]"
     version_string = "%%prog %s" % VERSION
 
     opt_parser = OptionParser(usage=usage_string, version=version_string)
-    opt_parser.add_option("-l", "--loglevel", type="int", dest="loglevel", help="Log level (0-3). Default is 0, which means only errors", default=0)
-    opt_parser.add_option("-n", "--nodexml", action="append", dest="nodexmlfile", metavar="FILE", help="XML file with node data")
-    opt_parser.add_option("-j", "--jobxml", action="append", dest="jobxmlfile", metavar="FILE", help="XML file with job data")
+    opt_parser.add_option("-l", "--loglevel", type="int", dest="loglevel", default=0,
+        help="Log level (0-3). Default is 0, which means only errors")
+    opt_parser.add_option("-n", "--nodexml", action="append", dest="nodexmlfile", metavar="FILE", 
+        help="XML file with node data")
+    opt_parser.add_option("-j", "--jobxml", action="append", dest="jobxmlfile", metavar="FILE", 
+        help="XML file with job data")
     opt_parser.add_option("-e", "--eventfile", action="append", dest="eventfile", metavar="FILE", 
         help="Text file with event data in accunting log format")
     opt_parser.add_option("-s", "--serverfile", action="append", dest="serverfile", metavar="FILE", 
@@ -499,6 +536,8 @@ def main():
         help="Update cache table with running jobs from the main jobs table")
     opt_parser.add_option("-x", "--removeall", action="store_true", dest="removeall", default=False, 
         help="Remove everything from tables (debug option, use with care)")
+    opt_parser.add_option("-m", "--mergenodes", action="append", dest="mergenodesfile", metavar="FILE",
+        help="Merge nodes according to file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode")
 
     (options, args) = opt_parser.parse_args()
 

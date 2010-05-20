@@ -8,13 +8,28 @@ from models import Job
 from helpers import BooleanListForm
 from django import forms
 
+################
+# Form classes #
+################
+
+class NodeSelectForm(forms.Form):
+    node = forms.ChoiceField(
+        label="Node",
+        initial=Node.objects.all()[0],
+        choices=[ (n.pk,n.name) for n in Node.objects.all() ]
+    )
+
 def index(request):
     return render_to_response('trq/index.html', {})
 
 def nodes(request):
 	return render_to_response('trq/nodes.html', {})
 
-def nodes_overview(request):
+def nodes_table(request):
+    # Tabulka vsech uzlu s graficky naznacenim v jakem stavu jsou
+    # z pohledu torque a jak moc jsou zaplnene joby.
+    # Pri najeti mysi by se mel ukazat detail uzlu - nejlepe
+    # v leve "formularove" - seznam bezicich jobu na uzlu (max s frontou).
 #    nodes = Node.objects.all().order_by('subcluster__name', 'name')
     cols = 10
     sc = SubCluster.objects.all()
@@ -33,12 +48,14 @@ def nodes_overview(request):
 
     nodestates = NodeState.objects.all().order_by('name')
     return render_to_response(
-        'trq/nodes_overview.html', 
+        'trq/nodes_table.html', 
         {'sc_nodes':sc_nodes, 'nodestates':nodestates, 'colswidth':cols}
         )
     
 
-def nodes_table_list(request):
+def nodes_listing(request):
+    # Podrobny seznam uzlu s formularem na vyber podmnozin podle
+    # torque vlastnosti.
     if request.POST:
         sc_list = []
         prop_list = []
@@ -87,19 +104,35 @@ def nodes_table_list(request):
         states_form.setData( dict(zip(states, len(states)*[True])) )
 
     return render_to_response(
-        'trq/nodes_table_list.html', 
+        'trq/nodes_listing.html', 
         {'nodes_list':nodes, 'subcluster_form':subcluster_form, 
         'properties_form':properties_form, 'states_form':states_form}
         )
 
 
-def node_detail(request, nodename):
-    n = Node.objects.get(name=nodename)
-    running_jobs = Job.objects.filter(exec_host=n, job_state__shortname="R")
+def node_detail(request, nodename=None):
+    # TODO: tady chci jednoduchou stranku s formularem na vlozeni (pripadne
+    # vybrani ze seznamu) jmena hledaneho uzlu
+    # zaroven pokud nodename neni prazdny, tak tato stranka zobrazi detail uzlu:
+    # - prave bezici ulohy (k nim frontu, uzivatele, stav, start, dobu behu)
+    # - dokoncene ulohy z posledni den, tyden, mesic dle front
+    # formular na vyber je tradicne vlevo a mohl by obsahovat zatrhavaci 
+    # cudliky, kde se voli, jake detaily o uzlu clovek chce videt
+    # bylo by taky fajn, mit moznost definovat obecne linky do jinych systemu
+
+    node_form = NodeSelectForm()
+    if nodename:
+        n = Node.objects.get(name=nodename)
+        running_jobs = Job.objects.filter(exec_host=n, job_state__shortname="R")
 #    completed_jobs = Job.objects.filter(exec_host=n, job_state__shortname="C")
-    completed_jobs = []
+        completed_jobs = []
+    else:
+        n = None
+        running_jobs = []
+        completed_jobs = []
     
     return render_to_response('trq/node_detail.html', 
-        {'node':n, 'running_jobs': running_jobs, 'completed_jobs': completed_jobs})
+        {'node':n, 'running_jobs': running_jobs, 
+        'completed_jobs': completed_jobs, 'node_form':node_form})
 
 # vi:ts=4:sw=4:expandtab

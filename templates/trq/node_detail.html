@@ -1,10 +1,27 @@
-{% extends "trq/nodes_base.html" %}
+{% extends "trq/base.html" %}
 
 {% block content %}
 
+<div class="leftmenu">
+
+        <form action="" method="post">
+
+        <h3>Node selection</h3>
+        <table>
+        {% for field in node_form.visible_fields %}
+        <tr>
+            <th>{{ field.label_tag }}</th><td>{{ field }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+        <input type="submit" value="Submit" name="submit" />
+
+        </form>
+</div>
+
 <div class="maintext">
-    <h2 style="background-color: cyan; color: white; text-shadow: black 0.1em 0.1em 0.1em">{{ node.name }}</h2>
-    <h3>Currently associated jobs</h3>
+    <div class="infopanel">
+    <h3>Currently running jobs</h3>
     <table class="nodejoblist">
         <tr>
             <th>JobId</th>
@@ -25,7 +42,10 @@
         </tr>
     {% endfor %}
     </table>
-    <h3>Completed jobs on this node</h3>
+    </div>
+
+    <div class="infopanel">
+    <h3>Jobs completed last hour</h3>
     <table class="nodejoblist">
         <tr>
             <th>JobId</th>
@@ -46,7 +66,31 @@
         </tr>
     {% endfor %}
     </table>
-    
+    </div>
+
+    <div class="infopanel">
+    <h3>Jobs completed last 24 hours</h3>
+    <table class="nodejoblist">
+        <tr>
+            <th>JobId</th>
+            <th>Owner</th>
+            <th>CpuTime</th>
+            <th>WallTime</th>
+            <th>Queue</th>
+            <th>Status</th>
+        </tr>
+    {% for job in completed_jobs %}
+        <tr>
+            <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
+            <td><a href="{{ job.job_owner.absolute_url }}">{{ job.job_owner }}</a></td>
+            <td>{{ job.cput }}</td>
+            <td>{{ job.walltime }}</td>
+            <td>{{ job.queue }}</td>
+            <td>{{ job.job_state.shortname }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+    </div>
 
 </div>
 

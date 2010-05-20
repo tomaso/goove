@@ -59,7 +59,7 @@ class NodeProperty(models.Model):
 
     @staticmethod
     def get_overview_name():
-        return u'node property'
+        return u'node propertie'
 
     @staticmethod
     def get_overview_url():
@@ -93,6 +93,7 @@ class Job(models.Model):
     job_owner = models.ForeignKey('User', null=True)
     cput = models.IntegerField('CPU time in seconds', null=True)
     walltime = models.IntegerField('Wall time in seconds', null=True)
+    efficiency = models.IntegerField('Efficiency in percent', null=True)
     job_state = models.ForeignKey('JobState', null=True)
     # TODO: job can be moved from queue to queue during its lifetime
     queue = models.ForeignKey('Queue', null=True)
@@ -110,13 +111,10 @@ class Job(models.Model):
     comp_time = models.DateTimeField(verbose_name='Completion time', null=True)
 
     def get_absolute_url(self):
-        return u"/trq/jobs/%s/%d/" % (self.server,self.jobid)
+        return u"/trq/jobs/detail/%s/%d/" % (self.server,self.jobid)
 
     def __unicode__(self):
     	return "%s.%s" % (self.jobid, self.server)
-
-    def efficiency(self):
-        return 100*self.cput/self.walltime
 
     def running_days(self):
         diff = datetime.datetime.now() - self.start_time
@@ -203,9 +201,9 @@ class Queue(models.Model):
 
     def get_queue_numbers(self):
         job_states = JobState.objects.all().order_by('name')
-        qnums = {}
+        qnums = []
         for js in job_states:
-            qnums[js] = Job.objects.filter(queue=self,job_state=js).count()
+            qnums.append((js,Job.objects.filter(queue=self,job_state=js).count()))
         return qnums
 
     @staticmethod

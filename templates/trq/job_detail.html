@@ -1,8 +1,26 @@
-{% extends "trq/jobs_base.html" %}
+{% extends "trq/base.html" %}
 
 {% block content %}
 
+<div class="leftmenu">
+
+        <form action="" method="post">
+
+        <h3>Job selection</h3>
+        <table>
+        {% for field in select_form.visible_fields %}
+        <tr>
+            <th>{{ field.label_tag }}</th><td>{{ field }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+        <input type="submit" value="Submit" name="submit" />
+
+        </form>
+</div>
+
 <div class="maintext">
+    {% if job %}
     <div class="infopanel">
     <h3>Job: {{ job.jobid }}</h3>
     <table class="jobdetail">
@@ -61,6 +79,8 @@
         {% endfor %}
     </table>
     </div>
+
+    {% endif %}
 </div>
 
 {% endblock content %}

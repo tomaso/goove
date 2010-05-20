@@ -35,14 +35,35 @@ div.topmenu {
 
 div.leftmenu {
         float: left;
+	block: inline;
+	font-size: 10px;
+	width: 20%;
 /*	position: fixed;*/
         border: 1px dotted;
-	background-color: #55BB55;
+/*	background-color: #55BB55;*/
 }
 
 div.leftmenu h3 {
+	text-align: center;
 	margin: 0px;
 	padding: 0px;
+}
+div.leftmenu th {
+	text-align: left;
+}
+div.leftmenu td {
+	text-align: right;
+}
+div.leftmenu input {
+	font-size: 9px;
+	width: 85px;
+}
+div.leftmenu select {
+	font-size: 9px;
+	width: 90px;
+}
+div.leftmenu input.vDateField {
+	width: 60px;
 }
 
 div.rightmenu {
@@ -51,9 +72,10 @@ div.rightmenu {
 }
 
 div.maintext {
-        float: center;
+        float: right;
+	block: inline;
         text-align: center;
-	width: 800px;
+	width: 79%;
         margin: 0px auto;
         padding-bottom:10px;
 }
@@ -93,6 +115,10 @@ table.overview td.left {
 	text-align: left;
 }
 
+table.nodejoblist {
+	font-family: Tahoma, Arial, Sans-Serif;
+	font-size: 0.9em;
+}
 table.nodejoblist th {
 	text-align: center;
 	background-color: #AAAAFF;
@@ -105,6 +131,7 @@ table.nodejoblist td {
 	border: 1px;
 	border-color: #AAAAAA;
 	border-style: solid;
+	padding: 0 5px;
 }
 
 table.jobdetail {
@@ -204,8 +231,4 @@ img.largeimage {
 background: transparent url(../images/loading.gif) top left no-repeat;
 }
 
-input.vDateField {
-width: 80px;
-}
 
-td
