@@ -19,6 +19,11 @@ class NodeSelectForm(forms.Form):
         initial=Node.objects.all()[0],
         choices=[ (n.pk,n.name) for n in Node.objects.all() ]
     )
+    started_day_histogram = forms.BooleanField(
+        label="Started 24h",
+        initial=False,
+        widget=forms.CheckboxInput(attrs={'title':'Display histogram of jobs started on this node in the last 24 hours'})
+    )
 
 def index(request):
     return render_to_response('trq/index.html', {})
@@ -54,10 +59,15 @@ def nodes_table(request):
         )
     
 
-def nodes_listing(request):
+def nodes_listing(request, filtertype=None, filtervalue=None):
     # Podrobny seznam uzlu s formularem na vyber podmnozin podle
     # torque vlastnosti.
-    if request.POST:
+
+    if filtertype=="subcluster":
+        nodes = Node.objects.filter(subcluster__name=filtervalue).distinct()
+    elif filtertype=="property":
+        nodes = Node.objects.filter(properties__name=filtervalue).distinct()
+    elif request.POST:
         sc_list = []
         prop_list = []
         state_list = []
@@ -95,7 +105,19 @@ def nodes_listing(request):
     states_form = BooleanListForm('nodestates_')
     states_form.setFields(states)
 
-    if request.POST:
+    if filtertype=="subcluster":
+        properties_form.setData( dict(zip(properties, len(properties)*[True])) )
+        states_form.setData( dict(zip(states, len(states)*[True])) )
+        subcluster_form.setData( dict(zip(subclusters, len(subclusters)*[False])) )
+        subcluster_form.data['subcluster_' + filtervalue] = True
+        subcluster_form.is_bound = True
+    elif filtertype=="property":
+        subcluster_form.setData( dict(zip(subclusters, len(subclusters)*[True])) )
+        states_form.setData( dict(zip(states, len(states)*[True])) )
+        properties_form.setData( dict(zip(properties, len(properties)*[False])) )
+        properties_form.data['properties_' + filtervalue] = True
+        properties_form.is_bound = True
+    elif request.POST:
         subcluster_form.setData(request.POST, useprefix=False)
         properties_form.setData(request.POST, useprefix=False)
         states_form.setData(request.POST, useprefix=False)
@@ -117,15 +139,17 @@ def node_detail(request, nodename=None):
     # formular na vyber je tradicne vlevo a mohl by obsahovat zatrhavaci 
     # cudliky, kde se voli, jake detaily o uzlu clovek chce videt
     # bylo by fajn, mit moznost definovat obecne linky do jinych systemu
+    # hezky by byl i histogram startovani a ukoncovani uloh
+    # pripadne graf toho jakymi ulohami se uzel zaobiral poslednich X hodin
 
     node_form = NodeSelectForm()
-    if not request.POST:
+    if not request.POST and not nodename:
         return render_to_response('trq/node_detail.html', 
             {'node':None, 'node_form':node_form})
         
     if nodename:
         n = Node.objects.get(name=nodename)
-    if request.POST['node']:
+    if request.POST.has_key('node'):
         n = Node.objects.get(pk=request.POST['node'])
     node_form.data['node'] = n.pk
     node_form.is_bound = True

@@ -2,15 +2,16 @@
 
 {% block content %}
 
-<div class="rightmenu">
+<div class="leftmenu">
 
-<table>
-
-<tr><th>State</th></tr>
-{% for ns in nodestates %}
-<tr><td class="node_state_{{ ns }}">{{ ns }}</td></tr>
-{% endfor %}
-</table>
+    <table>
+    <thead>
+        <tr><th>State</th></tr>
+    </thead>
+    {% for ns in nodestates %}
+        <tr><td class="node_state_{{ ns }}">{{ ns }}</td></tr>
+    {% endfor %}
+    </table>
 
 </div>
 

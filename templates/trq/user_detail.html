@@ -1,9 +1,10 @@
-{% extends "trq/users_base.html" %}
+{% extends "trq/base.html" %}
 
 {% block content %}
 
 <div class="maintext">
-    <h2 style="background-color: green; color: white; text-shadow: black 0.1em 0.1em 0.1em">User: {{ user.name }}</h2>
+
+    <div class="infopanel">
     <h3>Currently associated jobs</h3>
     <table class="nodejoblist">
         <tr>
@@ -21,6 +22,7 @@
         </tr>
     {% endfor %}
     </table>
+    </div>
 
 </div>
 

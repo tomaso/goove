@@ -22,12 +22,13 @@ def overview(request):
         item['url'] = c.get_overview_url()
         info.append(item)
 
+    qdb=Queue.objects.all()
     queues=[]
-    
-    queues.append(
-        {'name':'asdf','Q':'123','R':'234','C_in_last_24h':'233','C_in_last_week':'2345'}
-    )
-    
+    for q in qdb:
+        nums = q.get_queue_numbers()
+        queues.append(
+            {'queue':q,'Q':nums['Q'],'R':nums['R']}
+        )
 
     return render_to_response(
         'trq/overview.html', 

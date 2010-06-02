@@ -77,5 +77,29 @@
     "fields": {
       "name": "torque.farm.particle.cz"
     }
+  },
+  {
+    "model" : "trq.GlobalConfiguration",
+    "pk": 1,
+    "fields": {
+    }
+  },
+  {
+    "model" : "trq.NodeLink",
+    "pk": 1,
+    "fields": {
+      "name": "Nagios",
+      "url": "https://monitor.farm.particle.cz/nagios/cgi-bin/status.cgi?navbarsearch=1&host=<NODE>",
+      "config": 1
+    }
+  },
+  {
+    "model" : "trq.NodeLink",
+    "pk": 2,
+    "fields": {
+      "name": "Munin",
+      "url": "http://monitor.farm.particle.cz/munin/farm.particle.cz/<NODE>.farm.particle.cz.html",
+      "config": 1
+    }
   }
 ]

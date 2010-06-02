@@ -469,6 +469,7 @@ def updatePBSNodes():
             try:
                 nodesxml = parseString(out)
                 feedNodesXML(nodesxml)
+                nodesxml.unlink()
             except ExpatError:
                 log(LOG_ERROR, "Cannot parse line: %s" % (out))
             
@@ -478,6 +479,7 @@ def updatePBSNodes():
                 jobsxml = parseString(out)
                 starttime = time.time()
                 feedJobsXML(jobsxml)
+                jobsxml.unlink()
                 endtime = time.time()
                 log(LOG_INFO, "feedJobsXML() took %f seconds" % (endtime-starttime))
             except ExpatError:
@@ -510,6 +512,32 @@ def checkEventsRunningJobs():
             rj.job_state = comp_state
             rj.save()
 
+def mergeNodes(mergenodesfile):
+    """ This function expects file in format of "old_node_name=new_node_name" (without quotes)
+    It removes old_node_name node from the database and reassociate all data (e.g. jobs) from this
+    old node to the new_node_name node.
+    """
+    for l in mergenodesfile:
+        oldnodename,newnodename = l.strip().split('=')
+        try:
+            oldnode = Node.objects.get(name=oldnodename)
+        except Node.DoesNotExist:
+            log(LOG_ERROR, "Old node %s node is not in the database - skipping" % oldnodename)
+            continue
+            
+        try:
+            newnode = Node.objects.get(name=newnodename)
+        except Node.DoesNotExist:
+            log(LOG_ERROR, "New node %s node is not in the database, this is required, sorry - skipping" % newnodename)
+            continue
+
+        jobs = Job.objects.filter(exec_host=oldnode)
+        log(LOG_INFO, "Reassociating %d jobs from node %s to node %s" %(len(jobs), oldnodename, newnodename))
+        for j in jobs:
+            j.exec_host = newnode
+            j.save()
+        oldnode.delete()
+    
 
 def main():
     global loglevel
@@ -537,7 +565,8 @@ def main():
     opt_parser.add_option("-x", "--removeall", action="store_true", dest="removeall", default=False, 
         help="Remove everything from tables (debug option, use with care)")
     opt_parser.add_option("-m", "--mergenodes", action="append", dest="mergenodesfile", metavar="FILE",
-        help="Merge nodes according to file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode")
+        help="Merge nodes according to a file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode")
+    # TODO: move "one time hacks" into a separate group of help lines ^^
 
     (options, args) = opt_parser.parse_args()
 
@@ -556,6 +585,12 @@ def main():
 
     if (options.removeall):
         removeContent()
+        return
+
+    if (options.mergenodesfile):
+        for i in options.mergenodesfile:
+            log(LOG_DEBUG, "Merge data will be read from file: %s" % i)
+            mergeNodes(openfile(i))
         return
 
     # invalid combinations

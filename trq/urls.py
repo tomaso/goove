@@ -3,6 +3,7 @@ from django.conf.urls.defaults import *
 urlpatterns = patterns('',
     (r'^nodes/detail/(?P<nodename>.*)/$', 'goove.trq.nodeviews.node_detail'),
     (r'^nodes/detail/$', 'goove.trq.nodeviews.node_detail'),
+    (r'^nodes/listing/(?P<filtertype>.*)/(?P<filtervalue>.*)/$', 'goove.trq.nodeviews.nodes_listing'),
     (r'^nodes/listing/$', 'goove.trq.nodeviews.nodes_listing'),
     (r'^nodes/table/$', 'goove.trq.nodeviews.nodes_table'),
 

@@ -38,6 +38,10 @@ class Node(models.Model):
     def __unicode__(self):
     	return self.name
 
+    def get_node_links(self):
+        gc = GlobalConfiguration.objects.get(pk=1)
+        return [ (nl.name, nl.url.replace("<NODE>", self.name)) for nl in gc.nodelink_set.all() ]
+
     @staticmethod
     def get_overview_name():
         return u'worker node'
@@ -50,6 +54,9 @@ class NodeProperty(models.Model):
     name = models.CharField(verbose_name="property name", max_length=50)
     description = models.CharField(max_length=300)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
+
+    def get_nodeslist_url(self):
+        return u"/trq/nodes/listing/property/%s/" % (self.name)
 
     def __unicode__(self):
     	return self.name
@@ -78,6 +85,9 @@ class SubCluster(models.Model):
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     def __unicode__(self):
     	return self.name
+
+    def get_nodeslist_url(self):
+        return u"/trq/nodes/listing/subcluster/%s/" % (self.name)
 
     @staticmethod
     def get_overview_name():
@@ -200,10 +210,10 @@ class Queue(models.Model):
         return u"/trq/queues/detail/%s/" % (self.name)
 
     def get_queue_numbers(self):
-        job_states = JobState.objects.all().order_by('name')
-        qnums = []
+        job_states = JobState.objects.all()
+        qnums = {}
         for js in job_states:
-            qnums.append((js,Job.objects.filter(queue=self,job_state=js).count()))
+            qnums[js.shortname]=Job.objects.filter(queue=self,job_state=js).count()
         return qnums
 
     @staticmethod
@@ -234,5 +244,26 @@ class AccountingEvent(models.Model):
     type = models.CharField(max_length=1, choices=EVENT_CHOICES)
     job = models.ForeignKey('Job')
 
+
+class NodeLink(models.Model):
+    """
+    Link to another system with information about a node.
+    The <NODE> string in url is replaced with the actual name.
+    """
+    name = models.CharField(max_length=40)
+    url = models.CharField(max_length=512)
+    config = models.ForeignKey("GlobalConfiguration")
+
+class GlobalConfiguration(models.Model):
+    """
+    Object with global configuration.
+    """
+    pass
+    #name = models.CharField(max_length=40)
+
+
+    
+# The only instance of GlobalConfiguration    
+#globalConfiguration = GlobalConfiguration.objects.get(pk=1)
  
 # vi:ts=4:sw=4:expandtab

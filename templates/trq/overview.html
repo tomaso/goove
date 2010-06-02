@@ -25,14 +25,12 @@
 
 <h3>Queues</h3>
 <table class="overview">
-<tr><th>&nbsp;</th><th>Q</th><th>R</th><th>C (24h)</th><th>C (week)</th></tr>
+<tr><th>&nbsp;</th><th>Q</th><th>R</th></tr>
 {% for q in queues  %}
 <tr>
-<td class="coldesc">{{ q.name }}</td>
+<td class="coldesc"><a href="{{ q.queue.get_absolute_url}}">{{ q.queue.name }}</a></td>
 <td class="colnumber">{{ q.Q }}</a></td>
 <td class="colnumber">{{ q.R }}</a></td>
-<td class="colnumber">{{ q.C_in_last_24h }}</a></td>
-<td class="colnumber">{{ q.C_in_last_week }}</a></td>
 </tr>
 {% endfor %}
 
