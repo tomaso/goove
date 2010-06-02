@@ -16,6 +16,7 @@ from time import time
 import numpy as np
 import colorsys
 from django.db.models import Sum
+from django.db import connection, transaction
 
 class QueueSelectForm(forms.Form):
     queue = forms.ChoiceField(
@@ -27,10 +28,29 @@ class QueueSelectForm(forms.Form):
 def queues_overview(request):
     queues = Queue.objects.all()
     job_states = JobState.objects.all()
+    cursor = connection.cursor()
+    cursor.execute("SELECT queue_id,job_state_id,count(*) FROM trq_job GROUP BY queue_id,job_state_id")
+    rawresult = cursor.fetchall()
+    rt = {}
+    for qid,jsid,count in rawresult:
+        if not rt.has_key(qid):
+            rt[qid] = {}
+        rt[qid][jsid] = count
+
+    restable = {}
+    for q in queues:
+        restable[q] = []
+        for js in job_states:
+            if (not rt.has_key(q.pk)) or (not rt[q.pk].has_key(js.pk)):
+                restable[q].append(0)
+            else:
+                restable[q].append(rt[q.pk][js.pk])
+    
     return render_to_response(
         'trq/queues_overview.html',
         {'queues_list':queues, 
-        'job_states':job_states
+        'job_states':job_states,
+        'restable':restable
         }
     )
 
@@ -219,7 +239,6 @@ def graph(request):
 
     tempsum = [0]*N
 
-    from django.db import connection, transaction
     cursor = connection.cursor()
     cursor.execute("SELECT year(trq_job.comp_time),month(trq_job.comp_time),day(trq_job.comp_time),count(*),trq_queue.name FROM trq_job INNER JOIN trq_queue ON trq_job.queue_id=trq_queue.id WHERE comp_time>=%s  and comp_time<=%s GROUP BY TO_DAYS(trq_job.comp_time),trq_queue.name", [fromdates[0],todates[-1]])
     rawresult = cursor.fetchall()

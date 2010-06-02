@@ -79,6 +79,14 @@ div.maintext {
         margin: 0px auto;
         padding-bottom:10px;
 }
+div.maintextwide {
+        float: right;
+	block: inline;
+        text-align: center;
+	width: 100%;
+        margin: 0px auto;
+        padding-bottom:10px;
+}
 
 ol {
 	margin: 0px;
@@ -193,11 +201,17 @@ text-align: left;
 }
 
 table.subcluster {
-border: solid 1px;
+	border: solid 1px;
+	margin-bottom: 5px;
 }
 
 table.subcluster th {
 text-align: center;
+background-color: #CCCCCC;
+}
+
+table.subcluster td {
+	font-size: 0.8em;
 }
 
 span.overview_node {
