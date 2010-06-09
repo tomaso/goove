@@ -48,7 +48,7 @@ class Node(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/nodes/'
+        return u'/trq/nodes/listing/'
 
 class NodeProperty(models.Model):
     name = models.CharField(verbose_name="property name", max_length=50)
@@ -70,7 +70,7 @@ class NodeProperty(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/nodes/table_list/'
+        return u'/trq/nodes/table/'
 
 class NodeState(models.Model):
     name = models.CharField(verbose_name="State name", max_length=30)	
@@ -95,7 +95,7 @@ class SubCluster(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/nodes/table_list/'
+        return u'/trq/nodes/table/'
 
 class Job(models.Model):
     jobid = models.IntegerField(db_index=True, editable=False)
@@ -144,7 +144,7 @@ class Job(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/jobs/'
+        return u'/trq/jobs/detail/'
 
 # Kind of a view to Job table - so we can quickly obtain not finished jobs
 class RunningJob(models.Model):
@@ -222,7 +222,7 @@ class Queue(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/queues/'
+        return u'/trq/queues/table/'
 
 EVENT_CHOICES = (
     ('Q', 'Queued'),

@@ -553,7 +553,7 @@ def main():
     opt_parser.add_option("-j", "--jobxml", action="append", dest="jobxmlfile", metavar="FILE", 
         help="XML file with job data")
     opt_parser.add_option("-e", "--eventfile", action="append", dest="eventfile", metavar="FILE", 
-        help="Text file with event data in accunting log format")
+        help="Text file with event data in accounting log format")
     opt_parser.add_option("-s", "--serverfile", action="append", dest="serverfile", metavar="FILE", 
         help="Text file with server settings (basically output of qmgr `print server` command)")
     opt_parser.add_option("-d", "--daemon", dest="daemondir", metavar="DIR", 
