@@ -146,6 +146,7 @@ def feedNodesXML(x):
 
         # Node properties
         new_properties=i.getElementsByTagName("properties")[0].childNodes[0].nodeValue
+        n.properties.clear()
         for prop_name in new_properties.split(","):
             prop, created = NodeProperty.objects.get_or_create(name=prop_name, defaults={'description':'No description yet'})
             if not prop:
@@ -158,6 +159,7 @@ def feedNodesXML(x):
 
         # Node state(s)
         new_states=i.getElementsByTagName("state")[0].childNodes[0].nodeValue
+        n.state.clear()
         for state_name in new_states.split(","):
             state, created = NodeState.objects.get_or_create(name=state_name, defaults={'description':'No description yet'})
             if not state:
@@ -467,23 +469,28 @@ def updatePBSNodes():
             p = subprocess.Popen(["pbsnodes", "-ax", "-s", ts.name], stdout=subprocess.PIPE)
             (out,err) = p.communicate()
             try:
+                starttime = time.time()
                 nodesxml = parseString(out)
                 feedNodesXML(nodesxml)
                 nodesxml.unlink()
+                endtime = time.time()
+                log(LOG_INFO, "feedNodesXML() took %f seconds" % (endtime-starttime))
             except ExpatError:
                 log(LOG_ERROR, "Cannot parse line: %s" % (out))
             
-            p = subprocess.Popen(["qstat", "-fx", "@%s" % ts.name], stdout=subprocess.PIPE)
-            (out,err) = p.communicate()
-            try:
-                jobsxml = parseString(out)
-                starttime = time.time()
-                feedJobsXML(jobsxml)
-                jobsxml.unlink()
-                endtime = time.time()
-                log(LOG_INFO, "feedJobsXML() took %f seconds" % (endtime-starttime))
-            except ExpatError:
-                log(LOG_ERROR, "Cannot parse line: %s" % (out))
+# TODO: this should be done much less often just to find the Lost jobs
+# it is not that useful normally
+#            p = subprocess.Popen(["qstat", "-fx", "@%s" % ts.name], stdout=subprocess.PIPE)
+#            (out,err) = p.communicate()
+#            try:
+#                jobsxml = parseString(out)
+#                starttime = time.time()
+#                feedJobsXML(jobsxml)
+#                jobsxml.unlink()
+#                endtime = time.time()
+#                log(LOG_INFO, "feedJobsXML() took %f seconds" % (endtime-starttime))
+#            except ExpatError:
+#                log(LOG_ERROR, "Cannot parse line: %s" % (out))
         last_updatePBSNodes = now
 
 def updateRunningJobs():

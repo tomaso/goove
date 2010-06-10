@@ -32,6 +32,10 @@ class Node(models.Model):
         return self.job_set.filter(job_state=js)
     running_jobs_count.short_description = "running jobs"
 
+    def percentage_load(self):
+        return (self.running_jobs_count()*100)/self.np
+    percentage_load.short_description = "Number of job slots occupied in percents"
+
     def get_absolute_url(self):
         return u"/trq/nodes/detail/%s/" % (self.name)
 
@@ -76,6 +80,7 @@ class NodeState(models.Model):
     name = models.CharField(verbose_name="State name", max_length=30)	
     description = models.CharField(max_length=300)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
+    iconpath = models.CharField(max_length=512, null=True)
 
     def __unicode__(self):
     	return self.name
@@ -101,6 +106,7 @@ class Job(models.Model):
     jobid = models.IntegerField(db_index=True, editable=False)
     server = models.ForeignKey('TorqueServer', editable=False)
     job_owner = models.ForeignKey('User', null=True)
+    job_gridowner = models.ForeignKey('GridUser', null=True)
     cput = models.IntegerField('CPU time in seconds', null=True)
     walltime = models.IntegerField('Wall time in seconds', null=True)
     efficiency = models.IntegerField('Efficiency in percent', null=True)
@@ -149,6 +155,7 @@ class Job(models.Model):
 # Kind of a view to Job table - so we can quickly obtain not finished jobs
 class RunningJob(models.Model):
     mainjob = models.ForeignKey('Job', db_index=True)
+
     
 class TorqueServer(models.Model):
     name = models.CharField(verbose_name="torque server name", max_length=100)
@@ -163,9 +170,11 @@ class TorqueServer(models.Model):
     def get_overview_url():
         return u'/trq/'
 
+
 class User(models.Model):
     name = models.CharField(verbose_name="user name", max_length=100)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
+    group = models.ForeignKey('Group')
     def __unicode__(self):
     	return self.name
 
@@ -189,6 +198,63 @@ class User(models.Model):
     @staticmethod
     def get_overview_url():
         return u'/trq/users/'
+
+
+class Group(models.Model):
+    name = models.CharField(verbose_name="group name", max_length=100)
+    color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
+    def __unicode__(self):
+    	return self.name
+
+    def get_absolute_url(self):
+        return u"/trq/groups/%s/" % (self.name)
+
+    def get_group_numbers(self):
+        job_states = JobState.objects.all().order_by('name')
+        unums = {}
+        for js in job_states:
+            unums[js] = Job.objects.filter(job_owner_group=self,job_state=js).count()
+        return unums
+
+    class Meta:
+        ordering = ['name']
+
+    @staticmethod
+    def get_overview_name():
+        return u'group'
+
+    @staticmethod
+    def get_overview_url():
+        return u'/trq/group/'
+
+
+class GridUser(models.Model):
+    dn = models.CharField(verbose_name="Distinguished name", max_length=512)
+    color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
+    def __unicode__(self):
+    	return self.dn
+
+    def get_absolute_url(self):
+        return u"/trq/gridusers/%s/" % (self.name)
+
+    def get_user_numbers(self):
+        job_states = JobState.objects.all().order_by('name')
+        unums = {}
+        for js in job_states:
+            unums[js] = Job.objects.filter(job_gridowner=self,job_state=js).count()
+        return unums
+
+    class Meta:
+        ordering = ['dn']
+
+    @staticmethod
+    def get_overview_name():
+        return u'grid user'
+
+    @staticmethod
+    def get_overview_url():
+        return u'/trq/gridusers/'
+    
 
 class JobState(models.Model):
     name = models.CharField(verbose_name="job state name", max_length=100)

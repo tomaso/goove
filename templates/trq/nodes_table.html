@@ -9,7 +9,7 @@
         <tr><th>State</th></tr>
     </thead>
     {% for ns in nodestates %}
-        <tr><td class="node_state_{{ ns }}">{{ ns }}</td></tr>
+        <tr><td>{{ ns }}</td><td><span class="node_state_{{ ns }}"><span /></td></tr>
     {% endfor %}
     </table>
 
@@ -23,8 +23,10 @@
         {% for row in sc_node.rows %}
             <tr>
             {% for n in row %}
-                <td class="overview_node" id="{{ n.pk }}" onmouseover='show_node_tt(event,this)' onmouseout='hide_node_tt(this)'>
-                    <a href="{{ n.get_absolute_url }}">{{ n.name }}</a><span class="{% for c in n.state.all %}node_state_{{ c }}{% endfor %}">&nbsp;&nbsp;</span>
+                <td class="overview_node" id="{{ n.pk }}">
+                    <div style="position: relative">
+                        <a href="{{ n.get_absolute_url }}">{{ n.name }}</a>{% for c in n.state.all %}<span class="node_state_{{ c }}" title="{{ c }}"></span>{% endfor %}
+                    </div>
                 </td>
             {% endfor %}
             </tr>
@@ -34,32 +36,6 @@
     {% endfor %}
 
 </div>
-
-    {% for sc_node in sc_nodes %}
-    {% for row in sc_node.rows %}
-    {% for n in row %}
-    <table class="tooltip" id="node_tt_{{ n.pk }}">
-        <tr><td class="tt-topleft"></td><td class="tt-topright"></td></tr>
-        <tr>
-            <td class="tt-centerleft"></td>
-            <td class="tt-centerright">
-                <table>
-                    <tr><th colspan="2">
-                    {{ n.name }}
-                    </th><th></th></tr>
-                    {% for j in n.running_jobs %}
-                        {% cycle "<tr>" "" %}
-                        <td>{{ j.jobid }}</td>
-                        {% cycle "" "</tr>" %}
-                    {% endfor %}
-                </table>
-            </td>
-        </tr>
-        <tr><td class="tt-bottomleft"></td><td class="tt-bottomright"></td></tr>
-    </table>
-    {% endfor %}
-    {% endfor %}
-    {% endfor %}
 
 
 {% endblock content %}

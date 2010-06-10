@@ -10,6 +10,11 @@ Data feeder:
 - Let the daemon run on elf
 - check consistency between accounting events and jobs
 
+- remove xml parsing of jobs, let the web interface to poll job status only if it is running
+and if a user asks for details (we can store last update at Running job and cache data in DB via model methods)
+
+- store user groups (in model and then add them manually in mysql)
+
 Web interface:
 --------------
 
@@ -25,8 +30,21 @@ Web interface:
 - administration interface
 - better logging of events and profiling data
 
+- The main form for querying db for finished jobs is /trq/jobs/completed_listing
+  - make this form much richer and configurable
+  - aborted jobs in recent time period (per node/queue/user)
+
+- Be much faster with http://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.QuerySet.select_related
+
 Database:
 ---------
 
 - mysql separation on job table (not possible with the indexes, better try index on timestamps)
 - make sure TorqueServer is only one
+
+
+Documentation:
+--------------
+
+
+Mention silk icon pack: http://www.famfamfam.com/lab/icons/silk/

@@ -5,6 +5,8 @@ from goove.trq.models import SubCluster
 from goove.trq.models import Job
 from goove.trq.models import TorqueServer
 from goove.trq.models import User
+from goove.trq.models import GridUser
+from goove.trq.models import Group
 from goove.trq.models import JobState
 from goove.trq.models import Queue
 from django.contrib import admin
@@ -42,6 +44,8 @@ admin.site.register(SubCluster, SubClusterAdmin)
 admin.site.register(Job, JobAdmin)
 admin.site.register(TorqueServer)
 admin.site.register(User)
+admin.site.register(GridUser)
+admin.site.register(Group)
 admin.site.register(JobState)
 admin.site.register(Queue)
 
