@@ -35,9 +35,9 @@ def nodes_table(request):
     # Tabulka vsech uzlu s graficky naznacenim v jakem stavu jsou
     # z pohledu torque a jak moc jsou zaplnene joby.
     # Pri najeti mysi by se mel ukazat detail uzlu - nejlepe
-    # v leve "formularove" - seznam bezicich jobu na uzlu (max s frontou).
+    # v leve "formularove" oblasti - seznam bezicich jobu na uzlu (max s frontou).
 #    nodes = Node.objects.all().order_by('subcluster__name', 'name')
-    cols = 10
+    cols = 6
     sc = SubCluster.objects.all()
     sc_nodes = []
     for s in sc:
@@ -49,8 +49,6 @@ def nodes_table(request):
             i = i + cols
         sn['rows'][-1].extend([None]*(i-len(nodes)))
         sc_nodes.append(sn)
-
-    print sc_nodes
 
     nodestates = NodeState.objects.all().order_by('name')
     return render_to_response(

@@ -163,32 +163,48 @@ table.jobdetail td {
 }
 
 
-.node_state_down {
-background-color: #cc0000;
+span.node_state_down {
+background-image: url('/site_media/images/node_state_down.png');
+display: inline-block;
+width: 16px;
+height: 16px;
+float: right;
 }
 
-.node_state_offline {
-background-color: #ffff00;
+span.node_state_offline {
 color: black;
 text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
+background-image: url('/site_media/images/node_state_offline.png');
+display: inline-block;
+width: 16px;
+height: 16px;
+float: right;
 }
 
-.node_state_offlinejobs {
+span.node_state_offlinejobs {
 background-color: #ff9900;
 }
 
-.node_state_free {
-background-color: #00FF00;
+span.node_state_free {
+background-image: url('/site_media/images/node_state_free.png');
+display: inline-block;
+width: 16px;
+height: 16px;
+float: right;
 }
 
-.node_state_partfull {
+span.node_state_partfull {
 background-color: #4499ff;
 }
 
-.node_state_job-exclusive {
-background-color: #000099;
+span.node_state_job-exclusive {
 color: white;
 text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+background-image: url('/site_media/images/node_state_job-exclusive.png');
+display: inline-block;
+width: 16px;
+height: 16px;
+float: right;
 }
 
 .node_state_unknown {
@@ -224,14 +240,26 @@ border: solid 1px;
 border-collapse:collapse;
 }
 
+span.overview_node_job {
+height: 100%; 
+display: inline-block; 
+position: absolute; 
+background-color: #aaaaaa;
+z-index: -1;
+}
+
+
 td.overview_node {
 text-align: center;
 border: solid 1px;
 border-collapse:collapse;
+width: 30em;
 }
 
 td.overview_node a {
 color: inherit;
+float:left; 
+padding-left:15px;
 }
 
 div.statform th {
