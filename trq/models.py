@@ -174,7 +174,7 @@ class TorqueServer(models.Model):
 class User(models.Model):
     name = models.CharField(verbose_name="user name", max_length=100)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
-    group = models.ForeignKey('Group')
+    group = models.ForeignKey('Group', null=True)
     def __unicode__(self):
     	return self.name
 
