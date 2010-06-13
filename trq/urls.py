@@ -6,6 +6,8 @@ urlpatterns = patterns('',
     (r'^nodes/listing/(?P<filtertype>.*)/(?P<filtervalue>.*)/$', 'goove.trq.nodeviews.nodes_listing'),
     (r'^nodes/listing/$', 'goove.trq.nodeviews.nodes_listing'),
     (r'^nodes/table/$', 'goove.trq.nodeviews.nodes_table'),
+    (r'^nodes/table/with_detail/(?P<nodename>.*)/$', 'goove.trq.nodeviews.nodes_table'),
+    (r'^nodes/table/json_detail/$', 'goove.trq.nodeviews.nodes_table_json_detail'),
 
     (r'^queues/graph/$', 'goove.trq.queueviews.graph'),
     (r'^queues/stats/$', 'goove.trq.queueviews.queues_stats'),

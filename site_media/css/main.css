@@ -219,11 +219,25 @@ text-align: left;
 table.subcluster {
 	border: solid 1px;
 	margin-bottom: 5px;
+	width: 100%;
+}
+
+table.subcluster tbody {
+	background-color: #DDDDDD;
 }
 
 table.subcluster th {
-text-align: center;
-background-color: #CCCCCC;
+	text-align: center;
+	background-color: #CCCCCC;
+}
+
+table.subcluster thead.uncollapsed th {
+	background-image: url("/site_media/images/bullet_arrow_down.png");
+	background-repeat: no-repeat;
+}
+table.subcluster thead.collapsed th {
+	background-image: url("/site_media/images/bullet_arrow_right.png");
+	background-repeat: no-repeat;
 }
 
 table.subcluster td {

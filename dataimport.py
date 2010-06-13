@@ -23,6 +23,7 @@ from goove.trq.models import Job
 from goove.trq.models import RunningJob
 from goove.trq.models import TorqueServer
 from goove.trq.models import User
+from goove.trq.models import Group
 from goove.trq.models import JobState
 from goove.trq.models import Queue
 from goove.trq.models import AccountingEvent
@@ -42,6 +43,7 @@ QueueCache = {}
 NodeCache = {}
 TorqueServerCache = {}
 UserCache = {}
+GroupCache = {}
 
 VERSION="0.1"
 
@@ -113,12 +115,19 @@ def getTorqueServer(tsname):
         TorqueServerCache[tsname],created = TorqueServer.objects.get_or_create(name=tsname)
     return (TorqueServerCache[tsname],created)
 
-def getUser(uname):
+def getUser(uname, group=None):
     global UserCache
     created = False
     if not UserCache.has_key(uname):
-        UserCache[uname],created = User.objects.get_or_create(name=uname)
+        UserCache[uname],created = User.objects.get_or_create(name=uname, group=group)
     return (UserCache[uname],created)
+
+def getGroup(uname):
+    global GroupCache
+    created = False
+    if not GroupCache.has_key(uname):
+        GroupCache[uname],created = Group.objects.get_or_create(name=uname)
+    return (GroupCache[uname],created)
 
 
 def feedNodesXML(x):
@@ -313,11 +322,18 @@ def parseOneLogLine(line,lineno):
     if created:
         log(LOG_INFO, "new job will be created: %s.%s" % (jobid_name, server_name))
 
+    if attrdir.has_key('group'):
+        group,created = getGroup(attrdir['group'])
+        if created:
+            log(LOG_INFO, "new group will be created: %s" % attrdir['group'])
+
     if attrdir.has_key('user'):
-        user,created = getUser(attrdir['user'])
+        user,created = getUser(attrdir['user'], group)
         if created:
             log(LOG_INFO, "new user will be created: %s" % attrdir['user'])
         job.job_owner = user
+        job.job_owner.group = group
+
     if attrdir.has_key('resources_used.cput'):
         h,m,s = attrdir['resources_used.cput'].split(":")
         job.cput = (int(h)*60+int(m))*60+int(s)
