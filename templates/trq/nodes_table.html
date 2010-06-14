@@ -45,14 +45,6 @@ $(document).ready(function() {
         }
     };
 
-    var toggleSubcluster = function(obj) {
-        $(this).parent().children("tbody").hide();
-//        listProperties(obj.currentTarget);
-//        listProperties(obj.currentTarget.style);
-        var sib = obj.currentTarget.nextElementSibling;
-        //listProperties(sib);
-    }
-    
     $("#id_node").change(func1);
     $("input[type=submit]").remove();
     $(".overview_node").hover(func3, func2);

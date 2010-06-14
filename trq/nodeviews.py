@@ -184,6 +184,8 @@ def node_detail(request, nodename=None):
     node_form.is_bound = True
 
     running_jobs = Job.objects.filter(exec_host=n, job_state__shortname="R")
+    for rj in running_jobs:
+        UpdateRunningJob(rj)
 
     return render_to_response('trq/node_detail.html', 
         {'node':n, 'running_jobs': running_jobs, 'node_form':node_form

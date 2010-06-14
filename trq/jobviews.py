@@ -8,7 +8,7 @@ from models import User
 from models import Node
 from models import TorqueServer
 from models import AccountingEvent
-from helpers import BooleanListForm
+from helpers import BooleanListForm,UpdateRunningJob
 from django import forms
 import colorsys
 import matplotlib
@@ -200,6 +200,9 @@ def job_detail(request, servername=None, jobid=None):
         select_form.data['server'] = server.pk
         select_form.data['jobid'] = jobid
     select_form.is_bound = True
+
+    if job.job_state.shortname=='R':
+        UpdateRunningJob(job)
 
     accevents = AccountingEvent.objects.filter(job=job)
     return render_to_response(
