@@ -7,7 +7,7 @@ from models import SubCluster
 from models import NodeProperty
 from models import NodeState
 from models import Job
-from helpers import BooleanListForm
+from helpers import BooleanListForm,UpdateRunningJob
 from django import forms
 from datetime import date
 
@@ -184,11 +184,17 @@ def node_detail(request, nodename=None):
     node_form.is_bound = True
 
     running_jobs = Job.objects.filter(exec_host=n, job_state__shortname="R")
+    updated_running_jobs = []
     for rj in running_jobs:
+        # TODO: pokud se update nezdari, mel by byt job vyrazen 
+        # z bezicich jobu a prerazen mezi ztracene joby
         UpdateRunningJob(rj)
+        rj = Job.objects.get(pk=rj.pk)
+        updated_running_jobs.append(rj)
+        print "rj.walltime: ", rj.walltime
 
     return render_to_response('trq/node_detail.html', 
-        {'node':n, 'running_jobs': running_jobs, 'node_form':node_form
+        {'node':n, 'running_jobs': updated_running_jobs, 'node_form':node_form
         }
     )
 

@@ -209,11 +209,6 @@ def feedJobsXML(x, cleanLostJobs=False):
                 log(LOG_INFO, "new node (exec_host) will be created: %s" % new_exec_host_name)
             new_job.exec_host = new_exec_host
         
-        # mtime
-        new_walltime_string = restag.getElementsByTagName("walltime")[0].childNodes[0].nodeValue
-        h,m,s = new_walltime_string.split(":")
-        new_job.walltime = (int(h)*60+int(m))*60+int(s)
-        
         new_job.save()
         updated_jobs.append(new_job)
     # check that not finished jobs are between recently updated jobs
