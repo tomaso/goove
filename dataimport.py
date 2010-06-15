@@ -22,6 +22,7 @@ from goove.trq.models import SubCluster
 from goove.trq.models import Job
 from goove.trq.models import RunningJob
 from goove.trq.models import TorqueServer
+from goove.trq.models import GridUser
 from goove.trq.models import User
 from goove.trq.models import Group
 from goove.trq.models import JobState
@@ -35,6 +36,7 @@ from xml.parsers.expat import ExpatError
 from goove.trq.helpers import feedJobsXML,Configuration
 from goove.trq.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
 from goove.trq.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup
+from goove.trq.helpers import getRunningCountQstat
 
 
 JOBID_REGEX = re.compile("(\d+)\.(.*)")
@@ -89,7 +91,7 @@ def feedNodesXML(x):
         n.subcluster = sc
 
         n.save()
-        log(LOG_INFO, "new node saved: %s" % (new_name))
+        log(LOG_INFO, "node data saved: %s" % (new_name))
 
         # Node properties
         new_properties=i.getElementsByTagName("properties")[0].childNodes[0].nodeValue
@@ -330,9 +332,12 @@ def updatePBSNodes():
 #                log(LOG_INFO, "feedJobsXML() took %f seconds" % (endtime-starttime))
 #            except ExpatError:
 #                log(LOG_ERROR, "Cannot parse line: %s" % (out))
+            run_qstat = getRunningCountQstat()
+            run_db = Job.objects.filter(job_state=getJobState('R')).count()
+            log(LOG_INFO, "Running jobs:: according to qstat: %d, according to database: %d" % (run_qstat, run_db))
         last_updatePBSNodes = now
 
-def updateRunningJobs():
+def refreshRunningJobs():
     """
     Fill "cache" table with RunningJob - many queries are for running jobs, the table will speed those up
     """
@@ -383,10 +388,26 @@ def mergeNodes(mergenodesfile):
             j.exec_host = newnode
             j.save()
         oldnode.delete()
+
+def processGridJobMap(gjmfile):
+    for l in gjmfile:
+        kv = re.findall('"([^="]*)=([^"]*)"', l)
+        d = {}
+        for k,v in kv:
+            d[k] = v
+        if d['lrmsID']=='none' or d['lrmsID']=='FAILED':
+            continue
+        jobid,tsname = d['lrmsID'].split('.',1)
+        job = Job.objects.get(jobid=jobid, server__name=tsname)
+        griduser,created = GridUser.objects.get_or_create(dn=d['userDN'])
+        if created:
+            log(LOG_INFO, "new griduser will be created: %s" % (d['userDN']))
+        job.job_gridowner = griduser
+        job.save()
     
 
 def main():
-    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE|-s FILE]|[-d DIR] [-r] [-m FILE]"
+    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE|-s FILE]|[-d DIR] [-r] [-m FILE] [-g FILE]"
     version_string = "%%prog %s" % VERSION
 
     opt_parser = OptionParser(usage=usage_string, version=version_string)
@@ -410,6 +431,8 @@ def main():
         help="Remove everything from tables (debug option, use with care)")
     opt_parser.add_option("-m", "--mergenodes", action="append", dest="mergenodesfile", metavar="FILE",
         help="Merge nodes according to a file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode")
+    opt_parser.add_option("-g", "--gridjobmap", action="append", dest="gridjobmapfiles", metavar="FILE",
+        help="Parse grid-jobmap files so we can find out the grid user for a job")
     # TODO: move "one time hacks" into a separate group of help lines ^^
 
     (options, args) = opt_parser.parse_args()
@@ -423,8 +446,14 @@ def main():
         checkEventsRunningJobs()
         return
 
+    if (options.gridjobmapfiles):
+        for i in options.gridjobmapfiles:
+            log(LOG_DEBUG, "Grid job map data will be read from file: %s" % i)
+            processGridJobMap(openfile(i))
+        return
+
     if (options.updateRJ):
-        updateRunningJobs()
+        refreshRunningJobs()
         return
 
     if (options.removeall):

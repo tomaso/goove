@@ -5,6 +5,8 @@ from models import JobState
 from models import Job
 from models import Queue
 from models import User
+from models import Group
+from models import GridUser
 from models import Node
 from models import TorqueServer
 from models import AccountingEvent
@@ -94,17 +96,27 @@ class CompletedForm(forms.Form):
     queue = forms.ChoiceField(
         label="Queue", 
         initial=0,
-        choices=[ (0,'All') ]+[ (q.pk,q.name) for q in Queue.objects.all() ]
+        choices=[ (0,'Any') ]+[ (q.pk,q.name) for q in Queue.objects.all() ]
     )
     user = forms.ChoiceField(
         label="User",
         initial=0,
-        choices=[ (0,'All') ]+[ (u.pk,u.name) for u in User.objects.all() ]
+        choices=[ (0,'Any') ]+[ (u.pk,u.name) for u in User.objects.all() ]
+    )
+    group = forms.ChoiceField(
+        label="Group",
+        initial=0,
+        choices=[ (0,'Any') ]+[ (g.pk,g.name) for g in Group.objects.all() ]
+    )
+    griduser = forms.ChoiceField(
+        label="Grid user",
+        initial=0,
+        choices=[ (0,'Any') ]+[ (gu.pk,gu.dn) for gu in GridUser.objects.all() ]
     )
     node = forms.ChoiceField(
         label="Node",
         initial=0,
-        choices=[ (0,'All') ]+[ (n.pk,n.name) for n in Node.objects.all() ]
+        choices=[ (0,'Any') ]+[ (n.pk,n.name) for n in Node.objects.all() ]
     )
     page = forms.IntegerField(
         initial=1,
@@ -141,6 +153,8 @@ def jobs_completed_listing(request):
     comp_form.data['mincput'] = request.POST['mincput']
     comp_form.data['queue'] = request.POST['queue']
     comp_form.data['user'] = request.POST['user']
+    comp_form.data['group'] = request.POST['group']
+    comp_form.data['griduser'] = request.POST['griduser']
     comp_form.data['node'] = request.POST['node']
     comp_form.data['page'] = request.POST['page']
     if request.POST['submit']=='>>':
@@ -162,6 +176,12 @@ def jobs_completed_listing(request):
 
     if comp_form.data['user'] != '0':
         args['job_owner__pk'] = comp_form.data['user']
+
+    if comp_form.data['group'] != '0':
+        args['job_owner__group__pk'] = comp_form.data['group']
+
+    if comp_form.data['griduser'] != '0':
+        args['job_gridowner__pk'] = comp_form.data['griduser']
 
     if comp_form.data['node'] != '0':
         args['exec_host__pk'] = comp_form.data['node']

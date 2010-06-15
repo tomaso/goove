@@ -186,12 +186,10 @@ def node_detail(request, nodename=None):
     running_jobs = Job.objects.filter(exec_host=n, job_state__shortname="R")
     updated_running_jobs = []
     for rj in running_jobs:
-        # TODO: pokud se update nezdari, mel by byt job vyrazen 
-        # z bezicich jobu a prerazen mezi ztracene joby
-        UpdateRunningJob(rj)
-        rj = Job.objects.get(pk=rj.pk)
-        updated_running_jobs.append(rj)
-        print "rj.walltime: ", rj.walltime
+        if UpdateRunningJob(rj):
+            rj = Job.objects.get(pk=rj.pk)
+            updated_running_jobs.append(rj)
+            print "rj.walltime: ", rj.walltime
 
     return render_to_response('trq/node_detail.html', 
         {'node':n, 'running_jobs': updated_running_jobs, 'node_form':node_form

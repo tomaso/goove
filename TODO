@@ -36,6 +36,8 @@ Web interface:
 
 - Be much faster with http://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.QuerySet.select_related
 
+- Nice color tool: http://colorschemedesigner.com/
+
 Database:
 ---------
 

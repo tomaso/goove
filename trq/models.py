@@ -235,7 +235,7 @@ class GridUser(models.Model):
     	return self.dn
 
     def get_absolute_url(self):
-        return u"/trq/gridusers/%s/" % (self.name)
+        return u"/trq/gridusers/%s/" % (self.dn)
 
     def get_user_numbers(self):
         job_states = JobState.objects.all().order_by('name')
