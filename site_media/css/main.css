@@ -134,6 +134,23 @@ table.nodejoblist th {
 	border-color: #999999;
 	border-style: solid;
 }
+
+table.nodejoblist th a {
+	color: #000000;
+}
+
+table.nodejoblist tr.even {
+	background-color: #FFFFFF;
+}
+
+table.nodejoblist tr.odd {
+	background-color: #DDDDDD;
+}
+
+table.nodejoblist tr:hover {
+	background-color: #aaaaaa;
+}
+
 table.nodejoblist td {
 	text-align: right;
 	border: 1px;

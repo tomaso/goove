@@ -233,14 +233,23 @@ def UpdateRunningJob(job):
     """
     Update data of a running job from torque server
     Currently only xml output of `qstat -x` is supported
+    Returns True if the update was succesful. 
+    Returns False if the job could not be updated and it is then moved
+    to lost jobs.
     """
 #    TODO: does not work in multithreaded environment
 #    signal.signal(signal.SIGALRM, alarm_handler)
 #    signal.alarm(20)
     try:
         starttime = time.time()
-        proc = subprocess.Popen(["qstat", "-x", "%s.%s" % (job.jobid, job.server.name)], stdout=subprocess.PIPE)
+        proc = subprocess.Popen(["qstat", "-x", "%s.%s" % (job.jobid, job.server.name)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdoutdata, stderrdata = proc.communicate()
+        if stderrdata and stderrdata.startswith("qstat: Unknown Job Id"):
+            log(LOG_INFO, "UpdateRunningJob() job %s.%s is in database unfinished but not present in torque anymore - job is Lost" % (job.jobid, job.server.name))
+            job.job_state = getJobState('L')
+            job.save()
+            return False
+            
         log(LOG_INFO, "UpdateRunningJob() parsing: %s" % stdoutdata)
 #        signal.alarm(0)  # reset the alarm
         jobsxml = parseString(stdoutdata)
@@ -251,6 +260,16 @@ def UpdateRunningJob(job):
     except Alarm:
         log(LOG_ERROR, "UpdateRunningJob() taking too long.")
     except ExpatError:
-        log(LOG_ERROR, "Cannot parse line: %s" % (stdoutdata))
+        log(LOG_ERROR, "Cannot parse line: %s, jobid: %s.%s" % (stdoutdata, job.jobid, job.server.name))
+    return True
+
+def getRunningCountQstat():
+    """
+    Get number of running jobs from output of qstat
+    """
+    out,err = subprocess.Popen(["/bin/sh", "-c", "qstat @torque.farm.particle.cz | grep ' R '"], stdout=subprocess.PIPE).communicate()
+    return out.count('\n')
+
+
 
 # vi:sw=4:ts=4:et

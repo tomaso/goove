@@ -34,6 +34,12 @@
             <th>Owner</th><td><a href="{{ job.job_owner.get_absolute_url }}">{{ job.job_owner }}</a></td>
         </tr>
         <tr>
+            <th>Group</th><td><a href="{{ job.job_owner.group.get_absolute_url }}">{{ job.job_owner.group }}</a></td>
+        </tr>
+        <tr>
+            <th>Grid user</th><td><a href="{{ job.job_gridowner.get_absolute_url }}">{{ job.job_gridowner }}</a></td>
+        </tr>
+        <tr>
             <th>Queue</th><td><a href="{{ job.queue.get_absolute_url }}">{{ job.queue }}</a></td>
         </tr>
         <tr>

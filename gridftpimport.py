@@ -49,6 +49,9 @@ def openfile(filename):
     else:
         return open(filename, "r")
 
+def processDPMLogFile(logfile, servernodename):
+    re.findall('"([^="]*)=([^"]*)"', l)
+
 
 def processLogFile(logfile, servernodename):
     """ The main function that does the log parsing """
