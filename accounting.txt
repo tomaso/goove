@@ -1,4 +1,0 @@
-02/11/2010 15:47:33;Q;1228247.torque.farm.particle.cz;queue=isolid
-02/11/2010 15:48:49;S;1228247.torque.farm.particle.cz;user=koubat group=users jobname=STDIN queue=isolid ctime=1265899653 qtime=1265899653 etime=1265899653 start=1265899729 owner=koubat@ui5.farm.particle.cz exec_host=golias121/0 Resource_List.neednodes=golias121
-02/11/2010 15:49:50;E;1228247.torque.farm.particle.cz;user=koubat group=users jobname=STDIN queue=isolid ctime=1265899653 qtime=1265899653 etime=1265899653 start=1265899729 owner=koubat@ui5.farm.particle.cz exec_host=golias121/0 Resource_List.neednodes=golias121 session=27407 end=1265899790 Exit_status=0 resources_used.cput=00:00:00 resources_used.mem=8076kb resources_used.vmem=102116kb resources_used.walltime=00:01:54
-

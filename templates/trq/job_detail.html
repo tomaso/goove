@@ -55,7 +55,12 @@
             <th>Efficiency</th><td>{{ job.efficiency }} %</td>
         </tr>
         <tr>
-            <th>Execution Host</th><td><a href="{{ job.exec_host.get_absolute_url }}">{{ job.exec_host }}</a></td>
+            <th>Execution Host</th>
+            <td>
+            {% for slot in job.jobslots.all %}
+            <a href="{{slot.node.get_absolute_url}}">{{slot.node.name}}</a>/{{slot.slot}}{% if not forloop.last %}<br />{% endif %}
+            {% endfor %}
+            </td>
         </tr>
         <tr>
             <th>Modification time</th><td>{{ job.mtime }}</td>

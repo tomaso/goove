@@ -2,7 +2,10 @@ Packages needed for installation on opensuse 11.2:
 
 mysql >= 5.1
 python-mysql
+
+(not sure if we will use matplotlib or google charts)
 python-matplotlib
+python-django-googlecharts
 
 Mysql settings:
 

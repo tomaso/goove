@@ -15,6 +15,7 @@ os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
 
 import re
 
+from goove.trq.models import JobSlot
 from goove.trq.models import Node
 from goove.trq.models import NodeProperty
 from goove.trq.models import NodeState
@@ -180,14 +181,14 @@ def parseOneLogLine(line,lineno):
     else:
         log(LOG_ERROR, "Unknown event type in accounting log file: %s" % line)
     if job.job_state != getJobState('C'):
-        if new_state == getJobState('R') and job.job_state != getJobState('R'):
-            RunningJob.objects.get_or_create(mainjob=job)
-        elif new_state != getJobState('R') and job.job_state == getJobState('R'):
-            try:
-                rj = RunningJob.objects.get(mainjob=job)
-                rj.delete()
-            except RunningJob.DoesNotExist:
-                pass
+#        if new_state == getJobState('R') and job.job_state != getJobState('R'):
+#            RunningJob.objects.get_or_create(mainjob=job)
+#        elif new_state != getJobState('R') and job.job_state == getJobState('R'):
+#            try:
+#                rj = RunningJob.objects.get(mainjob=job)
+#                rj.delete()
+#            except RunningJob.DoesNotExist:
+#                pass
 
         job.job_state = new_state
     else:
@@ -213,20 +214,29 @@ def parseOneLogLine(line,lineno):
     if attrdir.has_key('end'):
         job.comp_time = datetime.datetime.fromtimestamp(int(attrdir['end']))
     if attrdir.has_key('exec_host'):
-        exec_host_name = attrdir['exec_host'].split("/",1)[0]
-        exec_host,created = getNode(exec_host_name)
-        if created:
-            log(LOG_INFO, "new node (exec_host) will be created: %s" % exec_host_name)
-        job.exec_host = exec_host
+        exec_host_names_slots = attrdir['exec_host'].split('+')
+        job.jobslots.clear()
+        for exec_host_name_slot in exec_host_names_slots:
+            name,slotstr = exec_host_name_slot.split('/')
+            slot = int(slotstr)
+            node,created = getNode(name)
+            if created:
+                log(LOG_INFO, "new node will be created: node name: %s" % (name))
+            js,created = JobSlot.objects.get_or_create(slot=slot,node=node)
+            if created:
+                log(LOG_INFO, "new jobslot will be created: slot: %d, node name: %s" % (slot,name))
+            job.jobslots.add(js)
     job.save()
 
-    # TODO: what if we are parsing the same file again?
     d,t = date.split(' ')
     m,d,y = d.split('/')
-    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
-    if created:
-        log(LOG_INFO, "new account event will be created: %s" % ae.timestamp)
-        ae.save()
+#    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+#    if created:
+#        log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
+#        ae.save()
+    ae = AccountingEvent(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+    log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
+    ae.save()
         
 
 def feedJobsLog(logfile):
@@ -382,11 +392,17 @@ def mergeNodes(mergenodesfile):
             log(LOG_ERROR, "New node %s node is not in the database, this is required, sorry - skipping" % newnodename)
             continue
 
-        jobs = Job.objects.filter(exec_host=oldnode)
-        log(LOG_INFO, "Reassociating %d jobs from node %s to node %s" %(len(jobs), oldnodename, newnodename))
-        for j in jobs:
-            j.exec_host = newnode
-            j.save()
+        oldjobslots = JobSlot.objects.filter(node=oldnode)
+        for ojs in oldjobslots:
+            njs = JobSlot.objects.get(node=newnode,slot=ojs.slot)
+            jobs = Job.objects.filter(jobslots=ojs)
+            for j in jobs:
+                log(LOG_INFO, "For job %s removing jobslot: %s and adding jobslot: %s" % (j,ojs,njs))
+                j.jobslots.remove(ojs)
+                j.jobslots.add(njs)
+                j.save()
+            ojs.delete()
+
         oldnode.delete()
 
 def processGridJobMap(gjmfile):

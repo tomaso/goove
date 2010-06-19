@@ -2,8 +2,32 @@
 
 {% block content %}
 
+<div class="leftmenu">
+
+        <form action="" method="post">
+
+        <h3>User selection</h3>
+        <table>
+        {% for field in user_form.visible_fields %}
+        <tr>
+            <th>{{ field.label_tag }}</th><td>{{ field }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+        <input type="submit" value="Submit" name="submit" />
+
+        </form>
+
+</div>
+
 <div class="maintext">
 
+    {% if user %}
+    <div class="infopanel">
+    <h3>{{user.name}}</h3>
+    </div>
+    {% endif %}
+<!--
     <div class="infopanel">
     <h3>Currently associated jobs</h3>
     <table class="nodejoblist">
@@ -23,7 +47,7 @@
     {% endfor %}
     </table>
     </div>
-
+-->
 </div>
 
 {% endblock content %}

@@ -72,12 +72,13 @@ def getUser(uname, group=None):
         UserCache[uname],created = User.objects.get_or_create(name=uname, group=group)
     return (UserCache[uname],created)
 
-def getGroup(uname):
+def getGroup(gname):
     global GroupCache
     created = False
-    if not GroupCache.has_key(uname):
-        GroupCache[uname],created = Group.objects.get_or_create(name=uname)
-    return (GroupCache[uname],created)
+    if not GroupCache.has_key(gname):
+        GroupCache[gname],created = Group.objects.get_or_create(name=gname)
+    return (GroupCache[gname],created)
+
 
 class BooleanListForm(forms.Form):
     """
