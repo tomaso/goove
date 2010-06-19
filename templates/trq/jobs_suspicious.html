@@ -33,15 +33,19 @@
             </tr>
         </thead>
         <tbody>
-            {% for object in suspicious_jobs %}
+            {% for job in suspicious_jobs %}
             <tr>
-                <td><a href="{{ object.get_absolute_url }}">{{ object.jobid }}</a></td>
-                <td><a href="{{ object.job_owner.get_absolute_url }}">{{ object.job_owner }}</a></td>
-                <td>{{ object.cput }}</td>
-                <td>{{ object.walltime }}</td>
-                <td>{{ object.running_seconds }}</td>
-                <td>{{ object.job_state.shortname }}</td>
-                <td><a href="{{ object.exec_host.get_absolute_url }}">{{ object.exec_host }}</a></td>
+                <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
+                <td><a href="{{ job.job_owner.get_absolute_url }}">{{ job.job_owner }}</a></td>
+                <td>{{ job.cput }}</td>
+                <td>{{ job.walltime }}</td>
+                <td>{{ job.running_seconds }}</td>
+                <td>{{ job.job_state.shortname }}</td>
+                <td>
+                {% for slot in job.jobslots.all %}
+                <a href="{{slot.node.get_absolute_url}}">{{slot.node.name}}</a>/{{slot.slot}}{% if not forloop.last %}<br />{% endif %}
+                {% endfor %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

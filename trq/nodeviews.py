@@ -154,7 +154,7 @@ def nodes_listing(request, filtertype=None, filtervalue=None):
 def nodes_table_json_detail(request):
     pk = request.POST['pk']
     node = Node.objects.get(pk=pk)
-    jobs = Job.objects.filter(exec_host=pk, job_state__shortname='R')
+    jobs = Job.objects.filter(jobslots__node=pk, job_state__shortname='R')
     jdata = { 'name':node.name, 'pk':node.pk, 'jobs':[] }
     for j in jobs:
         jdata['jobs'].append({"jobid":j.jobid, "joburl":j.get_absolute_url(), "queue":j.queue.name, "queueurl":j.queue.get_absolute_url() })
@@ -183,7 +183,7 @@ def node_detail(request, nodename=None):
     node_form.data['node'] = n.pk
     node_form.is_bound = True
 
-    running_jobs = Job.objects.filter(exec_host=n, job_state__shortname="R")
+    running_jobs = Job.objects.filter(jobslots__node=n, job_state__shortname="R")
     updated_running_jobs = []
     for rj in running_jobs:
         if UpdateRunningJob(rj):

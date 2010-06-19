@@ -184,7 +184,7 @@ def jobs_completed_listing(request):
         args['job_gridowner__pk'] = comp_form.data['griduser']
 
     if comp_form.data['node'] != '0':
-        args['exec_host__pk'] = comp_form.data['node']
+        args['jobslots__node__pk'] = comp_form.data['node']
 
     object_list = Job.objects.filter(**args)
         

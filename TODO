@@ -38,6 +38,10 @@ Web interface:
 
 - Nice color tool: http://colorschemedesigner.com/
 
+- Prettier graphs with http://code.google.com/apis/charttools/docs/choosing.html
+
+- User detail, grid user detail, group detail, queue detail (common philosophy)
+
 Database:
 ---------
 

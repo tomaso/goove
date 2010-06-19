@@ -2,6 +2,7 @@ from django.db import models
 import datetime
 
 # Create your models here.
+
 class Node(models.Model):
     name = models.CharField(verbose_name="node name", max_length=30)
     np = models.IntegerField(verbose_name="number of job slots", null=True)
@@ -76,6 +77,19 @@ class NodeProperty(models.Model):
     def get_overview_url():
         return u'/trq/nodes/table/'
 
+
+class JobSlot(models.Model):
+    slot = models.IntegerField(verbose_name="Job slot number")
+    node = models.ForeignKey('Node')
+
+    class Meta:
+        ordering = ['node','slot']
+        unique_together = (('node', 'slot'),)
+
+    def __unicode__(self):
+    	return "%s/%d" % (self.node.name,self.slot)
+
+
 class NodeState(models.Model):
     name = models.CharField(verbose_name="State name", max_length=30)	
     description = models.CharField(max_length=300)
@@ -84,6 +98,7 @@ class NodeState(models.Model):
 
     def __unicode__(self):
     	return self.name
+
 
 class SubCluster(models.Model):
     name = models.CharField(verbose_name="Subcluster name", max_length=30)	
@@ -102,6 +117,7 @@ class SubCluster(models.Model):
     def get_overview_url():
         return u'/trq/nodes/table/'
 
+
 class Job(models.Model):
     jobid = models.IntegerField(db_index=True, editable=False)
     server = models.ForeignKey('TorqueServer', editable=False)
@@ -116,7 +132,7 @@ class Job(models.Model):
     ctime = models.DateTimeField(verbose_name='Creation time', null=True,
         help_text="The time that the job was created.")
     # TODO: will not work for multinode and multislot jobs - we should redesign
-    exec_host = models.ForeignKey('Node', null=True)
+    jobslots = models.ManyToManyField('JobSlot', null=True)
     mtime = models.DateTimeField(verbose_name='modified time', null=True,
         help_text="The time that the job was last modified, changed state or changed locations.")
     qtime = models.DateTimeField(verbose_name='queued time', null=True,
@@ -139,6 +155,11 @@ class Job(models.Model):
     def running_seconds(self):
         diff = datetime.datetime.now() - self.start_time
         return diff.days*24*60*60+diff.seconds
+
+    def exec_hosts(self):
+        """ Return string with hosts used by this job """
+        return ",".join([ js.node.name for js in self.jobslots.all() ])
+       
 
     class Meta:
         ordering = ['jobid']
@@ -266,6 +287,7 @@ class JobState(models.Model):
     class Meta:
         ordering = ['name']
 
+
 class Queue(models.Model):
     name = models.CharField(verbose_name="queue name", max_length=100)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
@@ -289,6 +311,7 @@ class Queue(models.Model):
     @staticmethod
     def get_overview_url():
         return u'/trq/queues/table/'
+
 
 EVENT_CHOICES = (
     ('Q', 'Queued'),
@@ -319,6 +342,7 @@ class NodeLink(models.Model):
     name = models.CharField(max_length=40)
     url = models.CharField(max_length=512)
     config = models.ForeignKey("GlobalConfiguration")
+
 
 class GlobalConfiguration(models.Model):
     """

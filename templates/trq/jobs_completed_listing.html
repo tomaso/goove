@@ -38,17 +38,21 @@
             </tr>
         </thead>
         <tbody>
-            {% for object in jobs_page.object_list %}
+            {% for job in jobs_page.job_list %}
             <tr>
-                <td><a href="{{ object.get_absolute_url }}">{{ object.jobid }}</a></td>
-                <td><a href="{{ object.job_owner.get_absolute_url }}">{{ object.job_owner }}</a></td>
-                <td><a href="{{ object.queue.get_absolute_url }}">{{ object.queue }}</a></td>
-                <td>{{ object.cput }}</td>
-                <td>{{ object.walltime }}</td>
-                <td>{{ object.efficiency }}</td>
-                <td>{{ object.job_state.shortname }}</td>
-                <td>{{ object.comp_time }}</td>
-                <td><a href="{{ object.exec_host.get_absolute_url }}">{{ object.exec_host }}</a></td>
+                <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
+                <td><a href="{{ job.job_owner.get_absolute_url }}">{{ job.job_owner }}</a></td>
+                <td><a href="{{ job.queue.get_absolute_url }}">{{ job.queue }}</a></td>
+                <td>{{ job.cput }}</td>
+                <td>{{ job.walltime }}</td>
+                <td>{{ job.efficiency }}</td>
+                <td>{{ job.job_state.shortname }}</td>
+                <td>{{ job.comp_time }}</td>
+                <td>
+                {% for slot in job.jobslots.all %}
+                <a href="{{slot.node.get_absolute_url}}">{{slot.node.name}}</a>/{{slot.slot}}{% if not forloop.last %}<br />{% endif %}
+                {% endfor %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

@@ -34,7 +34,7 @@ class SubClusterAdmin(admin.ModelAdmin):
 
 
 class JobAdmin(admin.ModelAdmin):
-    list_display = ('jobid', 'job_state', 'job_owner', 'exec_host' )
+    list_display = ('jobid', 'job_state', 'job_owner' )
     
 
 admin.site.register(Node, NodeAdmin)
