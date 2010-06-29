@@ -36,7 +36,7 @@ from xml.parsers.expat import ExpatError
 
 from goove.trq.helpers import feedJobsXML,Configuration
 from goove.trq.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
-from goove.trq.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup
+from goove.trq.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup, getSubmitHost
 from goove.trq.helpers import getRunningCountQstat
 
 
@@ -148,6 +148,20 @@ def parseOneLogLine(line,lineno):
     if created:
         log(LOG_INFO, "new job will be created: %s.%s" % (jobid_name, server_name))
 
+    if attrdir.has_key('owner'):
+        shname = attrdir['owner'].split('@')[1]
+        submithost,created = getSubmitHost(shname)
+        if created:
+            log(LOG_INFO, "new submit host will be created: %s" % shname)
+        job.submithost = submithost
+
+    if attrdir.has_key('requestor'):
+        shname = attrdir['requestor'].split('@')[1]
+        submithost,created = getSubmitHost(shname)
+        if created:
+            log(LOG_INFO, "new submit host will be created: %s" % shname)
+        job.submithost = submithost
+
     if attrdir.has_key('group'):
         group,created = getGroup(attrdir['group'])
         if created:
@@ -230,13 +244,13 @@ def parseOneLogLine(line,lineno):
 
     d,t = date.split(' ')
     m,d,y = d.split('/')
-#    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
-#    if created:
-#        log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
-#        ae.save()
-    ae = AccountingEvent(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
-    log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
-    ae.save()
+    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+    if created:
+        log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
+        ae.save()
+#    ae = AccountingEvent(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+#    log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
+#    ae.save()
         
 
 def feedJobsLog(logfile):
@@ -414,7 +428,11 @@ def processGridJobMap(gjmfile):
         if d['lrmsID']=='none' or d['lrmsID']=='FAILED':
             continue
         jobid,tsname = d['lrmsID'].split('.',1)
-        job = Job.objects.get(jobid=jobid, server__name=tsname)
+        try:
+            job = Job.objects.get(jobid=jobid, server__name=tsname)
+        except Job.DoesNotExist:
+            log(LOG_ERROR, "gridjobmap refers to a job that is not present in database: %s" % (l))
+            continue
         griduser,created = GridUser.objects.get_or_create(dn=d['userDN'])
         if created:
             log(LOG_INFO, "new griduser will be created: %s" % (d['userDN']))
