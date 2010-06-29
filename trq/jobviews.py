@@ -10,6 +10,7 @@ from models import GridUser
 from models import Node
 from models import TorqueServer
 from models import AccountingEvent
+from models import SubmitHost
 from helpers import BooleanListForm,UpdateRunningJob
 from django import forms
 import colorsys
@@ -64,7 +65,6 @@ class CompletedForm(forms.Form):
     """
     Form with filters on completed jobs.
     """
-    # TODO: many more fields here
     wfrom = forms.DateField(
         label="Completed after", 
         initial=date.fromordinal(date.today().toordinal()-1).isoformat(),
@@ -118,6 +118,11 @@ class CompletedForm(forms.Form):
         initial=0,
         choices=[ (0,'Any') ]+[ (n.pk,n.name) for n in Node.objects.all() ]
     )
+    submithost = forms.ChoiceField(
+        label="Submit host",
+        initial=0,
+        choices=[ (0,'Any') ]+[ (sh.pk,sh.name) for sh in SubmitHost.objects.all() ]
+    )
     page = forms.IntegerField(
         initial=1,
         widget=forms.HiddenInput()
@@ -156,6 +161,7 @@ def jobs_completed_listing(request):
     comp_form.data['group'] = request.POST['group']
     comp_form.data['griduser'] = request.POST['griduser']
     comp_form.data['node'] = request.POST['node']
+    comp_form.data['submithost'] = request.POST['submithost']
     comp_form.data['page'] = request.POST['page']
     if request.POST['submit']=='>>':
         comp_form.data['page'] = int(comp_form.data['page']) + 1
@@ -185,6 +191,9 @@ def jobs_completed_listing(request):
 
     if comp_form.data['node'] != '0':
         args['jobslots__node__pk'] = comp_form.data['node']
+
+    if comp_form.data['submithost'] != '0':
+        args['submithost__pk'] = comp_form.data['submithost']
 
     object_list = Job.objects.filter(**args)
         

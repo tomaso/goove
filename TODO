@@ -13,7 +13,8 @@ Data feeder:
 - remove xml parsing of jobs, let the web interface to poll job status only if it is running
 and if a user asks for details (we can store last update at Running job and cache data in DB via model methods)
 
-- store user groups (in model and then add them manually in mysql)
+- when a Job is not started yet and deleted it does not have valid start_time and comp_time, this can be propagated
+from accounting events (example at fzu site: 3235577)
 
 Web interface:
 --------------
@@ -24,11 +25,8 @@ Web interface:
 - let the queue graph select between days, weeks and months aggregation
 - move jobs/statistics to queues/pie chart
 - with graph, draw also html table with results
-- better css for overview of nodes
-- enhance detail page (for node, queue and user) with some tables and graphs
 - list completed jobs on node detail page in pages not the entire list
 - administration interface
-- better logging of events and profiling data
 
 - The main form for querying db for finished jobs is /trq/jobs/completed_listing
   - make this form much richer and configurable
@@ -41,12 +39,21 @@ Web interface:
 - Prettier graphs with http://code.google.com/apis/charttools/docs/choosing.html
 
 - User detail, grid user detail, group detail, queue detail (common philosophy)
+- enhance detail page (for node, queue and user) with some tables and graphs
+
+- Sessions - store status of node
+
+- We should have a page with failed jobs (not Exited, Exited with error etc.)
 
 Database:
 ---------
 
-- mysql separation on job table (not possible with the indexes, better try index on timestamps)
 - make sure TorqueServer is only one
+
+Configuration
+-------------
+
+- Turn on/off node overview - we can work in a "accounting only" mode
 
 
 Documentation:

@@ -118,6 +118,19 @@ class SubCluster(models.Model):
         return u'/trq/nodes/table/'
 
 
+class SubmitHost(models.Model):
+    name = models.CharField(verbose_name="Where the job was submitted from", max_length=64)
+    color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
+    
+    @staticmethod
+    def get_overview_name():
+        return u'submithost'
+
+    @staticmethod
+    def get_overview_url():
+        return u'/trq/'
+
+
 class Job(models.Model):
     jobid = models.IntegerField(db_index=True, editable=False)
     server = models.ForeignKey('TorqueServer', editable=False)
@@ -141,6 +154,7 @@ class Job(models.Model):
         help_text="The time that the job became eligible to run, i.e. in a queued state while residing in an execution queue.")
     start_time = models.DateTimeField(verbose_name='Start time', null=True)
     comp_time = models.DateTimeField(verbose_name='Completion time', null=True)
+    submithost = models.ForeignKey('SubmitHost', null=True)
 
     def get_absolute_url(self):
         return u"/trq/jobs/detail/%s/%d/" % (self.server,self.jobid)

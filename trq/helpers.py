@@ -1,5 +1,5 @@
 from django import forms
-from models import Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, User, Group, JobState, Queue, AccountingEvent
+from models import Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, User, Group, JobState, Queue, AccountingEvent, SubmitHost
 import subprocess
 from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
@@ -19,6 +19,7 @@ NodeCache = {}
 TorqueServerCache = {}
 UserCache = {}
 GroupCache = {}
+SubmitHostCache = {}
 
 Configuration = {
     'loglevel': LOG_DEBUG
@@ -79,6 +80,13 @@ def getGroup(gname):
         GroupCache[gname],created = Group.objects.get_or_create(name=gname)
     return (GroupCache[gname],created)
 
+def getSubmitHost(shname):
+    global SubmitHostCache
+    created = False
+    if not SubmitHostCache.has_key(shname):
+        SubmitHostCache[shname],created = SubmitHost.objects.get_or_create(name=shname)
+    return (SubmitHostCache[shname],created)
+
 
 class BooleanListForm(forms.Form):
     """
@@ -136,7 +144,9 @@ def feedJobsXML(x, cleanLostJobs=False):
     updated_jobs = []
 
     for i in x.childNodes[0].childNodes:
-        new_full_jobid = i.getElementsByTagName("Job_Id")[0].childNodes[0].nodeValue
+        #new_full_jobid = i.getElementsByTagName("Job_Id")[0].childNodes[0].nodeValue
+        # currently the job id is text element and it is the first child of the <Job> element
+        new_full_jobid = i.firstChild.nodeValue
         new_jobid_name, new_server_name = JOBID_REGEX.search(new_full_jobid).groups()
 
         new_server,created = TorqueServer.objects.get_or_create(name=new_server_name)
@@ -238,6 +248,9 @@ def UpdateRunningJob(job):
     Returns False if the job could not be updated and it is then moved
     to lost jobs.
     """
+    # if the data feeder is currently running, some jobs may be marked Lost by mistake, but when the
+    # feeder runs again it finishes them correctly (switch them from Lost to Completed)
+
 #    TODO: does not work in multithreaded environment
 #    signal.signal(signal.SIGALRM, alarm_handler)
 #    signal.alarm(20)

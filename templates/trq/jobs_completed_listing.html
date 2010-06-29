@@ -35,10 +35,11 @@
                 <th>State</th>
                 <th>Completion time</th>
                 <th>Host</th>
+                <th>Submit Host</th>
             </tr>
         </thead>
         <tbody>
-            {% for job in jobs_page.job_list %}
+            {% for job in jobs_page.object_list %}
             <tr>
                 <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
                 <td><a href="{{ job.job_owner.get_absolute_url }}">{{ job.job_owner }}</a></td>
@@ -53,6 +54,7 @@
                 <a href="{{slot.node.get_absolute_url}}">{{slot.node.name}}</a>/{{slot.slot}}{% if not forloop.last %}<br />{% endif %}
                 {% endfor %}
                 </td>
+                <td>{{ job.submithost.name }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -63,7 +65,7 @@
         {% if jobs_page.has_previous %}
         <input type="submit" value="<<" name="submit" />
         {% endif %}
-        {{ jobs_page.number }} of {{ paginator.num_pages }}
+        {{ jobs_page.number }} of {{ paginator.num_pages }} ({{ paginator.count }} total jobs)
         {% if jobs_page.has_next %}
         <input type="submit" value=">>" name="submit" />
         {% endif %}

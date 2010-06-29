@@ -9,13 +9,14 @@ from models import User
 from models import Queue
 from models import TorqueServer
 from models import AccountingEvent
+from models import SubmitHost
 
 
 from django import forms
 
 def overview(request):
     info = []
-    for c in (Node, SubCluster, NodeProperty, User, Queue, Job):
+    for c in (Node, SubCluster, NodeProperty, User, Queue, Job, SubmitHost):
         item = {}
         item['name'] = c.get_overview_name()
         item['count'] = c.objects.all().count()

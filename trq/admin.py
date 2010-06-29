@@ -9,6 +9,7 @@ from goove.trq.models import GridUser
 from goove.trq.models import Group
 from goove.trq.models import JobState
 from goove.trq.models import Queue
+from goove.trq.models import SubmitHost
 from django.contrib import admin
 
 #class NodePropertyInline(admin.StackedInline):
@@ -32,7 +33,6 @@ class SubClusterAdmin(admin.ModelAdmin):
     list_display = ('name',)
     inlines = [NodeInline]
 
-
 class JobAdmin(admin.ModelAdmin):
     list_display = ('jobid', 'job_state', 'job_owner' )
     
@@ -48,5 +48,6 @@ admin.site.register(GridUser)
 admin.site.register(Group)
 admin.site.register(JobState)
 admin.site.register(Queue)
+admin.site.register(SubmitHost)
 
 # vi:ts=4:sw=4:expandtab
