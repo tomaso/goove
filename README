@@ -15,8 +15,14 @@ Mysql settings:
 
 installation:
 
+start mysql
+log into mysql as an admin:
+  create database goove;
+  grant all on goove.* to 'koubat'@'localhost';
+  flush privileges;
 
 python manage.py syncdb
+
 		
 
 configuration:

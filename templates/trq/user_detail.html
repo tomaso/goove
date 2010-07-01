@@ -23,9 +23,16 @@
 <div class="maintext">
 
     {% if user %}
+    {% if summary %}
     <div class="infopanel">
-    <h3>{{user.name}}</h3>
+    <h3>Summary</h3>
+    <table class="nodejoblist">
+    {% for sk,sv in summary %}
+        <tr><th>{{sk}}</th><td>{{sv}}</td></tr>
+    {% endfor %}
+    </table>
     </div>
+    {% endif %}
     {% endif %}
 <!--
     <div class="infopanel">
