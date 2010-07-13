@@ -291,8 +291,8 @@ def feedJobsLog(logfile):
     lineno = 0
     for line in logfile:
         lineno += 1
-#        parseOneLogLine(line, lineno)
-        fixExitStatusLogLine(line, lineno)
+        parseOneLogLine(line, lineno)
+#        fixExitStatusLogLine(line, lineno)
 
 
 def openfile(filename):
