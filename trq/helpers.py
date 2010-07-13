@@ -1,5 +1,6 @@
 from django import forms
-from models import Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, User, Group, JobState, Queue, AccountingEvent, SubmitHost
+from django.shortcuts import render_to_response
+from models import Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, User, Group, JobState, Queue, AccountingEvent, SubmitHost, GlobalConfiguration
 import subprocess
 from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
@@ -284,6 +285,12 @@ def getRunningCountQstat():
     out,err = subprocess.Popen(["/bin/sh", "-c", "qstat @torque.farm.particle.cz | grep ' R '"], stdout=subprocess.PIPE).communicate()
     return out.count('\n')
 
+def render_to_response_with_config(template_name, dictionary=None, context_instance=None):
+    if dictionary:
+        dictionary['global_config'] = GlobalConfiguration.objects.get(pk=1)
+    else:
+        dictionary = {'global_config':GlobalConfiguration.objects.get(pk=1)}
+    return render_to_response(template_name, dictionary, context_instance)
 
 
 # vi:sw=4:ts=4:et

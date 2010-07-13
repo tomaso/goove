@@ -1,6 +1,5 @@
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
 from models import JobState
 from models import Job
 from models import Queue
@@ -11,7 +10,7 @@ from models import Node
 from models import TorqueServer
 from models import AccountingEvent
 from models import SubmitHost
-from helpers import BooleanListForm,UpdateRunningJob
+from helpers import BooleanListForm,UpdateRunningJob,render_to_response_with_config
 from django import forms
 import colorsys
 import matplotlib
@@ -123,6 +122,11 @@ class CompletedForm(forms.Form):
         initial=0,
         choices=[ (0,'Any') ]+[ (sh.pk,sh.name) for sh in SubmitHost.objects.all() ]
     )
+    exitstatus = forms.ChoiceField(
+        label="Exit status",
+        initial=0,
+        choices=[ (0, 'Any'), (1,'=0'), (2,'>0') ]
+    )
     page = forms.IntegerField(
         initial=1,
         widget=forms.HiddenInput()
@@ -144,7 +148,7 @@ class JobSelectForm(forms.Form):
 def jobs_completed_listing(request):
     comp_form = CompletedForm()
     if not request.POST:
-        return render_to_response(
+        return render_to_response_with_config(
             'trq/jobs_completed_listing.html',
             {'jobs_page':[], 'paginator':None,
             'comp_form':comp_form}
@@ -162,6 +166,7 @@ def jobs_completed_listing(request):
     comp_form.data['griduser'] = request.POST['griduser']
     comp_form.data['node'] = request.POST['node']
     comp_form.data['submithost'] = request.POST['submithost']
+    comp_form.data['exitstatus'] = request.POST['exitstatus']
     comp_form.data['page'] = request.POST['page']
     if request.POST['submit']=='>>':
         comp_form.data['page'] = int(comp_form.data['page']) + 1
@@ -195,6 +200,11 @@ def jobs_completed_listing(request):
     if comp_form.data['submithost'] != '0':
         args['submithost__pk'] = comp_form.data['submithost']
 
+    if comp_form.data['exitstatus'] == '1':
+        args['exit_status__exact'] = 0
+    elif comp_form.data['exitstatus'] == '2':
+        args['exit_status__gt'] = 0
+
     object_list = Job.objects.filter(**args)
         
     page = int(comp_form.data['page'])
@@ -203,7 +213,7 @@ def jobs_completed_listing(request):
         page=1
     jobs_page = paginator.page(page)
 
-    return render_to_response(
+    return render_to_response_with_config(
         'trq/jobs_completed_listing.html',
         {'jobs_page':jobs_page, 'paginator':paginator,
         'comp_form':comp_form}
@@ -213,7 +223,7 @@ def jobs_completed_listing(request):
 def job_detail(request, servername=None, jobid=None):
     select_form = JobSelectForm()
     if not request.POST and jobid==None:
-        return render_to_response(
+        return render_to_response_with_config(
             'trq/job_detail.html',
             {'select_form':select_form, 'job':None, 'accevents':[]}
         )
@@ -234,7 +244,7 @@ def job_detail(request, servername=None, jobid=None):
         UpdateRunningJob(job)
 
     accevents = AccountingEvent.objects.filter(job=job)
-    return render_to_response(
+    return render_to_response_with_config(
         'trq/job_detail.html',
         {'select_form':select_form, 'job':job, 'accevents':accevents}
         )
@@ -258,7 +268,7 @@ def stats(request):
         query_form.data['wfrom'] = request.POST['wfrom']
         query_form.data['wto'] = request.POST['wto']
         query_form.is_bound = True
-    return render_to_response(
+    return render_to_response_with_config(
         'trq/jobs_stats.html', 
         {'query_form':query_form, 'jobs':jobs, 'graph_data':graph_data}
         )
@@ -302,7 +312,7 @@ def suspicious(request):
     sf = SuspicionForm()
     print sf
     print jobs
-    return render_to_response(
+    return render_to_response_with_config_with_config(
         'trq/jobs_suspicious.html', 
         {'suspicion_form':sf, 'suspicious_jobs':jobs}
         )

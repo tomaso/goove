@@ -16,6 +16,8 @@ and if a user asks for details (we can store last update at Running job and cach
 - when a Job is not started yet and deleted it does not have valid start_time and comp_time, this can be propagated
 from accounting events (example at fzu site: 3235577)
 
+- FIX node renaming and merging nodes
+
 Web interface:
 --------------
 
@@ -45,10 +47,17 @@ Web interface:
 
 - We should have a page with failed jobs (not Exited, Exited with error etc.)
 
+- We should return most pages with no-cache
+
 Database:
 ---------
 
 - make sure TorqueServer is only one
+
+Overview Mode
+-------------
+
+- Connect to nagios (via mklive)
 
 Configuration
 -------------
@@ -58,6 +67,5 @@ Configuration
 
 Documentation:
 --------------
-
 
 Mention silk icon pack: http://www.famfamfam.com/lab/icons/silk/

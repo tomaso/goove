@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from helpers import render_to_response_with_config
 from models import Node
 from models import SubCluster
 from models import NodeProperty
@@ -31,7 +31,7 @@ def overview(request):
             {'queue':q,'Q':nums['Q'],'R':nums['R']}
         )
 
-    return render_to_response(
+    return render_to_response_with_config(
         'trq/overview.html', 
         { 'info': info,
           'queues' : queues,

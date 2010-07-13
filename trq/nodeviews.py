@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.core import serializers
 from django.utils import simplejson
-from django.shortcuts import render_to_response
+from helpers import render_to_response_with_config
 from models import Node
 from models import SubCluster
 from models import NodeProperty
@@ -35,10 +35,10 @@ class NodeDetailForm(forms.Form):
     )
 
 def index(request):
-    return render_to_response('trq/index.html', {})
+    return render_to_response_with_config('trq/index.html', {})
 
 def nodes(request):
-	return render_to_response('trq/nodes.html', {})
+	return render_to_response_with_config('trq/nodes.html', {})
 
 def nodes_table(request, nodename=None):
     # Tabulka vsech uzlu s graficky naznacenim v jakem stavu jsou
@@ -72,7 +72,7 @@ def nodes_table(request, nodename=None):
         sc_nodes.append(sn)
 
     nodestates = NodeState.objects.all().order_by('name')
-    return render_to_response(
+    return render_to_response_with_config(
         'trq/nodes_table.html', 
         {'sc_nodes':sc_nodes, 'nodestates':nodestates, 'colswidth':cols, 'detailnode':detailnode, 'detailform':node_form}
         )
@@ -145,7 +145,7 @@ def nodes_listing(request, filtertype=None, filtervalue=None):
         properties_form.setData( dict(zip(properties, len(properties)*[True])) )
         states_form.setData( dict(zip(states, len(states)*[True])) )
 
-    return render_to_response(
+    return render_to_response_with_config(
         'trq/nodes_listing.html', 
         {'nodes_list':nodes, 'subcluster_form':subcluster_form, 
         'properties_form':properties_form, 'states_form':states_form}
@@ -173,7 +173,7 @@ def node_detail(request, nodename=None):
 
     node_form = NodeDetailForm()
     if not request.POST and not nodename:
-        return render_to_response('trq/node_detail.html', 
+        return render_to_response_with_config('trq/node_detail.html', 
             {'node':None, 'node_form':node_form})
         
     if nodename:
@@ -191,7 +191,7 @@ def node_detail(request, nodename=None):
             updated_running_jobs.append(rj)
             print "rj.walltime: ", rj.walltime
 
-    return render_to_response('trq/node_detail.html', 
+    return render_to_response_with_config('trq/node_detail.html', 
         {'node':n, 'running_jobs': updated_running_jobs, 'node_form':node_form
         }
     )

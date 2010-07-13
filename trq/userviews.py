@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from helpers import render_to_response_with_config
 from django import forms
 from models import Node
 from models import SubCluster
@@ -26,7 +26,7 @@ class UserSelectForm(CommonUserForm):
 def users_overview(request):
     users = User.objects.all()
     job_states = JobState.objects.all()
-    return render_to_response(
+    return render_to_response_with_config(
         'trq/users_overview.html',
         {'users_list':users, 'job_states':job_states}
         )
@@ -79,7 +79,7 @@ def user_detail(request, username=None):
             summary.append(('Month average efficiency',msummary['efficiency__avg']))
         
 
-    return render_to_response(
+    return render_to_response_with_config(
         'trq/user_detail.html',
         {'user':detailuser, 'user_form':user_form,
         'summary':summary}
