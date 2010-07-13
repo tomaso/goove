@@ -155,6 +155,7 @@ class Job(models.Model):
     start_time = models.DateTimeField(verbose_name='Start time', null=True)
     comp_time = models.DateTimeField(verbose_name='Completion time', null=True)
     submithost = models.ForeignKey('SubmitHost', null=True)
+    exit_status = models.IntegerField('Exit status', null=True)
 
     def get_absolute_url(self):
         return u"/trq/jobs/detail/%s/%d/" % (self.server,self.jobid)
@@ -362,8 +363,8 @@ class GlobalConfiguration(models.Model):
     """
     Object with global configuration.
     """
-    pass
-    #name = models.CharField(max_length=40)
+    livestatus = models.BooleanField(help_text="Should the node status be periodically updated and overview shown.")
+
 
 
     

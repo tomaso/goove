@@ -82,6 +82,7 @@
     "model" : "trq.GlobalConfiguration",
     "pk": 1,
     "fields": {
+      "livestatus" : false
     }
   },
   {

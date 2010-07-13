@@ -121,9 +121,37 @@ def feedNodesXML(x):
             n.state.add(state)
         n.save()
 
+def fixExitStatusLogLine(line,lineno):
+    """
+    One time helper function. It adds exit_status property to the jobs. 
+    """
+    try:
+        date,event,fulljobid,attrs = line.split(';')
+    except ValueError:
+        log(LOG_WARNING, "skipping invalid line %d: '%s'" % (lineno,line))
+        return
+        
+    log(LOG_DEBUG, "processing accounting line: %s:%s:%s ..." %(date, event, fulljobid))
+    attrdir = {}
+    try:
+        for key,val in map(lambda x: x.split('=',1), attrs.split()): 
+            attrdir[key] = val
+    except ValueError:
+        log(LOG_WARNING, "skipping line with invalid attribues %d: '%s'" % (lineno,attrs))
+
+    jobid_name, server_name = JOBID_REGEX.search(fulljobid).groups()
+    server,created = getTorqueServer(server_name)
+    job,created = Job.objects.get_or_create(jobid=int(jobid_name), server=server)
+    if attrdir.has_key('Exit_status'):
+        job.exit_status = int(attrdir['Exit_status'])
+        job.save()
+
+
+    
+
 def parseOneLogLine(line,lineno):
     """
-    Parse one line from accounting log and insert the date into DB.
+    Parse one line from accounting log and insert the data into DB.
     """
     try:
         date,event,fulljobid,attrs = line.split(';')
@@ -185,6 +213,9 @@ def parseOneLogLine(line,lineno):
             job.efficiency = 100*job.cput/job.walltime
         else:
             job.efficiency = 0
+
+    if attrdir.has_key('Exit_status'):
+        job.exit_status = int(attrdir['Exit_status'])
 
     if event=='Q':
         new_state = getJobState('Q')
@@ -260,7 +291,8 @@ def feedJobsLog(logfile):
     lineno = 0
     for line in logfile:
         lineno += 1
-        parseOneLogLine(line, lineno)
+#        parseOneLogLine(line, lineno)
+        fixExitStatusLogLine(line, lineno)
 
 
 def openfile(filename):
