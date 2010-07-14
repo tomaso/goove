@@ -496,7 +496,7 @@ def main():
     opt_parser.add_option("-x", "--removeall", action="store_true", dest="removeall", default=False, 
         help="Remove everything from tables (debug option, use with care)")
     opt_parser.add_option("-m", "--mergenodes", action="append", dest="mergenodesfile", metavar="FILE",
-        help="Merge nodes according to a file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode")
+        help="Merge nodes according to a file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode. Please note that the new node must be already present in the database with all its jobslots.")
     opt_parser.add_option("-g", "--gridjobmap", action="append", dest="gridjobmapfiles", metavar="FILE",
         help="Parse grid-jobmap files so we can find out the grid user for a job")
     # TODO: move "one time hacks" into a separate group of help lines ^^
