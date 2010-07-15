@@ -122,6 +122,11 @@ class CompletedForm(forms.Form):
         initial=0,
         choices=[ (0,'Any') ]+[ (sh.pk,sh.name) for sh in SubmitHost.objects.all() ]
     )
+    jobstatus = forms.ChoiceField(
+        label="Finished status",
+        initial=0,
+        choices=[ (0,'Any') ]+[ (js.pk,js.name) for js in JobState.objects.filter(terminal=True) ]
+    )
     exitstatus = forms.ChoiceField(
         label="Exit status",
         initial=0,
@@ -167,6 +172,7 @@ def jobs_completed_listing(request):
     comp_form.data['node'] = request.POST['node']
     comp_form.data['submithost'] = request.POST['submithost']
     comp_form.data['exitstatus'] = request.POST['exitstatus']
+    comp_form.data['jobstatus'] = request.POST['jobstatus']
     comp_form.data['page'] = request.POST['page']
     if request.POST['submit']=='>>':
         comp_form.data['page'] = int(comp_form.data['page']) + 1
@@ -204,6 +210,9 @@ def jobs_completed_listing(request):
         args['exit_status__exact'] = 0
     elif comp_form.data['exitstatus'] == '2':
         args['exit_status__gt'] = 0
+
+    if comp_form.data['job_state'] != '0':
+        args['job_state__pk'] = comp_form.data['job_state']
 
     object_list = Job.objects.filter(**args)
         

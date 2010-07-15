@@ -4,7 +4,8 @@
     "pk": 1,
     "fields": {
       "name": "Completed",
-      "shortname": "C"
+      "shortname": "C",
+      "terminal": true
     }
   },
   {
@@ -12,7 +13,8 @@
     "pk": 2,
     "fields": {
       "name": "Exiting",
-      "shortname": "E"
+      "shortname": "E",
+      "terminal": true
     }
   },
   {
@@ -20,7 +22,8 @@
     "pk": 3,
     "fields": {
       "name": "Held",
-      "shortname": "H"
+      "shortname": "H",
+      "terminal": false
     }
   },
   {
@@ -28,7 +31,8 @@
     "pk": 4,
     "fields": {
       "name": "Queued",
-      "shortname": "Q"
+      "shortname": "Q",
+      "terminal": false
     }
   },
   {
@@ -36,7 +40,8 @@
     "pk": 5,
     "fields": {
       "name": "Running",
-      "shortname": "R"
+      "shortname": "R",
+      "terminal": false
     }
   },
   {
@@ -44,7 +49,8 @@
     "pk": 6,
     "fields": {
       "name": "Transferred",
-      "shortname": "T"
+      "shortname": "T",
+      "terminal": false
     }
   },
   {
@@ -52,7 +58,8 @@
     "pk": 7,
     "fields": {
       "name": "Waiting",
-      "shortname": "W"
+      "shortname": "W",
+      "terminal": false
     }
   },
   {
@@ -60,7 +67,8 @@
     "pk": 8,
     "fields": {
       "name": "Suspended",
-      "shortname": "S"
+      "shortname": "S",
+      "terminal": false
     }
   },
   {
@@ -68,7 +76,26 @@
     "pk": 9,
     "fields": {
       "name": "Lost",
-      "shortname": "L"
+      "shortname": "L",
+      "terminal": true
+    }
+  },
+  {
+    "model" : "trq.jobstate",
+    "pk": 10,
+    "fields": {
+      "name": "Aborted",
+      "shortname": "A",
+      "terminal": true
+    }
+  },
+  {
+    "model" : "trq.jobstate",
+    "pk": 11,
+    "fields": {
+      "name": "Deleted",
+      "shortname": "D",
+      "terminal": true
     }
   },
   {
