@@ -296,6 +296,7 @@ class JobState(models.Model):
     name = models.CharField(verbose_name="job state name", max_length=100)
     shortname = models.CharField(verbose_name="abbreviation", max_length=1)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
+    terminal = models.BooleanField(help_text="Whether this state is terminal.")
     def __unicode__(self):
     	return self.name
 

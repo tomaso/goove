@@ -221,8 +221,12 @@ def parseOneLogLine(line,lineno):
         new_state = getJobState('Q')
     elif event=='S' or event=='R' or event=='C' or event=='T':
         new_state = getJobState('R')
-    elif event=='E' or event=='D' or event=='A':
+    elif event=='E'::
         new_state = getJobState('C')
+    elif event=='D':
+        new_state = getJobState('D')
+    elif event=='A':
+        new_state = getJobState('A')
     else:
         log(LOG_ERROR, "Unknown event type in accounting log file: %s" % line)
     if job.job_state != getJobState('C'):
