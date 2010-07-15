@@ -326,4 +326,16 @@ def suspicious(request):
         {'suspicion_form':sf, 'suspicious_jobs':jobs}
         )
 
+def report_form(request):
+    """
+    View form for reporting job data. This report is than returned as html or pdf.
+    """
+    pass
+
+def report_output(request):
+    """
+    Render the actual report.
+    """
+    pass
+
 # vi:ts=4:sw=4:expandtab

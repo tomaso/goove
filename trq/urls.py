@@ -27,6 +27,8 @@ urlpatterns = patterns('',
     (r'^jobs/detail/(?P<servername>.*)/(?P<jobid>.*)/$', 'goove.trq.jobviews.job_detail'),
     (r'^jobs/detail/$', 'goove.trq.jobviews.job_detail'),
     (r'^jobs/completed_listing/$', 'goove.trq.jobviews.jobs_completed_listing'),
+    (r'^jobs/report_form/$', 'goove.trq.jobviews.report_form'),
+    (r'^jobs/report_output/$', 'goove.trq.jobviews.report_output'),
 
     (r'^jobs/graph/$', 'goove.trq.jobviews.graph'),
 
