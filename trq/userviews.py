@@ -17,6 +17,10 @@ from django.db.models import Sum,Avg,Count
 from common_forms import CommonUserForm
 
 class UserSelectForm(CommonUserForm):
+    summary = forms.BooleanField(
+        label="summary",
+        initial=False
+    )
     user = forms.ChoiceField(
         label="user",
         initial=User.objects.all()[0],
