@@ -14,7 +14,7 @@
     "fields": {
       "name": "Exiting",
       "shortname": "E",
-      "terminal": true
+      "terminal": false
     }
   },
   {
