@@ -122,7 +122,7 @@ class CompletedForm(forms.Form):
         initial=0,
         choices=[ (0,'Any') ]+[ (sh.pk,sh.name) for sh in SubmitHost.objects.all() ]
     )
-    jobstatus = forms.ChoiceField(
+    job_state = forms.ChoiceField(
         label="Finished status",
         initial=0,
         choices=[ (0,'Any') ]+[ (js.pk,js.name) for js in JobState.objects.filter(terminal=True) ]
@@ -172,7 +172,7 @@ def jobs_completed_listing(request):
     comp_form.data['node'] = request.POST['node']
     comp_form.data['submithost'] = request.POST['submithost']
     comp_form.data['exitstatus'] = request.POST['exitstatus']
-    comp_form.data['jobstatus'] = request.POST['jobstatus']
+    comp_form.data['job_state'] = request.POST['job_state']
     comp_form.data['page'] = request.POST['page']
     if request.POST['submit']=='>>':
         comp_form.data['page'] = int(comp_form.data['page']) + 1
