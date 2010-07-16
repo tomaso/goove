@@ -474,6 +474,13 @@ def processGridJobMap(gjmfile):
             log(LOG_INFO, "new griduser will be created: %s" % (d['userDN']))
         job.job_gridowner = griduser
         job.save()
+
+def findDeletedJobs():
+    """ Find deleted jobs (in accounting events table) and mark them as deleted in job table.
+    Many jobs have Delete request in AccEvnt table but they are not really deleted (they
+    finish ok, or get aborted). This function should filter those.
+    """
+    pass
     
 
 def main():
