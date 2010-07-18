@@ -1,4 +1,6 @@
 from goove.trq.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
+from django.db.models import Avg, Max, Min, Count
+from goove.trq.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
 
 def removeContent():
     for ns in NodeState.objects.all():
@@ -45,7 +47,7 @@ def findDeletedJobs():
     # so we get the job one by one
     maxjobid = Job.objects.filter(job_state__shortname='C').aggregate(Max("id"))['id__max']
     #for n in range(1,maxjobid+1):
-    for n in range(1,maxjobid+1):
+    for n in range(916220,maxjobid+1):
         j = Job.objects.get(pk=n)
         aes = AccountingEvent.objects.filter(job=j).order_by("-timestamp")
         ae = aes[0]
