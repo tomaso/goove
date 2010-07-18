@@ -15,6 +15,8 @@ os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
 
 import re
 
+from django.db.models import Avg, Max, Min, Count
+
 from goove.trq.models import JobSlot
 from goove.trq.models import Node
 from goove.trq.models import NodeProperty
@@ -221,7 +223,7 @@ def parseOneLogLine(line,lineno):
         new_state = getJobState('Q')
     elif event=='S' or event=='R' or event=='C' or event=='T':
         new_state = getJobState('R')
-    elif event=='E'::
+    elif event=='E':
         new_state = getJobState('C')
     elif event=='D':
         new_state = getJobState('D')
@@ -480,11 +482,26 @@ def findDeletedJobs():
     Many jobs have Delete request in AccEvnt table but they are not really deleted (they
     finish ok, or get aborted). This function should filter those.
     """
-    pass
-    
+    # TODO: check that checkEventsRunningJob is still right
+    # Evaluation of all the jobs get realy looot of memory 
+    # so we get the job one by one
+    maxjobid = Job.objects.filter(job_state__shortname='C').aggregate(Max("id"))['id__max']
+    #for n in range(1,maxjobid+1):
+    for n in range(1,maxjobid+1):
+        j = Job.objects.get(pk=n)
+        aes = AccountingEvent.objects.filter(job=j).order_by("-timestamp")
+        ae = aes[0]
+        if ae.type=='D':
+            j.job_state = getJobState('D')
+            j.save()
+            log(LOG_DEBUG, "job %s changed to Deleted state" % (j))
+        else:
+            log(LOG_DEBUG, "job %s unchanged" % (j))
+            
+
 
 def main():
-    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE|-s FILE]|[-d DIR] [-r] [-m FILE] [-g FILE]"
+    usage_string = "%prog [-h] [-l LOGLEVEL] [-n FILE|-j FILE|-e FILE|-s FILE]|[-d DIR] [-r] [-m FILE] [-g FILE] [-t]"
     version_string = "%%prog %s" % VERSION
 
     opt_parser = OptionParser(usage=usage_string, version=version_string)
@@ -510,6 +527,8 @@ def main():
         help="Merge nodes according to a file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode. Please note that the new node must be already present in the database with all its jobslots.")
     opt_parser.add_option("-g", "--gridjobmap", action="append", dest="gridjobmapfiles", metavar="FILE",
         help="Parse grid-jobmap files so we can find out the grid user for a job")
+    opt_parser.add_option("-t", "--deleted", action="store_true", dest="deletedjobs", default=False, 
+        help="Walk through all jobs and mark them as deleted if their last accounting record is 'deleted'")
     # TODO: move "one time hacks" into a separate group of help lines ^^
 
     (options, args) = opt_parser.parse_args()
@@ -518,6 +537,10 @@ def main():
         opt_parser.error("Too many arguments")
 
     Configuration['loglevel'] = options.loglevel
+
+    if (options.deletedjobs):
+        findDeletedJobs()
+        return
 
     if (options.runevents):
         checkEventsRunningJobs()
