@@ -17,23 +17,10 @@ import re
 
 from django.db.models import Avg, Max, Min, Count
 
-from goove.trq.models import JobSlot
-from goove.trq.models import Node
-from goove.trq.models import NodeProperty
-from goove.trq.models import NodeState
-from goove.trq.models import SubCluster
-from goove.trq.models import Job
-from goove.trq.models import RunningJob
-from goove.trq.models import TorqueServer
-from goove.trq.models import GridUser
-from goove.trq.models import User
-from goove.trq.models import Group
-from goove.trq.models import JobState
-from goove.trq.models import Queue
-from goove.trq.models import AccountingEvent
+from goove.trq.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
 
 from xml.dom.minidom import parse, parseString
-from optparse import OptionParser
+from optparse import OptionParser, OptionGroup
 from xml.parsers.expat import ExpatError
 
 from goove.trq.helpers import feedJobsXML,Configuration
@@ -41,6 +28,7 @@ from goove.trq.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
 from goove.trq.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup, getSubmitHost
 from goove.trq.helpers import getRunningCountQstat
 
+import maintenance
 
 JOBID_REGEX = re.compile("(\d+)\.(.*)")
 
@@ -48,29 +36,6 @@ VERSION="0.1"
 
 # TODO: make this configurable
 last_updatePBSNodes = 0
-
-
-def removeContent():
-    for ns in NodeState.objects.all():
-        ns.delete()
-    for np in NodeProperty.objects.all():
-        np.delete()
-    for n in Node.objects.all():
-        n.delete()
-    for sc in SubCluster.objects.all():
-        sc.delete()
-    for rj in RunningJob.objects.all():
-        rj.delete()
-    for j in Job.objects.all():
-        j.delete()
-#   Job states are inserted initially from initial_data.json
-#    for js in JobState.objects.all():
-#        js.delete()
-    for q in Queue.objects.all():
-        q.delete()
-    for u in User.objects.all():
-        u.delete()
-
 
 
 def feedNodesXML(x):
@@ -413,50 +378,6 @@ def refreshRunningJobs():
         newrj.save()
     
 
-def checkEventsRunningJobs():
-    """ Check that Running jobs are running according to the event log
-    """
-    comp_state = JobState.objects.get(shortname='C')
-    for rj in Job.objects.filter(job_state__shortname='R'):
-        log(LOG_INFO, "Checking job id: %d" % (rj.jobid))
-        aes = AccountingEvent.objects.filter(job=rj, type__in=['E','D','A']).count()
-        if aes!=0:
-            log(LOG_ERROR, "job id: %d, db id: %d is in Running state but accounting records are finished - fixing it." % (rj.jobid, rj.id))
-            rj.job_state = comp_state
-            rj.save()
-
-def mergeNodes(mergenodesfile):
-    """ This function expects file in format of "old_node_name=new_node_name" (without quotes)
-    It removes old_node_name node from the database and reassociate all data (e.g. jobs) from this
-    old node to the new_node_name node.
-    """
-    for l in mergenodesfile:
-        oldnodename,newnodename = l.strip().split('=')
-        try:
-            oldnode = Node.objects.get(name=oldnodename)
-        except Node.DoesNotExist:
-            log(LOG_ERROR, "Old node %s node is not in the database - skipping" % oldnodename)
-            continue
-            
-        try:
-            newnode = Node.objects.get(name=newnodename)
-        except Node.DoesNotExist:
-            log(LOG_ERROR, "New node %s node is not in the database, this is required, sorry - skipping" % newnodename)
-            continue
-
-        oldjobslots = JobSlot.objects.filter(node=oldnode)
-        for ojs in oldjobslots:
-            njs = JobSlot.objects.get(node=newnode,slot=ojs.slot)
-            jobs = Job.objects.filter(jobslots=ojs)
-            for j in jobs:
-                log(LOG_INFO, "For job %s removing jobslot: %s and adding jobslot: %s" % (j,ojs,njs))
-                j.jobslots.remove(ojs)
-                j.jobslots.add(njs)
-                j.save()
-            ojs.delete()
-
-        oldnode.delete()
-
 def processGridJobMap(gjmfile):
     for l in gjmfile:
         kv = re.findall('"([^="]*)=([^"]*)"', l)
@@ -477,27 +398,6 @@ def processGridJobMap(gjmfile):
         job.job_gridowner = griduser
         job.save()
 
-def findDeletedJobs():
-    """ Find deleted jobs (in accounting events table) and mark them as deleted in job table.
-    Many jobs have Delete request in AccEvnt table but they are not really deleted (they
-    finish ok, or get aborted). This function should filter those.
-    """
-    # TODO: check that checkEventsRunningJob is still right
-    # Evaluation of all the jobs get realy looot of memory 
-    # so we get the job one by one
-    maxjobid = Job.objects.filter(job_state__shortname='C').aggregate(Max("id"))['id__max']
-    #for n in range(1,maxjobid+1):
-    for n in range(1,maxjobid+1):
-        j = Job.objects.get(pk=n)
-        aes = AccountingEvent.objects.filter(job=j).order_by("-timestamp")
-        ae = aes[0]
-        if ae.type=='D':
-            j.job_state = getJobState('D')
-            j.save()
-            log(LOG_DEBUG, "job %s changed to Deleted state" % (j))
-        else:
-            log(LOG_DEBUG, "job %s unchanged" % (j))
-            
 
 
 def main():
@@ -517,19 +417,23 @@ def main():
         help="Text file with server settings (basically output of qmgr `print server` command)")
     opt_parser.add_option("-d", "--daemon", dest="daemondir", metavar="DIR", 
         help="Run in deamon node and read torque accounting logs from DIR")
-    opt_parser.add_option("-r", "--runevents", action="store_true", dest="runevents", default=False, 
-        help="Test if running jobs are not completed in Accounting events log")
     opt_parser.add_option("-u", "--updaterj", action="store_true", dest="updateRJ", default=False, 
         help="Update cache table with running jobs from the main jobs table")
-    opt_parser.add_option("-x", "--removeall", action="store_true", dest="removeall", default=False, 
-        help="Remove everything from tables (debug option, use with care)")
-    opt_parser.add_option("-m", "--mergenodes", action="append", dest="mergenodesfile", metavar="FILE",
-        help="Merge nodes according to a file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode. Please note that the new node must be already present in the database with all its jobslots.")
     opt_parser.add_option("-g", "--gridjobmap", action="append", dest="gridjobmapfiles", metavar="FILE",
         help="Parse grid-jobmap files so we can find out the grid user for a job")
-    opt_parser.add_option("-t", "--deleted", action="store_true", dest="deletedjobs", default=False, 
+
+    oneTimeGroup = OptionGroup(opt_parser, "Maintenance options",
+        "Following options are/were handy for one-time fixes in database.")
+    oneTimeGroup.add_option("-m", "--mergenodes", action="append", dest="mergenodesfile", metavar="FILE",
+        help="Merge nodes according to a file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode. Please note that the new node must be already present in the database with all its jobslots.")
+    oneTimeGroup.add_option("-x", "--removeall", action="store_true", dest="removeall", default=False, 
+        help="Remove everything from tables (debug option, use with care)")
+    oneTimeGroup.add_option("-t", "--deleted", action="store_true", dest="deletedjobs", default=False, 
         help="Walk through all jobs and mark them as deleted if their last accounting record is 'deleted'")
-    # TODO: move "one time hacks" into a separate group of help lines ^^
+    oneTimeGroup.add_option("-r", "--runevents", action="store_true", dest="runevents", default=False, 
+        help="Test if running jobs are not completed in Accounting events log")
+
+    opt_parser.add_option_group(oneTimeGroup)
 
     (options, args) = opt_parser.parse_args()
 
@@ -539,11 +443,11 @@ def main():
     Configuration['loglevel'] = options.loglevel
 
     if (options.deletedjobs):
-        findDeletedJobs()
+        maintenance.findDeletedJobs()
         return
 
     if (options.runevents):
-        checkEventsRunningJobs()
+        maintenance.checkEventsRunningJobs()
         return
 
     if (options.gridjobmapfiles):
@@ -557,13 +461,13 @@ def main():
         return
 
     if (options.removeall):
-        removeContent()
+        maintenance.removeContent()
         return
 
     if (options.mergenodesfile):
         for i in options.mergenodesfile:
             log(LOG_DEBUG, "Merge data will be read from file: %s" % i)
-            mergeNodes(openfile(i))
+            maintenance.mergeNodes(openfile(i))
         return
 
     # invalid combinations
