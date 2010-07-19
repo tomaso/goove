@@ -48,7 +48,7 @@ def findDeletedJobs():
     # so we get the job one by one
     maxjobid = Job.objects.filter(job_state__shortname='C').aggregate(Max("id"))['id__max']
     #for n in range(1,maxjobid+1):
-    for n in range(916220,maxjobid+1):
+    for n in range(1,maxjobid+1):
         j = Job.objects.get(pk=n)
         aes = AccountingEvent.objects.filter(job=j).order_by("-timestamp")
         ae = aes[0]
