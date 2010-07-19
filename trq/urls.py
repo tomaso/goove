@@ -29,6 +29,7 @@ urlpatterns = patterns('',
     (r'^jobs/completed_listing/$', 'goove.trq.jobviews.jobs_completed_listing'),
     (r'^jobs/report_form/$', 'goove.trq.jobviews.report_form'),
     (r'^jobs/report_output/$', 'goove.trq.jobviews.report_output'),
+    (r'^jobs/fairshare/$', 'goove.trq.jobviews.fairshare'),
 
     (r'^jobs/graph/$', 'goove.trq.jobviews.graph'),
 

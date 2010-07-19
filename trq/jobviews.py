@@ -18,6 +18,7 @@ matplotlib.use('Agg')
 from pylab import *
 import datetime
 from datetime import date
+from django.db.models import Avg, Max, Min, Count, Sum
 
 
 class JobsStatsForm(forms.Form):
@@ -59,6 +60,25 @@ class SuspicionForm(forms.Form):
         widget=forms.CheckboxInput(attrs={'title':wl.description})
     )
 
+class FairshareForm(forms.Form):
+    """
+    Form to select fairshare view parameters.
+    """
+    timescale = forms.ChoiceField(
+        label="Time to inspect",
+        initial=60,
+        choices=[ (0,"Other"), (60,"Hour"), (1440,"Day"), (10080,"7 days"), (40320, "28 days") ]
+    )
+    minutes = forms.IntegerField(
+        label="Minutes", 
+        initial=60,
+        widget=forms.TextInput(attrs={'title':'Time to inspect in minutes'})
+    )
+    entity = forms.ChoiceField(
+        label="Fairshare entity",
+        initial=0,
+        choices=[ (0,'Queue'), (1,'Group'), (2,'User') ]
+    )
 
 class CompletedForm(forms.Form):
     """
@@ -319,8 +339,6 @@ def suspicious(request):
         if wl.isProblem(j):
             jobs.append(j)
     sf = SuspicionForm()
-    print sf
-    print jobs
     return render_to_response_with_config_with_config(
         'trq/jobs_suspicious.html', 
         {'suspicion_form':sf, 'suspicious_jobs':jobs}
@@ -337,5 +355,57 @@ def report_output(request):
     Render the actual report.
     """
     pass
+
+def fairshare(request):
+    """ View info about total used walltime and cputime.
+    Compare it with walltime/cputime per entity (queue, unix group, unix user).
+    """
+    fs_form = FairshareForm()
+    if not request.POST:
+        return render_to_response_with_config(
+            'trq/jobs_fairshare.html',
+            {'fs_form':fs_form}
+        )
+
+    fs_form.data['timescale'] = request.POST['timescale']
+    fs_form.data['minutes'] = request.POST['minutes']
+    fs_form.data['entity'] = request.POST['entity']
+    fs_form.is_bound = True
+
+    minutes = int(request.POST['timescale'])
+    if minutes == 0:
+        minutes = int(request.POST['minutes'])
+        
+    endtime = datetime.datetime.now()
+    starttime = datetime.datetime.fromtimestamp(int(endtime.strftime("%s"))-60*minutes)
+
+    # Job.objects.filter(comp_time__range=("2010-01-01", "2010-01-02")).values('queue__name').annotate(Sum('walltime'))
+    if request.POST['entity']=='0':  # Queue
+        entity_name = 'queue__name'
+    elif request.POST['entity']=='1':  # Group
+        entity_name = 'job_owner__group__name'
+    else: # request.POST['entity']=='2':  # User
+        entity_name = 'job_owner__name'
+    result = []
+    total_sum = 0
+    for j in Job.objects.filter(comp_time__range=(starttime, endtime)).values(entity_name).annotate(Sum('walltime')):
+        secs = int(j['walltime__sum'])
+        tstr = "%d %d:%d:%d" % ((secs/86400), (secs/3600)%24, (secs/60)%60, secs%60)
+        result.append({'entity_name':j[entity_name], 'walltime__sum':j['walltime__sum'], 'walltime__str':tstr})
+        total_sum += int(j['walltime__sum'])
+
+    total_str = "%d %d:%d:%d" % ((total_sum/86400), (total_sum/3600)%24, (total_sum/60)%60, total_sum%60)
+    total = {'entity_name':'total', 'walltime__sum':total_sum, 'walltime__str':total_str}
+    for row in result:
+        if total_sum==0:
+            row['percentage'] = 0
+        else:
+            row['percentage'] = 100*float(row['walltime__sum'])/total_sum
+
+    return render_to_response_with_config(
+        'trq/jobs_fairshare.html',
+        {'fs_form':fs_form, 'result':result, 'total':total}
+    )
+
 
 # vi:ts=4:sw=4:expandtab
