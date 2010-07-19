@@ -1,0 +1,65 @@
+{% extends "trq/base.html" %}
+
+{% block content %}
+
+<div class="leftmenu">
+
+    <form action="" method="post">
+        <h3>Fairshare</h3>
+        <table>
+        {% for field in fs_form %}
+        <tr>
+            <th>{{ field.label_tag }}</th><td>{{ field }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+        <input type="submit" value="Submit" />
+    </form>
+
+</div>
+
+
+<div class="maintext">
+
+{% if result %}
+    <div class="infopanel">
+    <h3>Table</h3>
+    <table class="nodejoblist sortable" id="fairshare_listing">
+        <thead>
+            <tr>
+                <th>Entity</th>
+                <th>Value</th>
+                <th>Share</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in result %}
+            <tr>
+                <td>{{ row.entity_name }}</td>
+                <td>{{ row.walltime__str }}</td>
+                <td>{{ row.percentage|floatformat:2 }}%</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td>{{ total.entity_name }}</td>
+                <td>{{ total.walltime__str }}</td>
+                <td>100.00%</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+
+    <div class="infopanel">
+    <h3>Graph</h3>
+    <img src="http://chart.apis.google.com/chart?chs=480x230&cht=p&chd=t0:{%for row in result%}{{row.percentage|floatformat:2}}{%if not forloop.last%},{%endif%}{%endfor%}&chdl={%for row in result%}{{row.percentage|floatformat:2}}% - {{row.entity_name}}{%if not forloop.last%}|{%endif%}{%endfor%}&chl={%for row in result%}{{row.entity_name}}{%if not forloop.last%}|{%endif%}{%endfor%}" />
+    </div>
+
+{% endif %}
+
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->
