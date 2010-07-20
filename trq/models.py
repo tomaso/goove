@@ -215,7 +215,7 @@ class User(models.Model):
     	return self.name
 
     def get_absolute_url(self):
-        return u"/trq/users/%s/" % (self.name)
+        return u"/trq/users/user_detail/%s/" % (self.name)
 
     def get_user_numbers(self):
         job_states = JobState.objects.all().order_by('name')
@@ -243,7 +243,7 @@ class Group(models.Model):
     	return self.name
 
     def get_absolute_url(self):
-        return u"/trq/groups/%s/" % (self.name)
+        return u"/trq/users/group_detail/%s/" % (self.name)
 
     def get_group_numbers(self):
         job_states = JobState.objects.all().order_by('name')
@@ -271,7 +271,7 @@ class GridUser(models.Model):
     	return self.dn
 
     def get_absolute_url(self):
-        return u"/trq/gridusers/%s/" % (self.dn)
+        return u"/trq/users/griduser_detail/%s/" % (self.dn)
 
     def get_user_numbers(self):
         job_states = JobState.objects.all().order_by('name')
