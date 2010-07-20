@@ -83,7 +83,7 @@ def create_summary(addfilter):
             **addfilter
             ).aggregate(Sum('cput'), Sum('walltime'), Avg('efficiency'), Count('pk'))
     summary.append(('Jobs completed this week',wsummary['pk__count']))
-    summary.append(('CPU time for this month',wsummary['cput__sum']))
+    summary.append(('CPU time for this week',wsummary['cput__sum']))
     summary.append(('Wall time for this week',wsummary['walltime__sum']))
     summary.append(('Weekly average efficiency',wsummary['efficiency__avg']))
 
