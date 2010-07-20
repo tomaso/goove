@@ -35,6 +35,9 @@ class SubClusterAdmin(admin.ModelAdmin):
 
 class JobAdmin(admin.ModelAdmin):
     list_display = ('jobid', 'job_state', 'job_owner' )
+
+class QueueAdmin(admin.ModelAdmin):
+    list_display = ('name', 'color')
     
 
 admin.site.register(Node, NodeAdmin)
@@ -47,7 +50,7 @@ admin.site.register(User)
 admin.site.register(GridUser)
 admin.site.register(Group)
 admin.site.register(JobState)
-admin.site.register(Queue)
+admin.site.register(Queue, QueueAdmin)
 admin.site.register(SubmitHost)
 
 # vi:ts=4:sw=4:expandtab
