@@ -382,16 +382,26 @@ def fairshare(request):
     # Job.objects.filter(comp_time__range=("2010-01-01", "2010-01-02")).values('queue__name').annotate(Sum('walltime'))
     if request.POST['entity']=='0':  # Queue
         entity_name = 'queue__name'
+        entity_color = 'queue__color'
     elif request.POST['entity']=='1':  # Group
         entity_name = 'job_owner__group__name'
+        entity_color = 'job_owner__group__color'
     else: # request.POST['entity']=='2':  # User
         entity_name = 'job_owner__name'
+        entity_color = 'job_owner__color'
+
+
     result = []
     total_sum = 0
-    for j in Job.objects.filter(comp_time__range=(starttime, endtime)).values(entity_name).annotate(Sum('walltime')):
+    for j in Job.objects.filter(comp_time__range=(starttime, endtime)).values(entity_name, entity_color).annotate(Sum('walltime')):
         secs = int(j['walltime__sum'])
         tstr = "%d %d:%d:%d" % ((secs/86400), (secs/3600)%24, (secs/60)%60, secs%60)
-        result.append({'entity_name':j[entity_name], 'walltime__sum':j['walltime__sum'], 'walltime__str':tstr})
+        result.append({
+            'entity_name':j[entity_name], 
+            'walltime__sum':j['walltime__sum'], 
+            'walltime__str':tstr,
+            'entity_color':j[entity_color]
+        })
         total_sum += int(j['walltime__sum'])
 
     total_str = "%d %d:%d:%d" % ((total_sum/86400), (total_sum/3600)%24, (total_sum/60)%60, total_sum%60)

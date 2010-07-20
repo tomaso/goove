@@ -21,7 +21,9 @@
 
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.PieChart(document.getElementById('graph2'));
-    chart.draw(data, {width: 400, height: 240, is3D: false, title: 'My Daily Activities', colors: ['#000000', '#333333', '#666666', '#999999', '#BBBBBB', '#DDDDDD', '#FFFFFF' ] });
+    chart.draw(data, {width: 400, height: 240, is3D: false, title: 'My Daily Activities', 
+        colors: [{%for row in result%}'#{{row.entity_color}}'{%if not forloop.last%},{%endif%}{%endfor%}] 
+    });
   }
 </script>
 
@@ -78,11 +80,6 @@
 
     <div class="infopanel">
     <h3>Graph</h3>
-    <img src="http://chart.apis.google.com/chart?chs=480x230&cht=p&chd=t0:{%for row in result%}{{row.percentage|floatformat:2}}{%if not forloop.last%},{%endif%}{%endfor%}&chdl={%for row in result%}{{row.percentage|floatformat:2}}% - {{row.entity_name}}{%if not forloop.last%}|{%endif%}{%endfor%}&chl={%for row in result%}{{row.entity_name}}{%if not forloop.last%}|{%endif%}{%endfor%}" />
-    </div>
-
-    <div class="infopanel">
-    <h3>Graph II</h3>
     <div id="graph2" />
     </div>
 
