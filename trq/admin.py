@@ -10,6 +10,7 @@ from goove.trq.models import Group
 from goove.trq.models import JobState
 from goove.trq.models import Queue
 from goove.trq.models import SubmitHost
+from goove.trq.models import GlobalConfiguration
 from django.contrib import admin
 
 #class NodePropertyInline(admin.StackedInline):
@@ -52,5 +53,6 @@ admin.site.register(Group)
 admin.site.register(JobState)
 admin.site.register(Queue, QueueAdmin)
 admin.site.register(SubmitHost)
+admin.site.register(GlobalConfiguration)
 
 # vi:ts=4:sw=4:expandtab

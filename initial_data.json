@@ -109,7 +109,9 @@
     "model" : "trq.GlobalConfiguration",
     "pk": 1,
     "fields": {
-      "livestatus" : false
+      "livestatus" : false,
+      "graphtype" : "Google",
+      "dpmtransfers" : false
     }
   },
   {

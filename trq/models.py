@@ -360,12 +360,18 @@ class NodeLink(models.Model):
     config = models.ForeignKey("GlobalConfiguration")
 
 
+GRAPH_CHOICES = (
+    ('Matplotlib', 'Matplotlib'),
+    ('Google', 'Google visualization'),
+)
+
 class GlobalConfiguration(models.Model):
     """
     Object with global configuration.
     """
     livestatus = models.BooleanField(help_text="Should the node status be periodically updated and overview shown.")
-
+    graphtype = models.CharField(max_length=20, choices=GRAPH_CHOICES, help_text="What framework for graphs should be used.")
+    dpmtransfers = models.BooleanField(help_text="Should the dpm transfers be watched.")
 
 
     
