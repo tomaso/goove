@@ -1,5 +1,49 @@
 {% extends "trq/base.html" %}
 
+{% block head %}
+
+{% if global_config.graphtype == "Google" %}
+
+<!--Load the AJAX API-->
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">
+  // Load the Visualization API and the piechart package.
+  google.load('visualization', '1', {'packages':['piechart', 'corechart']});
+
+  // Set a callback to run when the Google Visualization API is loaded.
+  google.setOnLoadCallback(drawChart);
+  
+  function drawChart() {
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Day');
+    {% for col in graph_values.queues %}
+    data.addColumn('number', '{{col}}');{% endfor %}
+    data.addRows([
+      {% for row in graph_values.values %}
+        ['{{row.date}}', {% for col in row.queues %}{{col}}{% if not forloop.last%}, {%endif%}{% endfor %} ]{% if not forloop.last%},{%endif%}
+    {% endfor %}
+    ]);
+    
+    // Instantiate and draw our chart, passing in some options.
+    var chart = new google.visualization.ColumnChart(document.getElementById('ggraph'));
+    chart.draw(data, {width: 800, height: 640, title: '{{graph_values.title}}', 
+                        isStacked: true, hAxis: {title: 'Year', titleColor:'red'},
+                        colors: [{%for c in graph_values.queues_colors%}'#{{c}}'{%if not forloop.last%},{%endif%}{%endfor%}]
+    });
+
+/*
+    chart.draw(data, {width: 400, height: 240, is3D: false, title: 'My Daily Activities', 
+        colors: [{%for row in result%}'#{{row.entity_color}}'{%if not forloop.last%},{%endif%}{%endfor%}] 
+    });
+*/
+  }
+
+</script>
+
+{% endif %}
+
+{% endblock %}
+
 {% block content %}
 <div class="leftmenu">
 
@@ -18,7 +62,11 @@
 
 <div class="maintext">
 {% if graph_data %}
-<img class="largeimage" width="600" height="600" src="/trq/queues/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
+  {% if global_config.graphtype == "Google" %}
+    <div id="ggraph" />
+  {% else %}
+    <img class="largeimage" width="600" height="600" src="/trq/queues/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
+  {% endif %}
 {% else %}
 Choose your filter in the left menu.
 {% endif %}
