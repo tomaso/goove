@@ -20,7 +20,7 @@
     ]);
 
     // Instantiate and draw our chart, passing in some options.
-    var chart = new google.visualization.PieChart(document.getElementById('graph2'));
+    var chart = new google.visualization.PieChart(document.getElementById('ggraph'));
     chart.draw(data, {width: 400, height: 240, is3D: false, title: 'My Daily Activities', 
         colors: [{%for row in result%}'#{{row.entity_color}}'{%if not forloop.last%},{%endif%}{%endfor%}] 
     });
@@ -80,7 +80,7 @@
 
     <div class="infopanel">
     <h3>Graph</h3>
-    <div id="graph2" />
+    <div id="ggraph" />
     </div>
 
 {% endif %}

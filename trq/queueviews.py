@@ -15,8 +15,8 @@ from datetime import date
 from time import time
 import numpy as np
 import colorsys
-from django.db.models import Sum
 from django.db import connection, transaction
+from django.db.models import Avg, Max, Min, Count, Sum
 
 class QueueSelectForm(forms.Form):
     queue = forms.ChoiceField(
@@ -113,11 +113,13 @@ def queues_stats(request):
         
 
     graph_data = False
+    graph_values = False
     if request.POST:
         graph_data = request.POST
+        graph_values = get_graph_values(graph_data)
     return render_to_response_with_config(
         'trq/queues_stats.html',
-        {'stat_form':stat_form, 'graph_data':graph_data}
+        {'stat_form':stat_form, 'graph_data':graph_data, 'graph_values':graph_values}
         )
 
 
@@ -134,8 +136,6 @@ def nextmonth(indate):
 
 
 def graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi):
-
-    print "%f: Generating pie graph." % time()
 
     fig = figure(1, figsize=(figsize,figsize))
     ax = axes([0.1, 0.1, 0.8, 0.8])
@@ -175,28 +175,33 @@ def graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi):
     print "%f: End of generating pie graph." % time()
     return response 
 
-    
-
-# TODO: make two variants: full big pic
-# and smaller with just few values as a preview
-def graph(request):
-    sfrom = request.GET['wfrom'].split('-')
+def get_graph_values(items):
+    """ This function just returns the raw data that can be used for 
+    drawing the graph. It takes the parameters for the query from request.POST object. """
+    sfrom = items['wfrom'].split('-')
     dfrom = date(int(sfrom[0]), int(sfrom[1]), int(sfrom[2]))
-    sto = request.GET['wto'].split('-')
+    sto = items['wto'].split('-')
     dto = date(int(sto[0]), int(sto[1]), int(sto[2]))
-    graph_type = request.GET['graph_type']
-    aggregation = request.GET['aggregation']
-    data_type = request.GET['data_type']
+    graph_type = items['graph_type']
+    aggregation = items['aggregation']
+    data_type = items['data_type']
+    graph_values = {}
+    if data_type == 'jobcount':
+        graph_values['ylabel']='Number of jobs'
+        graph_values['title']='Completed jobs per time unit'
+    elif data_type == 'cputime':
+        graph_values['ylabel']='Wall time'
+        graph_values['title']='Wall time of completed jobs'
+    elif data_type == 'walltime':
+        graph_values['ylabel']='CPU time'
+        graph_values['title']='CPU time of completed jobs'
 
     queue_names = []
-    for key,val in request.GET.items():
+    for key,val in items.items():
         if key.startswith('queue_'):
             queue_names.append(key[len('queue_'):])
-    figsize = 10
-    dpi = 60
-
-    if graph_type=='pie':
-        return graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi)
+    queue_names.sort()
+    
 
     if aggregation=='day':
         N = (dto-dfrom).days+1
@@ -208,17 +213,6 @@ def graph(request):
         dfrom = date(dfrom.year, dfrom.month, 1)
         dto = nextmonth(dto)
         N = (dto.year-dfrom.year)*12+(dto.month-dfrom.month+1)
-        
-    xtick_width = 30
-
-    fig = figure(1, figsize=(figsize,figsize))
-    ax = axes([0.1, 0.2, 0.7, 0.75])
-    menMeans   = (20, 35, 30, 35, 30)
-    womenMeans = (25, 32, 34, 20, 30)
-    ind = np.arange(N)    # the x locations for the groups
-    width = 1       # the width of the bars: can also be len(x) sequence
-    bars = []
-    i = 0
     fromdates = []
     todates = []
     for j in range(0,N):
@@ -237,18 +231,61 @@ def graph(request):
         fromdates.append(f)
         todates.append(t)
 
-    tempsum = [0]*N
+#    cursor = connection.cursor()
+#    cursor.execute("SELECT year(trq_job.comp_time),month(trq_job.comp_time),day(trq_job.comp_time),count(*),trq_queue.name FROM trq_job INNER JOIN trq_queue ON trq_job.queue_id=trq_queue.id WHERE comp_time>=%s  and comp_time<=%s GROUP BY TO_DAYS(trq_job.comp_time),trq_queue.name", [fromdates[0],todates[-1]])
+#    rawresult = cursor.fetchall()
+#    rr = {}
+#    for y,m,d,v,q in rawresult:
+#        if not rr.has_key(q):
+#            rr[q]={}
+#        rr[q]["%s-%02d-%02d" % (y,int(m),int(d))]=v
 
-    cursor = connection.cursor()
-    cursor.execute("SELECT year(trq_job.comp_time),month(trq_job.comp_time),day(trq_job.comp_time),count(*),trq_queue.name FROM trq_job INNER JOIN trq_queue ON trq_job.queue_id=trq_queue.id WHERE comp_time>=%s  and comp_time<=%s GROUP BY TO_DAYS(trq_job.comp_time),trq_queue.name", [fromdates[0],todates[-1]])
-    rawresult = cursor.fetchall()
-    rr = {}
-    for y,m,d,v,q in rawresult:
-        if not rr.has_key(q):
-            rr[q]={}
-        rr[q]["%s-%02d-%02d" % (y,int(m),int(d))]=v
+    graph_values['values'] = []
+    graph_values['queues'] = queue_names
+    graph_values['queues_colors'] = []
+    for q in queue_names:
+        graph_values['queues_colors'].append(Queue.objects.get(name=q).color)
+    for j in range(0,N):
+        rr = {}
+        rr['date'] = fromdates[j]
+        out = Job.objects.filter(comp_time__range=(fromdates[j], todates[j])).values('queue__name').annotate(Count('pk'))
+        od = {}
+        for i in out:
+            od[i['queue__name']]=i['pk__count']
+        rr['queues'] = []
+        for q in queue_names:
+            if od.has_key(q):
+                rr['queues'].append(od[q])
+            else:
+                rr['queues'].append(0)
+        graph_values['values'].append(rr)
+
+    return graph_values
+    
+
+# TODO: make two variants: full big pic
+# and smaller with just few values as a preview
+def graph(request):
+    graph_values = get_graph_values(request)
+    figsize = 10
+    dpi = 60
+
+#    if graph_type=='pie':
+#        return graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi)
+        
+    xtick_width = 30
+
+    fig = figure(1, figsize=(figsize,figsize))
+    ax = axes([0.1, 0.2, 0.7, 0.75])
+    ind = np.arange(N)    # the x locations for the groups
+    width = 1       # the width of the bars: can also be len(x) sequence
+    bars = []
+
+
         
 
+    tempsum = [0]*N
+    i = 0
     for q in queue_names:
         c = colorsys.hsv_to_rgb(float(i)/len(queue_names),1,1)
         i += 1
@@ -274,15 +311,8 @@ def graph(request):
         for j in range(0,N):
             tempsum[j] += values[j]
 
-    if data_type == 'jobcount':
-        ylabel('Number of jobs')
-        title('Completed jobs per time unit')
-    elif data_type == 'cputime':
-        ylabel('Wall time')
-        title('Wall time of completed jobs')
-    elif data_type == 'walltime':
-        ylabel('CPU time')
-        title('CPU time of completed jobs')
+    ylabel(graph_values['ylabel'])
+    title(graph_values['title'])
     nth = int(1.0+((1.0*N)/(figsize*dpi/xtick_width)))
     arr = ind+width/2.0
     xticks(arr[::nth], fromdates[::nth], rotation=90)
