@@ -9,6 +9,7 @@ class Node(models.Model):
     properties = models.ManyToManyField('NodeProperty', null=True)
     state = models.ManyToManyField('NodeState', null=True)
     subcluster = models.ForeignKey('SubCluster', null=True)
+    server = models.ForeignKey('TorqueServer')
 
     class Meta:
         ordering = ["name"]
@@ -103,6 +104,7 @@ class NodeState(models.Model):
 class SubCluster(models.Model):
     name = models.CharField(verbose_name="Subcluster name", max_length=30)	
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
+    server = models.ForeignKey('TorqueServer')
     def __unicode__(self):
     	return self.name
 
@@ -211,6 +213,7 @@ class User(models.Model):
     name = models.CharField(verbose_name="user name", max_length=100)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     group = models.ForeignKey('Group', null=True)
+    server = models.ForeignKey('TorqueServer')
     def __unicode__(self):
     	return self.name
 
@@ -238,6 +241,7 @@ class User(models.Model):
 
 class Group(models.Model):
     name = models.CharField(verbose_name="group name", max_length=100)
+    server = models.ForeignKey('TorqueServer')
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     def __unicode__(self):
     	return self.name
@@ -307,6 +311,7 @@ class JobState(models.Model):
 class Queue(models.Model):
     name = models.CharField(verbose_name="queue name", max_length=100)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
+    server = models.ForeignKey('TorqueServer', editable=False)
     def __unicode__(self):
     	return self.name
 

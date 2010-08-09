@@ -158,12 +158,12 @@ def parseOneLogLine(line,lineno):
         job.submithost = submithost
 
     if attrdir.has_key('group'):
-        group,created = getGroup(attrdir['group'])
+        group,created = getGroup(attrdir['group'], server)
         if created:
             log(LOG_INFO, "new group will be created: %s" % attrdir['group'])
 
     if attrdir.has_key('user'):
-        user,created = getUser(attrdir['user'], group)
+        user,created = getUser(attrdir['user'], server, group)
         if created:
             log(LOG_INFO, "new user will be created: %s" % attrdir['user'])
         job.job_owner = user
@@ -213,7 +213,7 @@ def parseOneLogLine(line,lineno):
         
 
     if attrdir.has_key('queue'):
-        queue,created = getQueue(attrdir['queue'])
+        queue,created = getQueue(attrdir['queue'], server)
         if created:
             log(LOG_INFO, "new queue will be created: %s" % attrdir['queue'])
         job.queue = queue
@@ -235,7 +235,7 @@ def parseOneLogLine(line,lineno):
         for exec_host_name_slot in exec_host_names_slots:
             name,slotstr = exec_host_name_slot.split('/')
             slot = int(slotstr)
-            node,created = getNode(name)
+            node,created = getNode(name, server)
             if created:
                 log(LOG_INFO, "new node will be created: node name: %s" % (name))
             js,created = JobSlot.objects.get_or_create(slot=slot,node=node)
@@ -250,6 +250,8 @@ def parseOneLogLine(line,lineno):
     if created:
         log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
         ae.save()
+#   This can be used if we are sure that we process
+#   new files. We can skip many SELECTs this way
 #    ae = AccountingEvent(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
 #    log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
 #    ae.save()
@@ -384,11 +386,13 @@ def processGridJobMap(gjmfile):
         d = {}
         for k,v in kv:
             d[k] = v
+        log(LOG_DEBUG, "gridmap dictionary: %s" % (d))
         if d['lrmsID']=='none' or d['lrmsID']=='FAILED':
             continue
         jobid,tsname = d['lrmsID'].split('.',1)
         try:
             job = Job.objects.get(jobid=jobid, server__name=tsname)
+            log(LOG_DEBUG, "job %s found" % str(job))
         except Job.DoesNotExist:
             log(LOG_ERROR, "gridjobmap refers to a job that is not present in database: %s" % (l))
             continue

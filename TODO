@@ -52,17 +52,13 @@ Web interface:
 Database:
 ---------
 
-- make sure TorqueServer is only one
+- check that TorqueServer is used properly (per queue etc.)
 
 Overview Mode
 -------------
 
 - Connect to nagios (via mklive)
 
-Configuration
--------------
-
-- Turn on/off node overview - we can work in a "accounting only" mode
 
 
 Documentation:
