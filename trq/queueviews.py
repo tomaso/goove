@@ -7,6 +7,7 @@ from models import NodeState
 from models import Job
 from models import JobState
 from models import Queue
+from models import TorqueServer
 from django import forms
 import matplotlib
 matplotlib.use('Agg')
@@ -22,37 +23,40 @@ class QueueSelectForm(forms.Form):
     queue = forms.ChoiceField(
         label="Queue",
         initial=Queue.objects.all()[0],
-        choices=[ (q.pk,q.name) for q in Queue.objects.all() ]
+        choices=[ (q['pk'],"%s@%s" % (q['name'],q['server__name'])) for q in Queue.objects.values('pk','name','server__name') ]
     )
 
 def queues_overview(request):
-    queues = Queue.objects.all()
-    job_states = JobState.objects.all()
-    cursor = connection.cursor()
-    cursor.execute("SELECT queue_id,job_state_id,count(*) FROM trq_job GROUP BY queue_id,job_state_id")
-    rawresult = cursor.fetchall()
-    rt = {}
-    for qid,jsid,count in rawresult:
-        if not rt.has_key(qid):
-            rt[qid] = {}
-        rt[qid][jsid] = count
+    servers_name = TorqueServer.objects.all().values_list('name')
+    job_states_name = JobState.objects.all().values_list('name')
 
     restable = {}
-    for q in queues:
-        restable[q] = []
-        for js in job_states:
-            if (not rt.has_key(q.pk)) or (not rt[q.pk].has_key(js.pk)):
-                restable[q].append(0)
-            else:
-                restable[q].append(rt[q.pk][js.pk])
-    
+    for sn in servers_name:
+        restable[sn[0]] = {}
+        queues_name = Queue.objects.filter(server__name=sn[0]).values_list('name')
+        for qn in queues_name:
+            restable[sn[0]][qn[0]] = {}
+            for jsn in job_states_name:
+                restable[sn[0]][qn[0]][jsn[0]] = 0
+    queue_results = Job.objects.all().values('server__name', 'queue__name','job_state__name').annotate(Count('job_state'))
+    for qr in queue_results:
+        restable[qr['server__name']][qr['queue__name']][qr['job_state__name']] += qr['job_state__count']
+
+    print restable
+
     return render_to_response_with_config(
         'trq/queues_overview.html',
-        {'queues_list':queues, 
-        'job_states':job_states,
-        'restable':restable
+        {'restable':restable
         }
     )
+    
+#    return render_to_response_with_config(
+#        'trq/queues_overview.html',
+#        {'queues_list':queues, 
+#        'job_states':job_states,
+#        'restable':restable
+#        }
+#    )
 
 
 def queue_detail(request, queuename=None):

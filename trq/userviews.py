@@ -20,7 +20,7 @@ class UserSelectForm(CommonUserForm):
     user = forms.ChoiceField(
         label="unix user",
         initial=User.objects.all()[0],
-        choices=[ (u.pk,u.name) for u in User.objects.all() ]
+        choices=[ (u['pk'],"%s@%s" % (u['name'],u['server__name'])) for u in User.objects.values('pk','name','server__name') ]
     )
 
 class GridUserSelectForm(CommonUserForm):

@@ -43,22 +43,24 @@ def getJobState(state):
     return JobStateCache[state]
 
 
-def getQueue(qname):
+def getQueue(qname,ts):
     """
     Return tuple (queue object, created)
     """
     global QueueCache
-    created = False
-    if not QueueCache.has_key(qname):
-        QueueCache[qname],created = Queue.objects.get_or_create(name=qname)
-    return (QueueCache[qname],created)
+#    created = False
+#    if not QueueCache.has_key(qname):
+#        QueueCache[qname],created = Queue.objects.get_or_create(name=qname)
+#    return (QueueCache[qname],created)
+    return Queue.objects.get_or_create(name=qname, server=ts)
 
-def getNode(nname):
+def getNode(nname, ts):
     global NodeCache
-    created = False
-    if not NodeCache.has_key(nname):
-        NodeCache[nname],created = Node.objects.get_or_create(name=nname)
-    return (NodeCache[nname],created)
+#    created = False
+#    if not NodeCache.has_key(nname):
+#        NodeCache[nname],created = Node.objects.get_or_create(name=nname)
+#    return (NodeCache[nname],created)
+    return Node.objects.get_or_create(name=nname, server=ts)
 
 def getTorqueServer(tsname):
     global TorqueServerCache
@@ -67,19 +69,21 @@ def getTorqueServer(tsname):
         TorqueServerCache[tsname],created = TorqueServer.objects.get_or_create(name=tsname)
     return (TorqueServerCache[tsname],created)
 
-def getUser(uname, group=None):
+def getUser(uname, ts, group=None):
     global UserCache
-    created = False
-    if not UserCache.has_key(uname):
-        UserCache[uname],created = User.objects.get_or_create(name=uname, group=group)
-    return (UserCache[uname],created)
+#    created = False
+#    if not UserCache.has_key(uname):
+#        UserCache[uname],created = User.objects.get_or_create(name=uname, group=group)
+#    return (UserCache[uname],created)
+    return User.objects.get_or_create(name=uname, group=group, server=ts)
 
-def getGroup(gname):
+def getGroup(gname,ts):
     global GroupCache
-    created = False
-    if not GroupCache.has_key(gname):
-        GroupCache[gname],created = Group.objects.get_or_create(name=gname)
-    return (GroupCache[gname],created)
+#    created = False
+#    if not GroupCache.has_key(gname):
+#        GroupCache[gname],created = Group.objects.get_or_create(name=gname)
+#    return (GroupCache[gname],created)
+    return Group.objects.get_or_create(name=gname, server=ts)
 
 def getSubmitHost(shname):
     global SubmitHostCache
