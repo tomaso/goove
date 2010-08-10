@@ -108,7 +108,7 @@ def fixExitStatusLogLine(line,lineno):
 
     jobid_name, server_name = JOBID_REGEX.search(fulljobid).groups()
     server,created = getTorqueServer(server_name)
-    job,created = Job.objects.get_or_create(jobid=int(jobid_name), server=server)
+    job,created = Job.objects.get_or_create(jobid=jobid_name, server=server)
     if attrdir.has_key('Exit_status'):
         job.exit_status = int(attrdir['Exit_status'])
         job.save()
@@ -139,7 +139,7 @@ def parseOneLogLine(line,lineno):
     if created:
         log(LOG_INFO, "new server will be created: %s" % server_name)
 
-    job,created = Job.objects.get_or_create(jobid=int(jobid_name), server=server)
+    job,created = Job.objects.get_or_create(jobid=jobid_name, server=server)
     if created:
         log(LOG_INFO, "new job will be created: %s.%s" % (jobid_name, server_name))
 
@@ -208,7 +208,7 @@ def parseOneLogLine(line,lineno):
 
         job.job_state = new_state
     else:
-        log(LOG_INFO, "Job %d is already finished, not changing the state." % (job.jobid))
+        log(LOG_INFO, "Job %s.%s is already finished, not changing the state." % (job.jobid,server.name))
     # running job cache update
         
 
