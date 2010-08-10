@@ -30,7 +30,7 @@ from goove.trq.helpers import getRunningCountQstat
 
 import maintenance
 
-JOBID_REGEX = re.compile("(\d+)\.(.*)")
+JOBID_REGEX = re.compile("(\d+-\d+|\d+)\.(.*)")
 
 VERSION="0.1"
 
