@@ -318,13 +318,6 @@ class Queue(models.Model):
     def get_absolute_url(self):
         return u"/trq/queues/detail/%s/" % (self.name)
 
-    def get_queue_numbers(self):
-        job_states = JobState.objects.all()
-        qnums = {}
-        for js in job_states:
-            qnums[js.shortname]=Job.objects.filter(queue=self,job_state=js).count()
-        return qnums
-
     @staticmethod
     def get_overview_name():
         return u'queue'

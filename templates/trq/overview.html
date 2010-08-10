@@ -7,37 +7,40 @@
     <div class="infopanel">
 
 
-<h3>Database content</h3>
-<table>
-{% for item in info %}
-<tr>
-<td class="coldesc"><a href="{{ item.url }}">{{ item.name }}s</a></td>
-<td class="colnumber">{{ item.count }}</a></td>
-</tr>
-{% endfor %}
+        <h3>Database content</h3>
+        <table>
+        {% for item in info %}
+        <tr>
+        <td class="coldesc"><a href="{{ item.url }}">{{ item.name }}s</a></td>
+        <td class="colnumber">{{ item.count }}</a></td>
+        </tr>
+        {% endfor %}
 
-</table>
-<a href="">more ...</a>
+        </table>
         
     </div>
+
+{% for ts,queues in tsqueues.items %}
 
     <div class="infopanel">
 
-<h3>Queues</h3>
-<table class="overview">
-<tr><th>&nbsp;</th><th>Q</th><th>R</th></tr>
-{% for q in queues  %}
-<tr>
-<td class="coldesc"><a href="{{ q.queue.get_absolute_url}}">{{ q.queue.name }}</a></td>
-<td class="colnumber">{{ q.Q }}</a></td>
-<td class="colnumber">{{ q.R }}</a></td>
-</tr>
-{% endfor %}
 
-</table>
-<a href="">more ...</a>
+        <h3>{{ts.name}} queues</h3>
+        <table class="overview">
+        <tr><th>&nbsp;</th><th>Q</th><th>R</th></tr>
+        {% for q in queues  %}
+        <tr>
+        <td class="coldesc"><a href="{{ q.queue.get_absolute_url}}">{{ q.queue.name }}</a></td>
+        <td class="colnumber">{{ q.Q }}</a></td>
+        <td class="colnumber">{{ q.R }}</a></td>
+        </tr>
+        {% endfor %}
+
+        </table>
         
     </div>
+
+{% endfor %}
 
     <div class="infopanel">
 
