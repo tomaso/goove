@@ -142,8 +142,7 @@ def griduser_detail(request, gridusername=None):
         griduser_form.data['summary'] = request.POST['summary']
         griduser_form.is_bound = True
         if request.POST['summary']:
-            summary = create_summary({'job_owner': detailuser})
-        
+            summary = create_summary({'job_gridowner': detailuser})
 
     return render_to_response_with_config(
         'trq/user_detail.html',
