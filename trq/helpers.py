@@ -8,6 +8,7 @@ import signal
 import re
 import time
 import datetime
+import colorsys
 
 LOG_ERROR=0
 LOG_WARNING=1
@@ -296,5 +297,22 @@ def render_to_response_with_config(template_name, dictionary=None, context_insta
         dictionary = {'global_config':GlobalConfiguration.objects.get(pk=1)}
     return render_to_response(template_name, dictionary, context_instance)
 
+def getColorArray(num):
+    """ Returns array of colors (triplets) that should be easy to distinguish
+    """
+    colors = []
+    for i in range(0,num):
+        c = colorsys.hsv_to_rgb(float(i)/num,1,1)
+        colors.append( c )
+    return colors
+
+def getColorArrayHTML(num):
+    """ Returns array of colors (strings with HTML codes) that should be easy to distinguish
+    """
+    colors = getColorArray(num)
+    ret = []
+    for r,g,b in colors:
+        ret.append("%02X%02X%02X" % (r*255,g*255,b*255))
+    return ret
 
 # vi:sw=4:ts=4:et

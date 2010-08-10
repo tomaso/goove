@@ -10,7 +10,7 @@ from models import Node
 from models import TorqueServer
 from models import AccountingEvent
 from models import SubmitHost
-from helpers import BooleanListForm,UpdateRunningJob,render_to_response_with_config
+from helpers import BooleanListForm,UpdateRunningJob,render_to_response_with_config,getColorArrayHTML
 from django import forms
 import colorsys
 import matplotlib
@@ -78,6 +78,11 @@ class FairshareForm(forms.Form):
         label="Fairshare entity",
         initial=0,
         choices=[ (0,'Queue'), (1,'Group'), (2,'User') ]
+    )
+    server = forms.ChoiceField(
+        label="Server",
+        initial=TorqueServer.objects.all()[0],
+        choices=[ (ts.pk,ts.name) for ts in TorqueServer.objects.all() ]
     )
 
 class CompletedForm(forms.Form):
@@ -376,6 +381,7 @@ def fairshare(request):
     fs_form.data['timescale'] = request.POST['timescale']
     fs_form.data['minutes'] = request.POST['minutes']
     fs_form.data['entity'] = request.POST['entity']
+    fs_form.data['server'] = request.POST['server']
     fs_form.is_bound = True
 
     minutes = int(request.POST['timescale'])
@@ -399,7 +405,7 @@ def fairshare(request):
 
     result = []
     total_sum = 0
-    for j in Job.objects.filter(comp_time__range=(starttime, endtime)).values(entity_name, entity_color).annotate(Sum('walltime')):
+    for j in Job.objects.filter(server__pk=request.POST['server'], comp_time__range=(starttime, endtime)).values(entity_name, entity_color).annotate(Sum('walltime')):
         secs = int(j['walltime__sum'])
         tstr = "%d %d:%d:%d" % ((secs/86400), (secs/3600)%24, (secs/60)%60, secs%60)
         result.append({
@@ -409,6 +415,19 @@ def fairshare(request):
             'entity_color':j[entity_color]
         })
         total_sum += int(j['walltime__sum'])
+    
+    # check color validity
+    colors_valid = False
+    for r in result:
+        if r['entity_color']:
+            colors_valid = True
+            break
+    if not colors_valid:
+        i = 0
+        generated_colors = getColorArrayHTML(len(result))
+        for r in result:
+            r['entity_color'] = generated_colors[i]
+            i += 1
 
     total_str = "%d %d:%d:%d" % ((total_sum/86400), (total_sum/3600)%24, (total_sum/60)%60, total_sum%60)
     total = {'entity_name':'total', 'walltime__sum':total_sum, 'walltime__str':total_str}

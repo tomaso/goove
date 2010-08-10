@@ -21,7 +21,7 @@
 
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.PieChart(document.getElementById('ggraph'));
-    chart.draw(data, {width: 400, height: 240, is3D: false, title: 'My Daily Activities', 
+    chart.draw(data, {width: 400, height: 240, is3D: false, title: 'Fairshare', 
         colors: [{%for row in result%}'#{{row.entity_color}}'{%if not forloop.last%},{%endif%}{%endfor%}] 
     });
   }
