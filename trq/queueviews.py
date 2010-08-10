@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from helpers import render_to_response_with_config
+from helpers import render_to_response_with_config,getColorArray
 from models import Node
 from models import SubCluster
 from models import NodeProperty
@@ -167,10 +167,7 @@ def graph_pie(dfrom, dto, data_type, queue_names, figsize, dpi):
             fracs.append(v)
     labels.append('others')
     fracs.append(others)
-    colors = []
-    for i in range(0,len(fracs)):
-        c = colorsys.hsv_to_rgb(float(i)/len(fracs),1,1)
-        colors.append( c )
+    colors = getColorArray(len(fracs))
     title("Completed jobs between %s and %s" % (dfrom, dto))
     pie(fracs, labels=labels, colors=colors, autopct='%1.1f%%')
     response = HttpResponse(mimetype='image/png')
