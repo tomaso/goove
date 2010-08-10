@@ -134,7 +134,7 @@ class SubmitHost(models.Model):
 
 
 class Job(models.Model):
-    jobid = models.IntegerField(db_index=True, editable=False)
+    jobid = models.CharField(max_length=16, db_index=True, editable=False)
     server = models.ForeignKey('TorqueServer', editable=False)
     job_owner = models.ForeignKey('User', null=True)
     job_gridowner = models.ForeignKey('GridUser', null=True)
