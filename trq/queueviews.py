@@ -42,22 +42,12 @@ def queues_overview(request):
     for qr in queue_results:
         restable[qr['server__name']][qr['queue__name']][qr['job_state__name']] += qr['job_state__count']
 
-    print restable
-
     return render_to_response_with_config(
         'trq/queues_overview.html',
         {'restable':restable
         }
     )
     
-#    return render_to_response_with_config(
-#        'trq/queues_overview.html',
-#        {'queues_list':queues, 
-#        'job_states':job_states,
-#        'restable':restable
-#        }
-#    )
-
 
 def queue_detail(request, queuename=None):
     queue_form = QueueSelectForm()
@@ -87,9 +77,15 @@ class QueuesStatsForm(forms.Form):
     graph_type = forms.ChoiceField(
         label="Graph type", choices=(('bars','Aggregated bars'),('pie','Pie chart')))
     wfrom = forms.DateField(
-        label="Start", widget=forms.DateInput(attrs={'class':'vDateField'}))
+        label="Start", 
+        initial=date.fromordinal(date.today().toordinal()-1).isoformat(),
+        widget=forms.DateInput(attrs={'class':'vDateField'})
+    )
     wto = forms.DateField(
-        label="End", widget=forms.DateInput(attrs={'class':'vDateField'}))
+        label="End", 
+        initial=date.today().isoformat(),
+        widget=forms.DateInput(attrs={'class':'vDateField'})
+    )
     aggregation = forms.ChoiceField(
         label="Aggregate", choices=(('day','day'),('week','week'),('month','month')))
     data_type = forms.ChoiceField(
@@ -99,8 +95,8 @@ class QueuesStatsForm(forms.Form):
 def queues_stats(request):
     stat_form = QueuesStatsForm()
     for q in Queue.objects.all():
-        stat_form.fields['queue_'+q.name] = forms.BooleanField(label=q.name, required=False)
-        stat_form.data['queue_'+q.name] = True
+        stat_form.fields['queue_'+str(q.pk)] = forms.BooleanField(label="%s@%s" % (q.name,q.server.name), required=False)
+        stat_form.data['queue_'+str(q.pk)] = True
         stat_form.is_bound = True
     if request.POST:
         stat_form.data['graph_type'] = request.POST['graph_type']
@@ -109,10 +105,10 @@ def queues_stats(request):
         stat_form.data['aggregation'] = request.POST['aggregation']
         stat_form.data['data_type'] = request.POST['data_type']
         for q in Queue.objects.all():
-            if request.POST.has_key('queue_'+q.name):
-                stat_form.data['queue_'+q.name] = request.POST['queue_'+q.name]
+            if request.POST.has_key('queue_'+str(q.pk)):
+                stat_form.data['queue_'+str(q.pk)] = request.POST['queue_'+str(q.pk)]
             else:
-                stat_form.data['queue_'+q.name] = False
+                stat_form.data['queue_'+str(q.pk)] = False
         stat_form.is_bound = True
         
 
@@ -197,11 +193,11 @@ def get_graph_values(items):
         graph_values['ylabel']='CPU time'
         graph_values['title']='CPU time of completed jobs'
 
-    queue_names = []
+    queue_pks = []
     for key,val in items.items():
         if key.startswith('queue_'):
-            queue_names.append(key[len('queue_'):])
-    queue_names.sort()
+            queue_pks.append(key[len('queue_'):])
+    queue_pks.sort()
     
 
     if aggregation=='day':
@@ -232,29 +228,25 @@ def get_graph_values(items):
         fromdates.append(f)
         todates.append(t)
 
-#    cursor = connection.cursor()
-#    cursor.execute("SELECT year(trq_job.comp_time),month(trq_job.comp_time),day(trq_job.comp_time),count(*),trq_queue.name FROM trq_job INNER JOIN trq_queue ON trq_job.queue_id=trq_queue.id WHERE comp_time>=%s  and comp_time<=%s GROUP BY TO_DAYS(trq_job.comp_time),trq_queue.name", [fromdates[0],todates[-1]])
-#    rawresult = cursor.fetchall()
-#    rr = {}
-#    for y,m,d,v,q in rawresult:
-#        if not rr.has_key(q):
-#            rr[q]={}
-#        rr[q]["%s-%02d-%02d" % (y,int(m),int(d))]=v
-
     graph_values['values'] = []
-    graph_values['queues'] = queue_names
+    queue_names = {}
+    for q in Queue.objects.all().values('pk','name','server__name'): 
+        queue_names[q['pk']]="%s@%s" % (q['name'], q['server__name'])
+    graph_values['queues']  = []
+    for pk in queue_pks:
+        graph_values['queues'].append(queue_names[int(pk)])
     graph_values['queues_colors'] = []
-    for q in queue_names:
-        graph_values['queues_colors'].append(Queue.objects.get(name=q).color)
+    for q in queue_pks:
+        graph_values['queues_colors'].append(Queue.objects.get(pk=q).color)
     for j in range(0,N):
         rr = {}
         rr['date'] = fromdates[j]
-        out = Job.objects.filter(comp_time__range=(fromdates[j], todates[j])).values('queue__name').annotate(Count('pk'))
+        out = Job.objects.filter(comp_time__range=(fromdates[j], todates[j])).values('queue__pk').annotate(Count('pk'))
         od = {}
         for i in out:
-            od[i['queue__name']]=i['pk__count']
+            od[str(i['queue__pk'])]=i['pk__count']
         rr['queues'] = []
-        for q in queue_names:
+        for q in queue_pks:
             if od.has_key(q):
                 rr['queues'].append(od[q])
             else:
