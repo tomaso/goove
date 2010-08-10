@@ -16,25 +16,28 @@ from django import forms
 
 def overview(request):
     info = []
-    for c in (Node, SubCluster, NodeProperty, User, Queue, Job, SubmitHost):
+    for c in (TorqueServer, Node, SubCluster, NodeProperty, User, Queue, Job, SubmitHost):
         item = {}
         item['name'] = c.get_overview_name()
         item['count'] = c.objects.all().count()
         item['url'] = c.get_overview_url()
         info.append(item)
 
-    qdb=Queue.objects.all()
-    queues=[]
-    for q in qdb:
-        nums = q.get_queue_numbers()
-        queues.append(
-            {'queue':q,'Q':nums['Q'],'R':nums['R']}
-        )
+    tsqueues = {}
+    for ts in TorqueServer.objects.all():
+        tsqueues[ts]=[]
+        qdb=Queue.objects.filter(server=ts)
+        for q in qdb:
+            numsq = Job.objects.filter(queue=q,job_state__shortname='Q').count()
+            numsr = Job.objects.filter(queue=q,job_state__shortname='R').count()
+            tsqueues[ts].append(
+                {'queue':q,'Q':numsq,'R':numsr}
+            )
 
     return render_to_response_with_config(
         'trq/overview.html', 
         { 'info': info,
-          'queues' : queues,
+          'tsqueues' : tsqueues,
           'starttime' : AccountingEvent.objects.all().order_by('timestamp')[0].timestamp,
           'endtime' : AccountingEvent.objects.all().order_by('-timestamp')[0].timestamp
         }
