@@ -254,20 +254,26 @@ def job_detail(request, servername=None, jobid=None):
     if not request.POST and jobid==None:
         return render_to_response_with_config(
             'trq/job_detail.html',
-            {'select_form':select_form, 'job':None, 'accevents':[]}
+            {'select_form':select_form, 'unknownjob': False, 'job':None, 'accevents':[]}
         )
-
-    if request.POST:
-        server = TorqueServer.objects.get(pk=request.POST['server'])
-        job = Job.objects.get(jobid=request.POST['jobid'], server=server)
-        select_form.data['server'] = request.POST['server']
-        select_form.data['jobid'] = request.POST['jobid']
-    else:
-        server = TorqueServer.objects.get(name=servername)
-        job = Job.objects.get(jobid=jobid, server=server)
-        select_form.data['server'] = server.pk
-        select_form.data['jobid'] = jobid
-    select_form.is_bound = True
+    try:
+        if request.POST:
+            server = TorqueServer.objects.get(pk=request.POST['server'])
+            job = Job.objects.get(jobid=request.POST['jobid'], server=server)
+            select_form.data['server'] = request.POST['server']
+            select_form.data['jobid'] = request.POST['jobid']
+        else:
+            server = TorqueServer.objects.get(name=servername)
+            job = Job.objects.get(jobid=jobid, server=server)
+            select_form.data['server'] = server.pk
+            select_form.data['jobid'] = jobid
+        select_form.is_bound = True
+    except Job.DoesNotExist:
+        return render_to_response_with_config(
+            'trq/job_detail.html',
+            {'select_form':select_form, 'unknownjob': True, 'job':None, 'accevents':[]}
+        )
+        
 
     if job.job_state.shortname=='R':
         UpdateRunningJob(job)
@@ -275,7 +281,7 @@ def job_detail(request, servername=None, jobid=None):
     accevents = AccountingEvent.objects.filter(job=job)
     return render_to_response_with_config(
         'trq/job_detail.html',
-        {'select_form':select_form, 'job':job, 'accevents':accevents}
+        {'select_form':select_form, 'unknownjob': False, 'job':job, 'accevents':accevents}
         )
 
 def stats(request):
