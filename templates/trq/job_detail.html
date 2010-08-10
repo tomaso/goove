@@ -20,6 +20,11 @@
 </div>
 
 <div class="maintext">
+    {% if unknownjob %}
+    <div class="error">
+    The requested job does not exist.
+    </div>
+    {% endif %}
     {% if job %}
     <div class="infopanel">
     <h3>Job: {{ job.jobid }}</h3>
