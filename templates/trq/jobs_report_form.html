@@ -1,0 +1,25 @@
+{% extends "trq/base.html" %}
+
+{% block content %}
+<div class="maintextwide">
+    <form action="" method="post">
+
+    <h3>Report configuration</h3>
+    <table>
+    {% for field in select_form.visible_fields %}
+    <tr>
+        <th>{{ field.label_tag }}</th><td>{{ field }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+    <input type="submit" value="Submit" name="submit" />
+    </form>
+
+    <h2>Sorry this feature is not implemented yet.</h2>
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

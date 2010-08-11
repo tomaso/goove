@@ -350,7 +350,7 @@ def suspicious(request):
         if wl.isProblem(j):
             jobs.append(j)
     sf = SuspicionForm()
-    return render_to_response_with_config_with_config(
+    return render_to_response_with_config(
         'trq/jobs_suspicious.html', 
         {'suspicion_form':sf, 'suspicious_jobs':jobs}
         )
@@ -359,7 +359,11 @@ def report_form(request):
     """
     View form for reporting job data. This report is than returned as html or pdf.
     """
-    pass
+    return render_to_response_with_config(
+        'trq/jobs_report_form.html',
+        {}
+        )
+    
 
 def report_output(request):
     """
