@@ -260,6 +260,9 @@ def UpdateRunningJob(job):
 #    TODO: does not work in multithreaded environment
 #    signal.signal(signal.SIGALRM, alarm_handler)
 #    signal.alarm(20)
+#    Currently this can block whole application if the torque server is not responding
+    return True
+
     try:
         starttime = time.time()
         proc = subprocess.Popen(["qstat", "-x", "%s.%s" % (job.jobid, job.server.name)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -283,11 +286,11 @@ def UpdateRunningJob(job):
         log(LOG_ERROR, "Cannot parse line: %s, jobid: %s.%s" % (stdoutdata, job.jobid, job.server.name))
     return True
 
-def getRunningCountQstat():
+def getRunningCountQstat(tsname):
     """
     Get number of running jobs from output of qstat
     """
-    out,err = subprocess.Popen(["/bin/sh", "-c", "qstat @torque.farm.particle.cz | grep ' R '"], stdout=subprocess.PIPE).communicate()
+    out,err = subprocess.Popen(["/bin/sh", "-c", "qstat @%s | grep ' R '" % (tsname)], stdout=subprocess.PIPE).communicate()
     return out.count('\n')
 
 def render_to_response_with_config(template_name, dictionary=None, context_instance=None):
