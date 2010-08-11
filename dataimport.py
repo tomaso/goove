@@ -361,7 +361,7 @@ def updatePBSNodes():
 #                log(LOG_INFO, "feedJobsXML() took %f seconds" % (endtime-starttime))
 #            except ExpatError:
 #                log(LOG_ERROR, "Cannot parse line: %s" % (out))
-            run_qstat = getRunningCountQstat()
+            run_qstat = getRunningCountQstat(ts.name)
             run_db = Job.objects.filter(job_state=getJobState('R')).count()
             log(LOG_INFO, "Running jobs:: according to qstat: %d, according to database: %d" % (run_qstat, run_db))
         last_updatePBSNodes = now
