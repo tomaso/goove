@@ -127,6 +127,11 @@ def parseOneLogLine(line,lineno):
         return
         
     log(LOG_DEBUG, "processing accounting line: %s:%s:%s ..." %(date, event, fulljobid))
+    # We ignore PBSPro Licensing lines (it is not job related)
+    if event=='L':
+        log(LOG_DEBUG, "ignored licensing line")
+        return
+
     attrdir = {}
     try:
         for key,val in map(lambda x: x.split('=',1), attrs.split()): 
@@ -232,7 +237,22 @@ def parseOneLogLine(line,lineno):
     if attrdir.has_key('exec_host'):
         exec_host_names_slots = attrdir['exec_host'].split('+')
         job.jobslots.clear()
+
+        # convert PBSPro records like 'node1/0*2' to more generic 'node1/0+node1/1'
+        exec_host_names_slots_new = []
         for exec_host_name_slot in exec_host_names_slots:
+            if exec_host_name_slot.find('*')>=0:
+                exec_host_slot0, numslots = exec_host_name_slot.split('*')
+                exec_host_name = exec_host_slot0.split('/')[0]
+                exec_host_name_slot_new=[ "%s/%d" % (exec_host_name, i) for i in range(0,int(numslots)) ]
+                log(LOG_DEBUG, "Exec_host %s converted to %s" % (exec_host_name_slot,exec_host_name_slot_new))
+                exec_host_names_slots_new.extend(exec_host_name_slot_new)
+            else:
+                exec_host_names_slots_new.append(exec_host_name_slot)
+        exec_host_names_slots = exec_host_names_slots_new
+
+        for exec_host_name_slot in exec_host_names_slots:
+                
             name,slotstr = exec_host_name_slot.split('/')
             slot = int(slotstr)
             node,created = getNode(name, server)
