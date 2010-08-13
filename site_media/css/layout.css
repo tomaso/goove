@@ -45,3 +45,22 @@ div.infopanel h3 {
 	font-size:15px;
 	font-weight:bold;
 }
+
+div.footer {
+	position:absolute;
+	bottom:0; /* stick to bottom */
+	background:#ddd;
+	border-top:2px dotted gray;
+
+	font-size:8pt;
+	font-size-adjust:none;
+	font-style:normal;
+	font-variant:normal;
+	font-weight:normal;
+	text-align:right;
+	color: #999;
+}
+div.footer a {
+	text-decoration: underline;
+	color: #999;
+}
