@@ -189,7 +189,6 @@ def node_detail(request, nodename=None):
         if UpdateRunningJob(rj):
             rj = Job.objects.get(pk=rj.pk)
             updated_running_jobs.append(rj)
-            print "rj.walltime: ", rj.walltime
 
     return render_to_response_with_config('trq/node_detail.html', 
         {'node':n, 'running_jobs': updated_running_jobs, 'node_form':node_form
