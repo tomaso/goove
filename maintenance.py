@@ -2,6 +2,11 @@ from goove.trq.helpers import getJobState, getQueue, getNode, getTorqueServer, g
 from goove.trq.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
 from django.db.models import Avg, Max, Min, Count
 from goove.trq.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
+from django import db
+
+import settings
+
+#from guppy import hpy
 
 def removeContent():
     for ns in NodeState.objects.all():
@@ -46,10 +51,17 @@ def findDeletedJobs():
     # TODO: check that checkEventsRunningJob is still right
     # Evaluation of all the jobs get realy looot of memory 
     # so we get the job one by one
+
     maxjobid = Job.objects.filter(job_state__shortname='C').aggregate(Max("id"))['id__max']
-    #for n in range(1,maxjobid+1):
     for n in range(1,maxjobid+1):
-        j = Job.objects.get(pk=n)
+        # clean SQL debug memory once in a while (see http://docs.djangoproject.com/en/1.2/faq/models/#why-is-django-leaking-memory)
+        if settings.DEBUG == True and n%1000==0:
+            db.reset_queries()
+        try:
+            j = Job.objects.get(pk=n)
+        except Job.DoesNotExist:
+            log(LOG_ERROR, "job with pk=%d not found" % (n))
+            continue
         aes = AccountingEvent.objects.filter(job=j).order_by("-timestamp")
         ae = aes[0]
         if ae.type=='D':
@@ -91,3 +103,5 @@ def mergeNodes(mergenodesfile):
             ojs.delete()
 
         oldnode.delete()
+
+# vi:ts=4:sw=4:expandtab
