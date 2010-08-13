@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from helpers import render_to_response_with_config
+from helpers import render_to_response_with_config,getJobState
 from models import Node
 from models import SubCluster
 from models import NodeProperty
@@ -23,24 +23,25 @@ def overview(request):
         item['url'] = c.get_overview_url()
         info.append(item)
 
-    tsqueues = {}
+    tsdata = {}
     for ts in TorqueServer.objects.all():
-        tsqueues[ts]=[]
+        tsdata[ts] = {'queues':[],'starttime':0,'endtime':0}
         qdb=Queue.objects.filter(server=ts)
         for q in qdb:
             numsq = Job.objects.filter(queue=q,job_state__shortname='Q').count()
             numsr = Job.objects.filter(queue=q,job_state__shortname='R').count()
-            tsqueues[ts].append(
+            tsdata[ts]['queues'].append(
                 {'queue':q,'Q':numsq,'R':numsr}
             )
+        tsdata[ts]['starttime'] = Job.objects.filter(job_state=getJobState('C')).order_by('comp_time').filter(server=ts)[0].comp_time
+        tsdata[ts]['endtime'] = Job.objects.filter(job_state=getJobState('C')).order_by('-comp_time').filter(server=ts)[0].comp_time
 
+    print tsdata
     return render_to_response_with_config(
         'trq/overview.html', 
         { 'info': info,
-          'tsqueues' : tsqueues,
-          'starttime' : AccountingEvent.objects.all().order_by('timestamp')[0].timestamp,
-          'endtime' : AccountingEvent.objects.all().order_by('-timestamp')[0].timestamp
+          'tsdata' : tsdata
         }
-        )
+    )
 
 # vi:ts=4:sw=4:expandtab

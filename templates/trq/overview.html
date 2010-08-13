@@ -20,7 +20,7 @@
         
     </div>
 
-{% for ts,queues in tsqueues.items %}
+{% for ts,data in tsdata.items %}
 
     <div class="infopanel">
 
@@ -28,7 +28,7 @@
         <h3>{{ts.name}} queues</h3>
         <table class="overview">
         <tr><th>&nbsp;</th><th>Q</th><th>R</th></tr>
-        {% for q in queues  %}
+        {% for q in data.queues  %}
         <tr>
         <td class="coldesc"><a href="{{ q.queue.get_absolute_url}}">{{ q.queue.name }}</a></td>
         <td class="colnumber">{{ q.Q }}</a></td>
@@ -37,20 +37,16 @@
         {% endfor %}
 
         </table>
+
+        <h3>Completed times</h3>
+        <table class="overview">
+        <tr><td>First job</td><td>{{ data.starttime }}</td></tr>
+        <tr><td>Last job</td><td>{{ data.endtime }}</td></tr>
+        </table>
         
     </div>
 
 {% endfor %}
-
-    <div class="infopanel">
-
-        <h3>Timeframe</h3>
-        <table class="overview">
-        <tr><td>First job</td><td>{{ starttime }}</td></tr>
-        <tr><td>Last job</td><td>{{ endtime }}</td></tr>
-        </table>
-
-    </div>
 
 </div>
 
