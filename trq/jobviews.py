@@ -59,6 +59,10 @@ class SuspicionForm(forms.Form):
         initial=True,
         widget=forms.CheckboxInput(attrs={'title':wl.description})
     )
+    page = forms.IntegerField(
+        initial=1,
+        widget=forms.HiddenInput()
+    )
 
 class FairshareForm(forms.Form):
     """
@@ -344,15 +348,34 @@ def suspicious(request):
     Get lists of suspicious jobs (various reasons)
     and render page with them.
     """
+    sf = SuspicionForm()
+    if not request.POST:
+        return render_to_response_with_config(
+            'trq/jobs_suspicious.html',
+            {'suspicion_form':sf, 'suspicious_jobs':[], 'paginator':None}
+        )
+
     current_date = datetime.date.today()
     jobs = []
     for j in Job.objects.filter(job_state__shortname="R"):
         if wl.isProblem(j):
             jobs.append(j)
-    sf = SuspicionForm()
+
+    sf.data['page'] = request.POST['page']
+    if request.POST['submit']=='>>':
+        sf.data['page'] = int(sf.data['page']) + 1
+    elif request.POST['submit']=='<<':
+        sf.data['page'] = int(sf.data['page']) - 1
+
+    page = int(comp_form.data['page'])
+    paginator = Paginator(jobs, 50)
+    if page>paginator.num_pages:
+        page=1
+    jobs_page = paginator.page(page)
+
     return render_to_response_with_config(
         'trq/jobs_suspicious.html', 
-        {'suspicion_form':sf, 'suspicious_jobs':jobs}
+        {'suspicion_form':sf, 'suspicious_jobs':jobs_page, 'paginator':paginator}
         )
 
 def report_form(request):
