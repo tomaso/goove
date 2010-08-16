@@ -168,7 +168,7 @@ def feedJobsXML(x, cleanLostJobs=False):
         # job_owner
         new_job_owner_name = i.getElementsByTagName("Job_Owner")[0].childNodes[0].nodeValue
         new_job_owner_name = new_job_owner_name.split("@")[0]
-        new_job_owner,created = User.objects.get_or_create(name=new_job_owner_name)
+        new_job_owner,created = User.objects.get_or_create(name=new_job_owner_name,server=new_server)
         if created:
             log(LOG_INFO, "new user will be created: %s" % new_job_owner_name)
         new_job.job_owner = new_job_owner
@@ -197,7 +197,7 @@ def feedJobsXML(x, cleanLostJobs=False):
 
         # queue
         new_queue_name = i.getElementsByTagName("queue")[0].childNodes[0].nodeValue
-        new_queue,created = Queue.objects.get_or_create(name=new_queue_name)
+        new_queue,created = Queue.objects.get_or_create(name=new_queue_name,server=new_server)
         if created:
             log(LOG_INFO, "new queue will be created: %s" % new_queue_name)
         new_job.queue = new_queue
@@ -215,13 +215,12 @@ def feedJobsXML(x, cleanLostJobs=False):
         # comp_time
         new_job.comp_time = getTimeOrZero(i, "comp_time")
 
-        # TODO: redesign for multislot jobs
         # exec_host
         exec_host_xml = i.getElementsByTagName("exec_host")
         if len(exec_host_xml)>0:
             new_exec_host_name = exec_host_xml[0].childNodes[0].nodeValue
             new_exec_host_name = new_exec_host_name.split("/",1)[0]
-            new_exec_host,created = Node.objects.get_or_create(name=new_exec_host_name)
+            new_exec_host,created = Node.objects.get_or_create(name=new_exec_host_name, server=new_server)
             if created:
                 log(LOG_INFO, "new node (exec_host) will be created: %s" % new_exec_host_name)
             new_job.exec_host = new_exec_host
@@ -232,7 +231,7 @@ def feedJobsXML(x, cleanLostJobs=False):
     # otherwise it is kinda lost job
     if cleanLostJobs:
         ljs = getJobState('L')
-        for j in Job.objects.exclude(job_state__shortname="C").exclude(job_state__shortname="L"):
+        for j in Job.objects.exclude(job_state__shortname="C").exclude(job_state__shortname="L").exclude(job_state__shortname="A").exclude(job_state__shortname="D"):
             if j not in updated_jobs:
                 log(LOG_WARNING, "job %d.%s is in database unfinished but not present in torque anymore - job is Lost" % (j.jobid, j.server.name))
                 j.job_state = getJobState('L')
