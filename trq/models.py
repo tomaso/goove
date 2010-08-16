@@ -197,6 +197,7 @@ class RunningJob(models.Model):
     
 class TorqueServer(models.Model):
     name = models.CharField(verbose_name="torque server name", max_length=100)
+    isactive = models.BooleanField(help_text="Is this server still used?")
     def __unicode__(self):
     	return self.name
 
@@ -215,7 +216,7 @@ class User(models.Model):
     group = models.ForeignKey('Group', null=True)
     server = models.ForeignKey('TorqueServer')
     def __unicode__(self):
-    	return self.name
+    	return "%s@%s" % (self.name,self.server.name)
 
     def get_absolute_url(self):
         return u"/trq/users/user_detail/%s/" % (self.name)
