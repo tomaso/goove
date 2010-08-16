@@ -1,10 +1,14 @@
 from goove.trq.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup, getSubmitHost
 from goove.trq.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
 from django.db.models import Avg, Max, Min, Count
-from goove.trq.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
+from goove.trq.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log,feedJobsXML
 from django import db
 
 import settings
+import subprocess
+import time
+from xml.parsers.expat import ExpatError
+from xml.dom.minidom import parse, parseString
 
 #from guppy import hpy
 
@@ -33,14 +37,42 @@ def removeContent():
 def checkEventsRunningJobs():
     """ Check that Running jobs are running according to the event log
     """
-    comp_state = JobState.objects.get(shortname='C')
     for rj in Job.objects.filter(job_state__shortname='R'):
         log(LOG_INFO, "Checking job id: %d" % (rj.jobid))
         aes = AccountingEvent.objects.filter(job=rj, type__in=['E','D','A']).count()
         if aes!=0:
             log(LOG_ERROR, "job id: %d, db id: %d is in Running state but accounting records are finished - fixing it." % (rj.jobid, rj.id))
-            rj.job_state = comp_state
+            rj.job_state = getJobState('C')
             rj.save()
+
+def findLostJobs():
+    """ Find jobs that are in active state (running) but
+    torque server does know about them (mark them as lost).
+    """
+    for dead_server in TorqueServer.objects.filter(isactive=False):
+        for job in Job.objects.filter(job_state=getJobState('R'), server=dead_server):
+            job.job_state = getJobState('L')
+            job.save()
+            log(LOG_DEBUG, "Running job on inactive server marked Lost: %s@%s" % (job.jobid,job.server.name))
+    
+    for live_server in TorqueServer.objects.filter(isactive=True):
+        p = subprocess.Popen(["qstat", "-fx", "@%s" % live_server.name], stdout=subprocess.PIPE)
+        (out,err) = p.communicate()
+        log(LOG_DEBUG, "Qstat output from live server %s obtained" % (live_server.name))
+        try:
+            log(LOG_DEBUG, "before parseString()")
+            jobsxml = parseString(out)
+            log(LOG_DEBUG, "after parseString()")
+            starttime = time.time()
+            log(LOG_DEBUG, "before feedJobsXML()")
+            feedJobsXML(jobsxml, True)
+            log(LOG_DEBUG, "after feedJobsXML()")
+            endtime = time.time()
+            log(LOG_INFO, "feedJobsXML() took %f seconds" % (endtime-starttime))
+        except ExpatError:
+            log(LOG_ERROR, "Cannot parse line: %s" % (out))
+        
+        
 
 
 def findDeletedJobs():
@@ -103,5 +135,62 @@ def mergeNodes(mergenodesfile):
             ojs.delete()
 
         oldnode.delete()
+
+def mergeUsers(mergeusersfile):
+    """ This function expects file in format "server:usernameA=usernameB" (without quotes. 
+    It reassociates jobs of usernameA to usernameB. After that it deletes usernameA.
+    If there are more users with usernameA or usernameB the more precise specification can be used:
+    server:usernameA/groupnameA=usernameB/groupnameB
+    """
+    for l in mergeusersfile:
+        oldgroupname = newgroupname = None
+        if l.find('/')>=0:
+            oldtmp,newtmp = l.strip().split('=')
+            oldusername,oldgroupname = oldtmp.split('/')
+            newusername,newgroupname = newtmp.split('/')
+        else:
+            oldusername,newusername = l.strip().split('=')
+    
+        try:
+            if oldgroupname:
+                olduser = User.objects.get(name=oldusername, group__name=oldgroupname)
+                newuser = User.objects.get(name=newusername, group__name=newgroupname)
+            else:
+                olduser = User.objects.get(name=oldusername)
+                newuser = User.objects.get(name=newusername)
+        except User.DoesNotExist:
+            log(LOG_ERROR, "Old or new user node is not in the database - skipping line: %s" % l)
+            continue
+
+        jobs = Job.objects.filter(job_owner=olduser)
+        for j in jobs:
+            j.job_owner = newuser
+            j.save()
+            log(LOG_DEBUG, "Changing the old owner: %s to thenew owner: %s for job %s" % (olduser, newuser, j))
+
+
+def mergeGroups(mergegroupsfile):
+    """ This function expects opened file with lines in format "server:oldgroup=newgroup", where server
+    is a name of torque server, oldgroup is the name of the group that should vanish and newgroup is the
+    name of the group that should obtain all users belonging to old group. The old group is then deleted.
+    """
+    for l in mergegroupsfile:
+        servername,rest = l.strip().split(':')
+        oldgroupname,newgroupname = rest.split('=')
+        try:
+            oldgroup = Group.objects.get(name=oldgroupname, server__name=servername)
+        except Group.DoesNotExist:
+            log(LOG_ERROR, "Cannot find group: %s on server %s - skipping" % (oldgroupname, servername))
+            continue
+        try:
+            newgroup = Group.objects.get(name=newgroupname, server__name=servername)
+        except Group.DoesNotExist:
+            log(LOG_ERROR, "Cannot find group: %s on server %s - skipping" % (newgroupname, servername))
+            continue
+        for u in User.objects.filter(group=oldgroup):
+            u.group = newgroup
+            log(LOG_DEBUG, "Changing the old group: %s to the new group: %s for user %s" % (oldgroup, newgroup, u))
+        oldgroup.delete()
+        log(LOG_DEBUG, "Old group: %s deleted" % (oldgroup))
 
 # vi:ts=4:sw=4:expandtab
