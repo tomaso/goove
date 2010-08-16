@@ -7,12 +7,15 @@
     <form action="" method="post">
         <h3>Suspicion type</h3>
         <table>
-        {% for field in suspicion_form %}
+        {% for field in suspicion_form.visible_fields %}
         <tr>
             <th>{{ field.label_tag }}</th><td>{{ field }}</td>
         </tr>
         {% endfor %}
         </table>
+        {% for field in comp_form.hidden_fields %}
+        {{ field }}
+        {% endfor %}
         <input type="submit" value="Submit" />
     </form>
 
@@ -33,7 +36,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for job in suspicious_jobs %}
+            {% for job in jobs_page.object_list %}
             <tr>
                 <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
                 <td><a href="{{ job.job_owner.get_absolute_url }}">{{ job.job_owner }}</a></td>
@@ -50,6 +53,18 @@
             {% endfor %}
         </tbody>
     </table>
+    {% if paginator %}
+        <span class="paging">
+        Page: 
+        {% if jobs_page.has_previous %}
+        <input type="submit" value="<<" name="submit" />
+        {% endif %}
+        {{ jobs_page.number }} of {{ paginator.num_pages }} ({{ paginator.count }} total jobs)
+        {% if jobs_page.has_next %}
+        <input type="submit" value=">>" name="submit" />
+        {% endif %}
+        </span>
+    {% endif %}
 </div>
 
 {% endblock content %}
