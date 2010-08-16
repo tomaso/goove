@@ -231,9 +231,14 @@ def feedJobsXML(x, cleanLostJobs=False):
     # otherwise it is kinda lost job
     if cleanLostJobs:
         ljs = getJobState('L')
-        for j in Job.objects.exclude(job_state__shortname="C").exclude(job_state__shortname="L").exclude(job_state__shortname="A").exclude(job_state__shortname="D"):
+        test_jobs = Job.objects.exclude(job_state__shortname="C").exclude(job_state__shortname="L").exclude(job_state__shortname="A").exclude(job_state__shortname="D")
+        count = test_jobs.count()
+        i = 0
+        for j in test_jobs:
+            log(LOG_DEBUG, "%d out of %d tested for being lost" % (i, count))
+            i = i+1
             if j not in updated_jobs:
-                log(LOG_WARNING, "job %d.%s is in database unfinished but not present in torque anymore - job is Lost" % (j.jobid, j.server.name))
+                log(LOG_WARNING, "job %s.%s is in database unfinished but not present in torque anymore - job is Lost" % (j.jobid, j.server.name))
                 j.job_state = getJobState('L')
                 j.save()
             
