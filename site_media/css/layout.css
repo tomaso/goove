@@ -24,7 +24,7 @@ div.page {
 }
 
 div.infopanel {
-	float: left;
+/*	float: left;*/
 	block: inline;
 	margin-right:15px;
 	padding:5px;
@@ -47,7 +47,7 @@ div.infopanel h3 {
 }
 
 div.footer {
-	position:absolute;
+	position:fixed;
 	bottom:0; /* stick to bottom */
 	background:#ddd;
 	border-top:2px dotted gray;
@@ -59,8 +59,13 @@ div.footer {
 	font-weight:normal;
 	text-align:right;
 	color: #999;
+	height: 1.5em;
 }
 div.footer a {
 	text-decoration: underline;
 	color: #999;
+}
+
+div.push {
+	height: 1.5em;
 }

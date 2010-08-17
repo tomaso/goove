@@ -38,7 +38,7 @@ div.topmenu {
 }
 
 div.leftmenu {
-        float: left;
+/*        float: left;*/
 	block: inline;
 	font-size: 10px;
 	width: 20%;
@@ -76,7 +76,7 @@ div.rightmenu {
 }
 
 div.maintext {
-        float: right;
+/*        float: right;*/
 	block: inline;
         text-align: center;
 	width: 79%;
