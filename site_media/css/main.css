@@ -38,12 +38,13 @@ div.topmenu {
 }
 
 div.leftmenu {
-/*        float: left;*/
+        float: left;
 	block: inline;
 	font-size: 10px;
 	width: 20%;
 /*	position: fixed;*/
         border: 1px dotted;
+        margin: 0px auto 1.5em;
 /*	background-color: #55BB55;*/
 }
 
@@ -76,11 +77,11 @@ div.rightmenu {
 }
 
 div.maintext {
-/*        float: right;*/
+        float: right;
 	block: inline;
         text-align: center;
 	width: 79%;
-        margin: 0px auto;
+        margin: 0px auto 1.5em;
         padding-bottom:10px;
 }
 div.maintextwide {
