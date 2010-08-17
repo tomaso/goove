@@ -11,6 +11,7 @@ from models import TorqueServer
 from models import AccountingEvent
 from models import SubmitHost
 from helpers import BooleanListForm,UpdateRunningJob,render_to_response_with_config,getColorArrayHTML
+from helpers import getJobState
 from django import forms
 import colorsys
 import matplotlib
@@ -352,12 +353,12 @@ def suspicious(request):
     if not request.POST:
         return render_to_response_with_config(
             'trq/jobs_suspicious.html',
-            {'suspicion_form':sf, 'suspicious_jobs':[], 'paginator':None}
+            {'suspicion_form':sf, 'jobs_page':None, 'paginator':None}
         )
 
     current_date = datetime.date.today()
     jobs = []
-    for j in Job.objects.filter(job_state__shortname="R"):
+    for j in Job.objects.filter(job_state=getJobState('R')):
         if wl.isProblem(j):
             jobs.append(j)
 
@@ -367,7 +368,7 @@ def suspicious(request):
     elif request.POST['submit']=='<<':
         sf.data['page'] = int(sf.data['page']) - 1
 
-    page = int(comp_form.data['page'])
+    page = int(sf.data['page'])
     paginator = Paginator(jobs, 50)
     if page>paginator.num_pages:
         page=1
@@ -375,7 +376,7 @@ def suspicious(request):
 
     return render_to_response_with_config(
         'trq/jobs_suspicious.html', 
-        {'suspicion_form':sf, 'suspicious_jobs':jobs_page, 'paginator':paginator}
+        {'suspicion_form':sf, 'jobs_page':jobs_page, 'paginator':paginator}
         )
 
 def report_form(request):
