@@ -5,6 +5,10 @@
 {% if global_config.graphtype == "Google" %}
 
 <!--Load the AJAX API-->
+
+<link rel="stylesheet" media="all" type="text/css" href="/site_media/css/ui.dropdownchecklist.css" />
+<script type="text/javascript" src="/site_media/js/ui.core-min.js"></script>
+<script type="text/javascript" src="/site_media/js/ui.dropdownchecklist-min.js"></script>
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">
   // Load the Visualization API and the piechart package.
@@ -39,6 +43,12 @@
   }
 
 </script>
+<script type="text/javascript">
+$(document).ready(function() {
+/*$(".dropdown_qlist").dropdownchecklist({ firstItemChecksAll: true, maxDropHeight: 200 });*/
+$(".dropdown_qlist").dropdownchecklist({ firstItemChecksAll: false, maxDropHeight: 200 });
+});
+</script> 
 
 {% endif %}
 
@@ -49,11 +59,10 @@
 
     <div class="statform">
         <form action="" method="post">
-        <table>
-            {% for field in stat_form %}
-                <tr><th>{{ field.label }}:</th><td style="text-align: left">{{ field }}</td></tr>
-            {% endfor %}
-        </table>
+        {% for field in stat_form %}
+            <div><span style="text-align: left">{{ field.label }}</span><span style="text-align: right">{{ field }}</span></div>
+        {% endfor %}
+
         <input type="submit" value="Submit" />
         </form>
     </div>

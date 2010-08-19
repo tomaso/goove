@@ -24,7 +24,7 @@ div.page {
 }
 
 div.infopanel {
-/*	float: left;*/
+	float: left;
 	block: inline;
 	margin-right:15px;
 	padding:5px;
