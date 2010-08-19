@@ -46,7 +46,8 @@
 <script type="text/javascript">
 $(document).ready(function() {
 /*$(".dropdown_qlist").dropdownchecklist({ firstItemChecksAll: true, maxDropHeight: 200 });*/
-$(".dropdown_qlist").dropdownchecklist({ firstItemChecksAll: false, maxDropHeight: 200 });
+$(".dropdown_qlist").prepend("<option>(all)</option>");
+$(".dropdown_qlist").dropdownchecklist({ firstItemChecksAll: true, maxDropHeight: 200, width: 160 });
 });
 </script> 
 
@@ -60,10 +61,10 @@ $(".dropdown_qlist").dropdownchecklist({ firstItemChecksAll: false, maxDropHeigh
     <div class="statform">
         <form action="" method="post">
         {% for field in stat_form %}
-            <div><span style="text-align: left">{{ field.label }}</span><span style="text-align: right">{{ field }}</span></div>
+            <div style="clear: both"><div style="float: left">{{ field.label }}</div><div style="float: right;">{{ field }}</div></div>
         {% endfor %}
 
-        <input type="submit" value="Submit" />
+        <div style="clear: both; float: right;"><input type="submit" value="Submit" /></div>
         </form>
     </div>
 </div>
