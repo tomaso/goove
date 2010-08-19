@@ -94,21 +94,25 @@ class QueuesStatsForm(forms.Form):
 
 def queues_stats(request):
     stat_form = QueuesStatsForm()
-    for q in Queue.objects.all():
-        stat_form.fields['queue_'+str(q.pk)] = forms.BooleanField(label="%s@%s" % (q.name,q.server.name), required=False)
-        stat_form.data['queue_'+str(q.pk)] = True
+
+    for ts in TorqueServer.objects.all():
+        ch = []
+        for q in Queue.objects.filter(server=ts).order_by('name'):
+            ch.append(('queue_'+str(q.pk),q.name))
+        stat_form.fields['server_'+str(ts.pk)] = forms.MultipleChoiceField(
+            choices=ch, label=ts.name, widget=forms.SelectMultiple(attrs={'class':'dropdown_qlist'})) 
         stat_form.is_bound = True
+
     if request.POST:
+        print request.POST
         stat_form.data['graph_type'] = request.POST['graph_type']
         stat_form.data['wfrom'] = request.POST['wfrom']
         stat_form.data['wto'] = request.POST['wto']
         stat_form.data['aggregation'] = request.POST['aggregation']
         stat_form.data['data_type'] = request.POST['data_type']
-        for q in Queue.objects.all():
-            if request.POST.has_key('queue_'+str(q.pk)):
-                stat_form.data['queue_'+str(q.pk)] = request.POST['queue_'+str(q.pk)]
-            else:
-                stat_form.data['queue_'+str(q.pk)] = False
+        for ts in TorqueServer.objects.all():
+            if request.POST.has_key('server_'+str(ts.pk)):
+                stat_form.data['server_'+str(ts.pk)] = request.POST.getlist('server_'+str(ts.pk))
         stat_form.is_bound = True
         
 
@@ -119,7 +123,8 @@ def queues_stats(request):
         graph_values = get_graph_values(graph_data)
     return render_to_response_with_config(
         'trq/queues_stats.html',
-        {'stat_form':stat_form, 'graph_data':graph_data, 'graph_values':graph_values}
+        {'stat_form':stat_form,
+        'graph_data':graph_data, 'graph_values':graph_values}
         )
 
 
@@ -191,9 +196,9 @@ def get_graph_values(items):
         graph_values['title']='CPU time of completed jobs'
 
     queue_pks = []
-    for key,val in items.items():
-        if key.startswith('queue_'):
-            queue_pks.append(key[len('queue_'):])
+    for ts in TorqueServer.objects.all():
+        for q in items.getlist('server_'+str(ts.pk)):
+            queue_pks.append(q[len('queue_'):])
     queue_pks.sort()
     
 
