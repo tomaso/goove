@@ -198,7 +198,8 @@ def get_graph_values(items):
     queue_pks = []
     for ts in TorqueServer.objects.all():
         for q in items.getlist('server_'+str(ts.pk)):
-            queue_pks.append(q[len('queue_'):])
+            if q.startswith('queue_'):
+                queue_pks.append(q[len('queue_'):])
     queue_pks.sort()
     
 
