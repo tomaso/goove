@@ -31,7 +31,7 @@
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.ColumnChart(document.getElementById('ggraph'));
     chart.draw(data, {width: 800, height: 640, title: '{{graph_values.title}}', 
-                        isStacked: true, hAxis: {title: 'Year', titleColor:'red'},
+                        isStacked: true, hAxis: {title: 'Date', titleColor:'red'},
                         colors: [{%for c in graph_values.queues_colors%}'#{{c}}'{%if not forloop.last%},{%endif%}{%endfor%}]
     });
 
@@ -61,6 +61,9 @@ $(".dropdown_qlist").dropdownchecklist({ firstItemChecksAll: true, maxDropHeight
     <div class="statform">
         <form action="" method="post">
         {% for field in stat_form %}
+            <div style="clear: both"><div style="float: left">{{ field.label }}</div><div style="float: right;">{{ field }}</div></div>
+        {% endfor %}
+        {% for field in queues_form %}
             <div style="clear: both"><div style="float: left">{{ field.label }}</div><div style="float: right;">{{ field }}</div></div>
         {% endfor %}
 

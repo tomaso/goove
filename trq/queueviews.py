@@ -94,14 +94,16 @@ class QueuesStatsForm(forms.Form):
 
 def queues_stats(request):
     stat_form = QueuesStatsForm()
+    queues_form = forms.Form()
+
 
     for ts in TorqueServer.objects.all():
         ch = []
         for q in Queue.objects.filter(server=ts).order_by('name'):
             ch.append(('queue_'+str(q.pk),q.name))
-        stat_form.fields['server_'+str(ts.pk)] = forms.MultipleChoiceField(
+        queues_form.fields['server_'+str(ts.pk)] = forms.MultipleChoiceField(
             choices=ch, label=ts.name, widget=forms.SelectMultiple(attrs={'class':'dropdown_qlist'})) 
-        stat_form.is_bound = True
+        queues_form.is_bound = True
 
     if request.POST:
         print request.POST
@@ -110,10 +112,11 @@ def queues_stats(request):
         stat_form.data['wto'] = request.POST['wto']
         stat_form.data['aggregation'] = request.POST['aggregation']
         stat_form.data['data_type'] = request.POST['data_type']
+        stat_form.is_bound = True
         for ts in TorqueServer.objects.all():
             if request.POST.has_key('server_'+str(ts.pk)):
-                stat_form.data['server_'+str(ts.pk)] = request.POST.getlist('server_'+str(ts.pk))
-        stat_form.is_bound = True
+                queues_form.data['server_'+str(ts.pk)] = request.POST.getlist('server_'+str(ts.pk))
+        queues_form.is_bound = True
         
 
     graph_data = False
@@ -123,7 +126,7 @@ def queues_stats(request):
         graph_values = get_graph_values(graph_data)
     return render_to_response_with_config(
         'trq/queues_stats.html',
-        {'stat_form':stat_form,
+        {'stat_form':stat_form, 'queues_form':queues_form,
         'graph_data':graph_data, 'graph_values':graph_values}
         )
 
