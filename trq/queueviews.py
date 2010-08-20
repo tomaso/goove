@@ -195,12 +195,18 @@ def get_graph_values(items):
     if data_type == 'jobcount':
         graph_values['ylabel']='Number of jobs'
         graph_values['title']='Completed jobs per time unit'
+        data_type_arg=Count("pk")
+        data_type_res='pk__count'
     elif data_type == 'cputime':
         graph_values['ylabel']='Wall time'
         graph_values['title']='Wall time of completed jobs'
+        data_type_arg=Sum("cput")
+        data_type_res='cput__sum'
     elif data_type == 'walltime':
         graph_values['ylabel']='CPU time'
         graph_values['title']='CPU time of completed jobs'
+        data_type_arg=Sum("walltime")
+        data_type_res='walltime__sum'
 
     queue_pks = []
     for ts in TorqueServer.objects.all():
@@ -248,13 +254,15 @@ def get_graph_values(items):
     graph_values['queues_colors'] = []
     for q in queue_pks:
         graph_values['queues_colors'].append(Queue.objects.get(pk=q).color)
+    
     for j in range(0,N):
         rr = {}
         rr['date'] = fromdates[j]
-        out = Job.objects.filter(comp_time__range=(fromdates[j], todates[j])).values('queue__pk').annotate(Count('pk'))
+        out = Job.objects.filter(comp_time__range=(fromdates[j], todates[j])).values('queue__pk').annotate(data_type_arg)
+        print out
         od = {}
         for i in out:
-            od[str(i['queue__pk'])]=i['pk__count']
+            od[str(i['queue__pk'])]=i[data_type_res]
         rr['queues'] = []
         for q in queue_pks:
             if od.has_key(q):

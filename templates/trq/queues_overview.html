@@ -26,9 +26,7 @@
         {% endif %}
 
             <tr>
-                <td class="left">
-                    <a href="{{queue.get_absolute_url}}">{{ queue }}</a>
-                </td>
+                <td class="left">{{queue}}</td>
                 {% for js,val in values.items %}
                 <td>{{ val }}</td>
                 {% endfor %}
