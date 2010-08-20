@@ -27,7 +27,7 @@
 
             <tr>
                 <td class="left">
-                    {{ queue }}
+                    <a href="{{queue.get_absolute_url}}">{{ queue }}</a>
                 </td>
                 {% for js,val in values.items %}
                 <td>{{ val }}</td>

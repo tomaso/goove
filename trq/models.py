@@ -317,7 +317,7 @@ class Queue(models.Model):
     	return self.name
 
     def get_absolute_url(self):
-        return u"/trq/queues/detail/%s/" % (self.name)
+        return u"/trq/queues/detail/%s/%s" % (self.server.name, self.name)
 
     @staticmethod
     def get_overview_name():

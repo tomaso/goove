@@ -11,7 +11,7 @@ urlpatterns = patterns('',
 
     (r'^queues/graph/$', 'goove.trq.queueviews.graph'),
     (r'^queues/stats/$', 'goove.trq.queueviews.queues_stats'),
-    (r'^queues/detail/(?P<queuename>.*)/$', 'goove.trq.queueviews.queue_detail'),
+    (r'^queues/detail/(?P<servername>.*)/(?P<queuename>.*)/$', 'goove.trq.queueviews.queue_detail'),
     (r'^queues/detail/$', 'goove.trq.queueviews.queue_detail'),
     (r'^queues/table/$', 'goove.trq.queueviews.queues_overview'),
 

@@ -49,18 +49,22 @@ def queues_overview(request):
     )
     
 
-def queue_detail(request, queuename=None):
+def queue_detail(request, servername=None, queuename=None):
     queue_form = QueueSelectForm()
-    if not request.POST:
+        
+    queue = None
+    if queuename and servername:
+        queue = Queue.objects.get(name=queuename, server__name=servername)
+        print queue
+    if request.POST.has_key('queue'):
+        queue = Queue.objects.get(pk=request.POST['queue'])
+
+    if not queue:
         return render_to_response_with_config(
             'trq/queue_detail.html',
             {'queue':None, 'queue_form':queue_form}
             )
-        
-    if queuename:
-        queue = Queue.objects.get(name=queuename)
-    if request.POST['queue']:
-        queue = Queue.objects.get(pk=request.POST['queue'])
+
     queue_form.data['queue'] = queue.pk
     queue_form.is_bound = True
 
