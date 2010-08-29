@@ -99,16 +99,17 @@ def create_summary(addfilter):
     return summary
     
 
-def user_detail(request, username=None):
+def user_detail(request, servername=None, username=None):
     user_form = UserSelectForm()
     summary = []
 
     if not request.POST and not username:
         detailuser = None
-    elif username:
-        detailuser = User.objects.get(name=username)
     elif request.POST.has_key('user'):
         detailuser = User.objects.get(pk=request.POST['user'])
+    elif username:
+        detailuser = User.objects.get(name=username, server__name=servername)
+
     if detailuser:
         user_form.data['user'] = detailuser.pk
         user_form.is_bound = True
@@ -118,7 +119,6 @@ def user_detail(request, username=None):
         if request.POST['summary']:
             summary = create_summary({'job_owner': detailuser})
         
-
     return render_to_response_with_config(
         'trq/user_detail.html',
         {'user':detailuser, 'user_form':user_form,
