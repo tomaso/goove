@@ -2,24 +2,24 @@
 
 {% block content %}
 
+
+<div class="leftmenu">
+
+
+    <h3>Database content</h3>
+    <table>
+    {% for item in info %}
+    <tr>
+    <td class="coldesc"><a href="{{ item.url }}">{{ item.name }}s</a></td>
+    <td class="colnumber">{{ item.count }}</a></td>
+    </tr>
+    {% endfor %}
+
+    </table>
+    
+</div>
+
 <div class="maintext">
-
-    <div class="infopanel">
-
-
-        <h3>Database content</h3>
-        <table>
-        {% for item in info %}
-        <tr>
-        <td class="coldesc"><a href="{{ item.url }}">{{ item.name }}s</a></td>
-        <td class="colnumber">{{ item.count }}</a></td>
-        </tr>
-        {% endfor %}
-
-        </table>
-        
-    </div>
-
 {% for ts,data in tsdata.items %}
 
     <div class="infopanel">

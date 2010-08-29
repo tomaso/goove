@@ -160,7 +160,7 @@ class Job(models.Model):
     exit_status = models.IntegerField('Exit status', null=True)
 
     def get_absolute_url(self):
-        return u"/trq/jobs/detail/%s/%d/" % (self.server,self.jobid)
+        return u"/trq/jobs/detail/%s/%s/" % (self.server,self.jobid)
 
     def __unicode__(self):
     	return "%s.%s" % (self.jobid, self.server)
