@@ -219,7 +219,7 @@ class User(models.Model):
     	return "%s@%s" % (self.name,self.server.name)
 
     def get_absolute_url(self):
-        return u"/trq/users/user_detail/%s/" % (self.name)
+        return u"/trq/users/user_detail/%s/%s/" % (self.server.name, self.name)
 
     def get_user_numbers(self):
         job_states = JobState.objects.all().order_by('name')
