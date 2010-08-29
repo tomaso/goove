@@ -90,6 +90,51 @@ class FairshareForm(forms.Form):
         choices=[ (ts.pk,ts.name) for ts in TorqueServer.objects.all() ]
     )
 
+class RunningForm(forms.Form):
+    """
+    Form to specify parameters of jobs.
+    """
+    momentdate = forms.DateField(
+        label="Date", 
+        initial=date.fromordinal(date.today().toordinal()-1).isoformat(),
+        widget=forms.DateInput(attrs={'class':'vDateField'})
+    )
+    momenttime = forms.TimeField(
+        label="Time",
+        initial=datetime.time(12,0),
+        widget=forms.TimeInput(attrs={'class':'vTimeField'})
+    )
+    queue = forms.ChoiceField(
+        label="Queue", 
+        initial=0,
+        choices=[ (0,'Any') ]+[ (q.pk,"%s@%s" % (q.name,q.server.name)) for q in Queue.objects.all() ]
+    )
+    user = forms.ChoiceField(
+        label="User",
+        initial=0,
+        choices=[ (0,'Any') ]+[ (u.pk,u.name) for u in User.objects.all() ]
+    )
+    group = forms.ChoiceField(
+        label="Group",
+        initial=0,
+        choices=[ (0,'Any') ]+[ (g.pk,g.name) for g in Group.objects.all() ]
+    )
+    griduser = forms.ChoiceField(
+        label="Grid user",
+        initial=0,
+        choices=[ (0,'Any') ]+[ (gu.pk,gu.dn) for gu in GridUser.objects.all() ]
+    )
+    node = forms.ChoiceField(
+        label="Node",
+        initial=0,
+        choices=[ (0,'Any') ]+[ (n.pk,"%s@%s" % (n.name,n.server.name)) for n in Node.objects.all() ]
+    )
+    page = forms.IntegerField(
+        initial=1,
+        widget=forms.HiddenInput()
+    )
+    
+
 class CompletedForm(forms.Form):
     """
     Form with filters on completed jobs.
@@ -179,6 +224,59 @@ class JobSelectForm(forms.Form):
     )
     
 
+def jobs_running(request):
+    run_form = RunningForm()
+    if not request.POST:
+        return render_to_response_with_config(
+            'trq/jobs_running.html',
+            {'jobs_page':[], 'paginator':None,
+            'run_form':run_form}
+        )
+
+    run_form.data['momentdate'] = request.POST['momentdate']
+    run_form.data['momenttime'] = request.POST['momenttime']
+    run_form.data['queue'] = request.POST['queue']
+    run_form.data['user'] = request.POST['user']
+    run_form.data['group'] = request.POST['group']
+    run_form.data['griduser'] = request.POST['griduser']
+    run_form.data['node'] = request.POST['node']
+    run_form.data['page'] = request.POST['page']
+    if request.POST['submit']=='>>':
+        run_form.data['page'] = int(run_form.data['page']) + 1
+    elif request.POST['submit']=='<<':
+        run_form.data['page'] = int(run_form.data['page']) - 1
+    run_form.is_bound = True
+
+    args = {
+        'start_time__lte':run_form.data['momentdate'],
+        'comp_time__gte':run_form.data['momentdate']
+    }
+    if run_form.data['queue'] != '0':
+        args['queue__pk'] = run_form.data['queue']
+    if run_form.data['user'] != '0':
+        args['jobowner__pk'] = run_form.data['user']
+    if run_form.data['group'] != '0':
+        args['job_owner__group__pk'] = run_form.data['group']
+    if run_form.data['griduser'] != '0':
+        args['job_gridowner__pk'] = run_form.data['griduser']
+    if run_form.data['node'] != '0':
+        args['jobslots__node__pk'] = run_form.data['node']
+
+
+    object_list = Job.objects.filter(**args)
+    # TODO: also add jobs with comp_time=None and not Lost
+        
+    page = int(run_form.data['page'])
+    paginator = Paginator(object_list, 50)
+    if page>paginator.num_pages:
+        page=1
+    jobs_page = paginator.page(page)
+
+    return render_to_response_with_config(
+        'trq/jobs_running.html',
+        {'jobs_page':jobs_page, 'paginator':paginator,
+        'run_form':run_form}
+        )
 
 def jobs_completed_listing(request):
     comp_form = CompletedForm()
