@@ -22,7 +22,12 @@
 
 <div class="maintext">
     {% if user %}
-    <h2>{{ user.name }}@{{ user.server.name }}</h2>
+        {% if user.name %}
+            <h2>{{ user.name }}@{{ user.server.name }}</h2>
+        {% endif %}
+        {% if user.dn %}
+            <h2>{{ user.dn }}</h2>
+        {% endif %}
     {% if summary %}
     <div class="infopanel">
     <h3>Summary</h3>
