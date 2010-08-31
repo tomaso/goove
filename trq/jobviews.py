@@ -170,7 +170,7 @@ class CompletedForm(forms.Form):
     queue = forms.ChoiceField(
         label="Queue", 
         initial=0,
-        choices=[ (0,'Any') ]+[ (q.pk,q.name) for q in Queue.objects.all() ]
+        choices=[ (0,'Any') ]+[ (q.pk,"%s@%s" % (q.name,q.server.name)) for q in Queue.objects.all() ]
     )
     user = forms.ChoiceField(
         label="User",

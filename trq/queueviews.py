@@ -55,7 +55,6 @@ def queue_detail(request, servername=None, queuename=None):
     queue = None
     if queuename and servername:
         queue = Queue.objects.get(name=queuename, server__name=servername)
-        print queue
     if request.POST.has_key('queue'):
         queue = Queue.objects.get(pk=request.POST['queue'])
 
@@ -110,7 +109,6 @@ def queues_stats(request):
         queues_form.is_bound = True
 
     if request.POST:
-        print request.POST
         stat_form.data['graph_type'] = request.POST['graph_type']
         stat_form.data['wfrom'] = request.POST['wfrom']
         stat_form.data['wto'] = request.POST['wto']
@@ -259,7 +257,6 @@ def get_graph_values(items):
         rr = {}
         rr['date'] = fromdates[j]
         out = Job.objects.filter(comp_time__range=(fromdates[j], todates[j])).values('queue__pk').annotate(data_type_arg)
-        print out
         od = {}
         for i in out:
             od[str(i['queue__pk'])]=i[data_type_res]
