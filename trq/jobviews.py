@@ -262,9 +262,12 @@ def jobs_running(request):
     if run_form.data['node'] != '0':
         args['jobslots__node__pk'] = run_form.data['node']
 
+    object_list1 = Job.objects.filter(**args)
+    args.pop('comp_time__gte')
+    args['job_state__pk'] = getJobState('R').pk
+    object_list2 = Job.objects.filter(**args)
 
-    object_list = Job.objects.filter(**args)
-    # TODO: also add jobs with comp_time=None and not Lost
+    object_list = object_list1|object_list2
         
     page = int(run_form.data['page'])
     paginator = Paginator(object_list, 50)
