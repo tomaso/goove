@@ -254,7 +254,7 @@ def jobs_running(request):
     if run_form.data['queue'] != '0':
         args['queue__pk'] = run_form.data['queue']
     if run_form.data['user'] != '0':
-        args['jobowner__pk'] = run_form.data['user']
+        args['job_owner__pk'] = run_form.data['user']
     if run_form.data['group'] != '0':
         args['job_owner__group__pk'] = run_form.data['group']
     if run_form.data['griduser'] != '0':

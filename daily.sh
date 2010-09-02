@@ -1,7 +1,7 @@
 #!/bin/sh
 
 DATE1=`/bin/date +%Y%m%d --date=yesterday`
-DATE1=`/bin/date +%Y%m%d --date='2 days ago'`
+DATE2=`/bin/date +%Y%m%d --date='2 days ago'`
 
 cd /home/koubat/repos/goove
 
