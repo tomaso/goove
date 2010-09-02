@@ -196,13 +196,13 @@ def get_graph_values(items):
         data_type_arg=Count("pk")
         data_type_res='pk__count'
     elif data_type == 'cputime':
-        graph_values['ylabel']='Wall time'
-        graph_values['title']='Wall time of completed jobs'
+        graph_values['ylabel']='CPU time'
+        graph_values['title']='CPU time of completed jobs'
         data_type_arg=Sum("cput")
         data_type_res='cput__sum'
     elif data_type == 'walltime':
-        graph_values['ylabel']='CPU time'
-        graph_values['title']='CPU time of completed jobs'
+        graph_values['ylabel']='Wall time'
+        graph_values['title']='Wall time of completed jobs'
         data_type_arg=Sum("walltime")
         data_type_res='walltime__sum'
 
