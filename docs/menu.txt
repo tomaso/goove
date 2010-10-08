@@ -1,0 +1,49 @@
+This document describes menu entries and the purpose of every page that is viewed
+when a menu entry is selected.
+
+
+Home
+----
+Overview page that shows how many information we currently keep in the database.
+
+Queues - Overview table
+-----------------------
+
+Queues - Stats
+--------------
+
+Queues - Detail
+---------------
+Shows detailed information about the given queue.
+Currently it lists all running jobs in the queue.
+
+Users - Grid user detail
+------------------------
+
+Users - Unix user detail
+------------------------
+
+Users - Unix group detail
+-------------------------
+
+
+Jobs - Finished
+---------------
+
+Jobs - Running
+--------------
+
+Jobs - Suspicious
+-----------------
+
+Jobs - Report
+-------------
+
+List total numbers for given time slot and various entitites (queues, user groups, users).
+
+
+Jobs - Fairshare
+----------------
+
+Jobs - Detail
+-------------
