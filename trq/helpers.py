@@ -322,4 +322,10 @@ def getColorArrayHTML(num):
         ret.append("%02X%02X%02X" % (r*255,g*255,b*255))
     return ret
 
+def secondsToHours(secs):
+    """ Convert seconds to string with hours, minutes and seconds (00:00:00)
+    """
+    return "%sh %sm %ss" % ( secs/3600 ,(secs/60%60), secs % 60)
+    
+
 # vi:sw=4:ts=4:et

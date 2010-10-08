@@ -1,31 +1,37 @@
 {% extends "trq/base.html" %}
 
+{% block head %}
+
+<link rel="stylesheet" media="all" type="text/css" href="/site_media/css/ui.dropdownchecklist.css" />
+<script type="text/javascript" src="/site_media/js/ui.core-min.js"></script>
+<script type="text/javascript" src="/site_media/js/ui.dropdownchecklist-min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+$(".dropdown_qlist").prepend("<option>(all)</option>");
+$(".dropdown_qlist").dropdownchecklist({ firstItemChecksAll: true, maxDropHeight: 200, width: 160 });
+});
+</script> 
+
+{% endblock %}
+
 {% block content %}
 
 <div class="leftmenu">
 
     <form action="/trq/nodes/listing/" method="post">
-        <h3>SubCluster</h3>
-        <ol>
-        {% for field in subcluster_form %}
-            <li class="filterlist">{{ field }} {{ field.label_tag }}</li>
+        {% for field in subcluster2_form %}
+            <div style="clear: both"><div style="float: left">{{ field.label }}</div><div style="float: right;">{{ field }}</div></div>
         {% endfor %}
-        </ol>
 
-        <h3>Properties</h3>
-        <ol>
-        {% for field in properties_form %}
-            <li class="filterlist">{{ field }} {{ field.label_tag }}</li>
+        {% for field in properties2_form %}
+            <div style="clear: both"><div style="float: left">{{ field.label }}</div><div style="float: right;">{{ field }}</div></div>
         {% endfor %}
-        </ol>
 
-        <h3>States</h3>
-        <ol>
-        {% for field in states_form %}
-            <li class="filterlist">{{ field }} {{ field.label_tag }}</li>
+        {% for field in states2_form %}
+            <div style="clear: both"><div style="float: left">{{ field.label }}</div><div style="float: right;">{{ field }}</div></div>
         {% endfor %}
-        </ol>
-        <input type="submit" value="Submit" />
+        <div style="clear: both; float: right;"><input type="submit" value="Submit" /></div>
     </form>
 
 </div>

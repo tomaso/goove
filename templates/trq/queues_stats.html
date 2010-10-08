@@ -12,7 +12,7 @@
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">
   // Load the Visualization API and the piechart package.
-  google.load('visualization', '1', {'packages':['piechart', 'corechart']});
+  google.load('visualization', '1', {'packages':['piechart', 'corechart', 'imagechart']});
 
   // Set a callback to run when the Google Visualization API is loaded.
   google.setOnLoadCallback(drawChart);
@@ -29,11 +29,19 @@
     ]);
     
     // Instantiate and draw our chart, passing in some options.
+
     var chart = new google.visualization.ColumnChart(document.getElementById('ggraph'));
     chart.draw(data, {width: 800, height: 640, title: '{{graph_values.title}}', 
                         isStacked: true, hAxis: {title: 'Date', titleColor:'red'},
                         colors: [{%for c in graph_values.queues_colors%}'#{{c}}'{%if not forloop.last%},{%endif%}{%endfor%}]
     });
+/*
+    var chartpng = new google.visualization.ImageChart(document.getElementById('ggraphpng'));
+    chartpng.draw(data, {cht: 'bvs', chs: '800x600', title: '{{graph_values.title}}', 
+                        isStacked: true, hAxis: {title: 'Date', titleColor:'red'},
+                        colors: [{%for c in graph_values.queues_colors%}'#{{c}}'{%if not forloop.last%},{%endif%}{%endfor%}]
+    });
+*/    
 
 /*
     chart.draw(data, {width: 400, height: 240, is3D: false, title: 'My Daily Activities', 
@@ -77,6 +85,7 @@ $(".dropdown_qlist").dropdownchecklist({ firstItemChecksAll: true, maxDropHeight
 {% if graph_data %}
   {% if global_config.graphtype == "Google" %}
     <div id="ggraph" />
+    <div id="ggraphpng" />
   {% else %}
     <img class="largeimage" width="600" height="600" src="/trq/queues/graph/?{% for q,val in graph_data.items %}{{ q }}={{ val }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}" />
   {% endif %}
