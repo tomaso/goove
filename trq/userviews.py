@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from helpers import render_to_response_with_config
+from helpers import render_to_response_with_config, getJobState, secondsToHours
 from django import forms
 from models import Node
 from models import SubCluster
@@ -10,7 +10,6 @@ from models import JobState
 from models import User
 from models import Group
 from models import GridUser
-from helpers import getJobState
 from datetime import date
 from django.db.models import Sum,Avg,Count
 
@@ -82,10 +81,12 @@ def create_summary(addfilter):
             comp_time__gte=date.fromordinal(dtoday.toordinal()-dtoday.weekday()),
             **addfilter
             ).aggregate(Sum('cput'), Sum('walltime'), Avg('efficiency'), Count('pk'))
+    summary.append(('--',''))
     summary.append(('Jobs completed this week',wsummary['pk__count']))
-    summary.append(('CPU time for this week',wsummary['cput__sum']))
-    summary.append(('Wall time for this week',wsummary['walltime__sum']))
+    summary.append(('CPU time for this week',secondsToHours(wsummary['cput__sum'])))
+    summary.append(('Wall time for this week',secondsToHours(wsummary['walltime__sum'])))
     summary.append(('Weekly average efficiency',wsummary['efficiency__avg']))
+    summary.append(('--',''))
 
     msummary = Job.objects.filter(
             job_state=getJobState('C'), 
@@ -93,8 +94,8 @@ def create_summary(addfilter):
             **addfilter
             ).aggregate(Sum('cput'), Sum('walltime'), Avg('efficiency'), Count('pk'))
     summary.append(('Jobs completed this month',msummary['pk__count']))
-    summary.append(('CPU time for this month',msummary['cput__sum']))
-    summary.append(('Wall time for this month',msummary['walltime__sum']))
+    summary.append(('CPU time for this month',secondsToHours(msummary['cput__sum'])))
+    summary.append(('Wall time for this month',secondsToHours(msummary['walltime__sum'])))
     summary.append(('Monthly average efficiency',msummary['efficiency__avg']))
     return summary
     

@@ -111,44 +111,48 @@ def nodes_listing(request, filtertype=None, filtervalue=None):
         nodes = Node.objects.all()
 
 
-    subclusters = [x.name for x in SubCluster.objects.all()]
-    properties = [x.name for x in NodeProperty.objects.all()]
-    states = [x.name for x in NodeState.objects.all()]
-    
-    subcluster_form = BooleanListForm('subcluster_')
-    subcluster_form.setFields(subclusters)
+    subclusters2 = [(x.pk,x.name) for x in SubCluster.objects.all()]
+    subcluster2_form = forms.Form()
+    subcluster2_form.fields['subclusters'] = forms.MultipleChoiceField(choices=subclusters2, label='Subclusters', widget=forms.SelectMultiple(attrs={'class':'dropdown_qlist'})) 
+    subcluster2_form.is_bound = True
 
-    properties_form = BooleanListForm('properties_')
-    properties_form.setFields(properties)
+    properties2 = [(x.pk,x.name) for x in NodeProperty.objects.all()]
+    properties2_form = forms.Form()
+    properties2_form.fields['properties'] = forms.MultipleChoiceField(choices=properties2, label='Node properties', widget=forms.SelectMultiple(attrs={'class':'dropdown_qlist'})) 
+    properties2_form.is_bound = True
 
-    states_form = BooleanListForm('nodestates_')
-    states_form.setFields(states)
+    states2 = [(x.pk,x.name) for x in NodeState.objects.all()]
+    states2_form = forms.Form()
+    states2_form.fields['states'] = forms.MultipleChoiceField(choices=states2, label='Node states', widget=forms.SelectMultiple(attrs={'class':'dropdown_qlist'})) 
+    states2_form.is_bound = True
 
     if filtertype=="subcluster":
-        properties_form.setData( dict(zip(properties, len(properties)*[True])) )
-        states_form.setData( dict(zip(states, len(states)*[True])) )
-        subcluster_form.setData( dict(zip(subclusters, len(subclusters)*[False])) )
-        subcluster_form.data['subcluster_' + filtervalue] = True
-        subcluster_form.is_bound = True
+        properties2_form.setData( dict(zip(properties, len(properties)*[True])) )
+        states2_form.setData( dict(zip(states, len(states)*[True])) )
+        subcluster2_form.setData( dict(zip(subclusters, len(subclusters)*[False])) )
+        subcluster2_form.data['subcluster_' + filtervalue] = True
+        subcluster2_form.is_bound = True
     elif filtertype=="property":
-        subcluster_form.setData( dict(zip(subclusters, len(subclusters)*[True])) )
-        states_form.setData( dict(zip(states, len(states)*[True])) )
-        properties_form.setData( dict(zip(properties, len(properties)*[False])) )
-        properties_form.data['properties_' + filtervalue] = True
-        properties_form.is_bound = True
+        subcluster2_form.setData( dict(zip(subclusters, len(subclusters)*[True])) )
+        states2_form.setData( dict(zip(states, len(states)*[True])) )
+        properties2_form.setData( dict(zip(properties, len(properties)*[False])) )
+        properties2_form.data['properties_' + filtervalue] = True
+        properties2_form.is_bound = True
     elif request.POST:
-        subcluster_form.setData(request.POST, useprefix=False)
-        properties_form.setData(request.POST, useprefix=False)
-        states_form.setData(request.POST, useprefix=False)
+        subcluster2_form.setData(request.POST, useprefix=False)
+        properties2_form.setData(request.POST, useprefix=False)
+        states2_form.setData(request.POST, useprefix=False)
     else:
-        subcluster_form.setData( dict(zip(subclusters, len(subclusters)*[True])) )
-        properties_form.setData( dict(zip(properties, len(properties)*[True])) )
-        states_form.setData( dict(zip(states, len(states)*[True])) )
+        print subcluster2_form
+        subcluster2_form.setData( dict(zip(subclusters, len(subclusters)*[True])) )
+        properties2_form.setData( dict(zip(properties, len(properties)*[True])) )
+        states2_form.setData( dict(zip(states, len(states)*[True])) )
 
     return render_to_response_with_config(
         'trq/nodes_listing.html', 
-        {'nodes_list':nodes, 'subcluster_form':subcluster_form, 
-        'properties_form':properties_form, 'states_form':states_form}
+        {'nodes_list':nodes, 'subcluster2_form':subcluster2_form, 
+        'properties2_form':properties2_form,
+        'states2_form':states2_form}
         )
 
 def nodes_table_json_detail(request):
