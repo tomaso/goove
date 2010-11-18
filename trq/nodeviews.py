@@ -1,13 +1,12 @@
 from django.http import HttpResponse
 from django.core import serializers
 from django.utils import simplejson
-from helpers import render_to_response_with_config
+from helpers import render_to_response_with_config,BooleanListForm,UpdateRunningJob,getJobState
 from models import Node
 from models import SubCluster
 from models import NodeProperty
 from models import NodeState
 from models import Job
-from helpers import BooleanListForm,UpdateRunningJob
 from django import forms
 from datetime import date
 
@@ -158,7 +157,8 @@ def nodes_listing(request, filtertype=None, filtervalue=None):
 def nodes_table_json_detail(request):
     pk = request.POST['pk']
     node = Node.objects.get(pk=pk)
-    jobs = Job.objects.filter(jobslots__node=pk, job_state__shortname='R')
+    js = getJobState('R')
+    jobs = Job.objects.filter(jobslots__node=pk, job_state=js)
     jdata = { 'name':node.name, 'pk':node.pk, 'jobs':[] }
     for j in jobs:
         jdata['jobs'].append({"jobid":j.jobid, "joburl":j.get_absolute_url(), "queue":j.queue.name, "queueurl":j.queue.get_absolute_url() })
