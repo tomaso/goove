@@ -38,12 +38,13 @@ VERSION="0.1"
 last_updatePBSNodes = 0
 
 
-def feedNodesXML(x):
+def feedNodesXML(x, tsname):
+    ts = TorqueServer.objects.get(name=tsname)
     sc_regex = re.compile("(\D+)")
 
     for i in x.childNodes[0].childNodes:
         new_name=i.getElementsByTagName("name")[0].childNodes[0].nodeValue
-        n, created = Node.objects.get_or_create(name=new_name)
+        n, created = Node.objects.get_or_create(name=new_name, server=ts)
         if created:
             log(LOG_INFO, "new node will be created: %s" % (new_name))
 
@@ -53,7 +54,7 @@ def feedNodesXML(x):
 
         # Node's subcluster
         sc_name = sc_regex.search(new_name).groups()[0]
-        sc, created = SubCluster.objects.get_or_create(name=sc_name)
+        sc, created = SubCluster.objects.get_or_create(name=sc_name, server=ts)
         if created:
             log(LOG_INFO, "new subcluster saved: %s" % (sc_name))
         n.subcluster = sc
@@ -361,7 +362,7 @@ def updatePBSNodes():
             try:
                 starttime = time.time()
                 nodesxml = parseString(out)
-                feedNodesXML(nodesxml)
+                feedNodesXML(nodesxml, ts.name)
                 nodesxml.unlink()
                 endtime = time.time()
                 log(LOG_INFO, "feedNodesXML() took %f seconds" % (endtime-starttime))
