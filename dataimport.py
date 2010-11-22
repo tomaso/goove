@@ -105,7 +105,7 @@ def fixExitStatusLogLine(line,lineno):
         for key,val in map(lambda x: x.split('=',1), attrs.split()): 
             attrdir[key] = val
     except ValueError:
-        log(LOG_WARNING, "skipping line with invalid attribues %d: '%s'" % (lineno,attrs))
+        log(LOG_WARNING, "skipping attributes parsing (line no %d has invalid attributes): '%s'" % (lineno,attrs))
 
     jobid_name, server_name = JOBID_REGEX.search(fulljobid).groups()
     server,created = getTorqueServer(server_name)
@@ -200,8 +200,11 @@ def parseOneLogLine(line,lineno):
         new_state = getJobState('D')
     elif event=='A':
         new_state = getJobState('A')
+    elif event=='G':
+        new_state = getJobState('D')
     else:
         log(LOG_ERROR, "Unknown event type in accounting log file: %s" % line)
+        return
     if job.job_state != getJobState('C'):
 #        if new_state == getJobState('R') and job.job_state != getJobState('R'):
 #            RunningJob.objects.get_or_create(mainjob=job)
