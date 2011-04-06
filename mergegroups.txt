@@ -1,7 +1,9 @@
 torque.farm.particle.cz:1395=alice
 torque.farm.particle.cz:1307=atlas
 torque.farm.particle.cz:1078=auger
+torque.farm.particle.cz:2688=dteam
 torque.farm.particle.cz:2689=dzero
+torque.farm.particle.cz:3886=sgmops
 torque.farm.particle.cz:21000=ops
 golias:1078=auger
 golias:21000=ops
