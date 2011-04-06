@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from helpers import render_to_response_with_config,getColorArray
+from helpers import render_to_response_with_config,getColorArray,getColorArrayHTML
 from models import Node
 from models import SubCluster
 from models import NodeProperty
@@ -250,8 +250,14 @@ def get_graph_values(items):
     for pk in queue_pks:
         graph_values['queues'].append(queue_names[int(pk)])
     graph_values['queues_colors'] = []
+    backup_colors = getColorArrayHTML(len(queue_pks))
+    i = 0
     for q in queue_pks:
-        graph_values['queues_colors'].append(Queue.objects.get(pk=q).color)
+        color = Queue.objects.get(pk=q).color
+        if not color:
+            color = backup_colors[i]
+        graph_values['queues_colors'].append(color)
+        i+=1
     
     for j in range(0,N):
         rr = {}
