@@ -2,6 +2,7 @@ Packages needed for installation on opensuse 11.2:
 
 mysql >= 5.1
 python-mysql
+python-django
 
 (not sure if we will use matplotlib or google charts)
 python-matplotlib
@@ -17,9 +18,12 @@ installation:
 
 start mysql
 log into mysql as an admin:
+  grant all on *.* to koubat;
+
+log into mysql as koubat:
   create database goove;
-  grant all on goove.* to 'koubat'@'localhost';
-  flush privileges;
+  #grant all on goove.* to 'koubat'@'localhost';
+  #flush privileges;
 
 python manage.py syncdb
 
