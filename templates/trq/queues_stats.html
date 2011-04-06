@@ -9,6 +9,8 @@
 <link rel="stylesheet" media="all" type="text/css" href="/site_media/css/ui.dropdownchecklist.css" />
 <script type="text/javascript" src="/site_media/js/ui.core-min.js"></script>
 <script type="text/javascript" src="/site_media/js/ui.dropdownchecklist-min.js"></script>
+
+{% if graph_data %}
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">
   // Load the Visualization API and the piechart package.
@@ -35,6 +37,7 @@
                         isStacked: true, hAxis: {title: 'Date', titleColor:'red'},
                         colors: [{%for c in graph_values.queues_colors%}'#{{c}}'{%if not forloop.last%},{%endif%}{%endfor%}]
     });
+
 /*
     var chartpng = new google.visualization.ImageChart(document.getElementById('ggraphpng'));
     chartpng.draw(data, {cht: 'bvs', chs: '800x600', title: '{{graph_values.title}}', 
@@ -42,15 +45,15 @@
                         colors: [{%for c in graph_values.queues_colors%}'#{{c}}'{%if not forloop.last%},{%endif%}{%endfor%}]
     });
 */    
-
 /*
     chart.draw(data, {width: 400, height: 240, is3D: false, title: 'My Daily Activities', 
         colors: [{%for row in result%}'#{{row.entity_color}}'{%if not forloop.last%},{%endif%}{%endfor%}] 
     });
 */
   }
-
 </script>
+{% endif %}
+
 <script type="text/javascript">
 $(document).ready(function() {
 /*$(".dropdown_qlist").dropdownchecklist({ firstItemChecksAll: true, maxDropHeight: 200 });*/
