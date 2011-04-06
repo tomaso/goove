@@ -33,8 +33,11 @@ def overview(request):
             tsdata[ts]['queues'].append(
                 {'queue':q,'Q':numsq,'R':numsr}
             )
-        tsdata[ts]['starttime'] = Job.objects.filter(job_state=getJobState('C')).order_by('comp_time').filter(server=ts)[0].comp_time
-        tsdata[ts]['endtime'] = Job.objects.filter(job_state=getJobState('C')).order_by('-comp_time').filter(server=ts)[0].comp_time
+        try:
+            tsdata[ts]['starttime'] = Job.objects.filter(job_state=getJobState('C')).order_by('comp_time').filter(server=ts)[0].comp_time
+            tsdata[ts]['endtime'] = Job.objects.filter(job_state=getJobState('C')).order_by('-comp_time').filter(server=ts)[0].comp_time
+        except IndexError:
+            pass
 
     return render_to_response_with_config(
         'trq/overview.html', 
