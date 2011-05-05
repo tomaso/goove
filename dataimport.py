@@ -15,7 +15,7 @@ os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
 
 import re
 
-from django.db import transaction
+from django.db import transaction, connection
 from django.db.models import Avg, Max, Min, Count
 
 from goove.trq.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
@@ -122,6 +122,7 @@ def parseOneLogLine(line,lineno):
     """
     Parse one line from accounting log and insert the data into DB.
     """
+    cursor = connection.cursor()
     try:
         date,event,fulljobid,attrs = line.split(';')
     except ValueError:
@@ -146,7 +147,9 @@ def parseOneLogLine(line,lineno):
     if created:
         log(LOG_INFO, "new server will be created: %s" % server_name)
 
-    job,created = Job.objects.get_or_create(jobid=jobid_name, server=server)
+    #job,created = Job.objects.get_or_create(jobid=jobid_name, server=server)
+    cursor.execute("SELECT pk FROM trq_job WHERE jobid=%s AND server_id=%s", [jobid_name,server.pk])
+    row = cursor.fetchone()
     if created:
         log(LOG_INFO, "new job will be created: %s.%s" % (jobid_name, server_name))
 
@@ -155,14 +158,14 @@ def parseOneLogLine(line,lineno):
         submithost,created = getSubmitHost(shname)
         if created:
             log(LOG_INFO, "new submit host will be created: %s" % shname)
-        job.submithost = submithost
+#        job.submithost = submithost
 
     if attrdir.has_key('requestor'):
         shname = attrdir['requestor'].split('@')[1]
         submithost,created = getSubmitHost(shname)
         if created:
             log(LOG_INFO, "new submit host will be created: %s" % shname)
-        job.submithost = submithost
+#        job.submithost = submithost
 
     if attrdir.has_key('group'):
         group,created = getGroup(attrdir['group'], server)
@@ -173,8 +176,8 @@ def parseOneLogLine(line,lineno):
         user,created = getUser(attrdir['user'], server, group)
         if created:
             log(LOG_INFO, "new user will be created: %s" % attrdir['user'])
-        job.job_owner = user
-        job.job_owner.group = group
+#        job.job_owner = user
+#        job.job_owner.group = group
 
     if attrdir.has_key('resources_used.cput'):
         h,m,s = attrdir['resources_used.cput'].split(":")
@@ -289,6 +292,7 @@ def feedJobsLog(logfile):
     as described at http://www.clusterresources.com/products/torque/docs/9.1accounting.shtml
     """
     lineno = 0
+    transaction.set_dirty()
     for line in logfile:
         lineno += 1
         parseOneLogLine(line, lineno)
