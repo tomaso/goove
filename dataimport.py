@@ -268,12 +268,12 @@ def parseOneLogLine(line,lineno):
             job.jobslots.add(js)
     job.save()
 
-#    d,t = date.split(' ')
-#    m,d,y = d.split('/')
-#    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
-#    if created:
-#        log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
-#        ae.save()
+    d,t = date.split(' ')
+    m,d,y = d.split('/')
+    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+    if created:
+        log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
+        ae.save()
 
 #   This can be used if we are sure that we process
 #   new files. We can skip many SELECTs this way
