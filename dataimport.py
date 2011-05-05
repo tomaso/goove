@@ -15,6 +15,7 @@ os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
 
 import re
 
+from django.db import transaction
 from django.db.models import Avg, Max, Min, Count
 
 from goove.trq.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
@@ -268,12 +269,12 @@ def parseOneLogLine(line,lineno):
             job.jobslots.add(js)
     job.save()
 
-#    d,t = date.split(' ')
-#    m,d,y = d.split('/')
-#    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
-#    if created:
-#        log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
-#        ae.save()
+    d,t = date.split(' ')
+    m,d,y = d.split('/')
+    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+    if created:
+        log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
+        ae.save()
 
 #   This can be used if we are sure that we process
 #   new files. We can skip many SELECTs this way
@@ -282,6 +283,7 @@ def parseOneLogLine(line,lineno):
 #    ae.save()
         
 
+@transaction.commit_manually
 def feedJobsLog(logfile):
     """ Insert data about jobs into database. The data are obtained from text log file
     as described at http://www.clusterresources.com/products/torque/docs/9.1accounting.shtml
@@ -290,6 +292,7 @@ def feedJobsLog(logfile):
     for line in logfile:
         lineno += 1
         parseOneLogLine(line, lineno)
+        transaction.commit()
 #        fixExitStatusLogLine(line, lineno)
 
 
