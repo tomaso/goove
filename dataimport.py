@@ -32,11 +32,52 @@ from goove.trq.helpers import getRunningCountQstat
 import maintenance
 
 JOBID_REGEX = re.compile("(\d+-\d+|\d+)\.(.*)")
+SUPPORTED_JOB_ATTRS = ['jobid', 'server_id', 'job_owner_id', 'job_gridowner_id', 'cput', 
+            'walltime', 'efficiency', 'job_state_id', 'queue_id', 'ctime', 'mtime', 
+            'qtime', 'etime', 'start_time', 'comp_time', 'submithost_id', 'exit_status']
 
 VERSION="0.1"
 
 # TODO: make this configurable
 last_updatePBSNodes = 0
+
+class SQLJob:
+    def refresh_id_jobstate_id(self):
+        """ 
+        Refresh id from the database. Sets id to -1 if the job is not present.
+        jobid and server_id must be set.
+        """
+        cursor = connection.cursor()
+        if(cursor.execute("SELECT id,job_state_id FROM trq_job WHERE jobid=%s AND server_id=%s", [self.jobid,self.server_id])==0):
+            self.id = -1
+            self.job_state_id = -1
+        else:
+            row = cursor.fetchone()
+            self.id = row[0]
+            self.job_state_id = row[1]
+        
+
+    def save(self):
+        cursor = connection.cursor()
+        attrs = [a for a in SUPPORTED_JOB_ATTRS if hasattr(self,a)]
+        if self.id == -1:
+            log(LOG_INFO, "new job will be created")
+            sqlkeys = ",".join(attrs)
+            sqlvalues = '%s,'*(len(attrs)-1) + '%s'
+            #print attrs
+            #print dir(self)
+            #print [getattr(self,x) for x in attrs]
+            cursor.execute("INSERT INTO trq_job (%s) VALUES (%s)" % (sqlkeys,sqlvalues), 
+                [getattr(self,x) for x in attrs]
+            )
+        else:
+            log(LOG_INFO, "the updated job id: %d" % self.id)
+            sqlitems = ",".join([("%s=%%s" % i) for i in attrs])
+            cursor.execute("UPDATE trq_job SET %s WHERE id=%d" % (sqlitems,self.id), 
+                [getattr(self,x) for x in attrs]
+            )
+            
+
 
 
 def feedNodesXML(x, tsname):
@@ -148,24 +189,26 @@ def parseOneLogLine(line,lineno):
         log(LOG_INFO, "new server will be created: %s" % server_name)
 
     #job,created = Job.objects.get_or_create(jobid=jobid_name, server=server)
-    cursor.execute("SELECT pk FROM trq_job WHERE jobid=%s AND server_id=%s", [jobid_name,server.pk])
-    row = cursor.fetchone()
-    if created:
-        log(LOG_INFO, "new job will be created: %s.%s" % (jobid_name, server_name))
+    job = SQLJob()
+    job.jobid = jobid_name
+    job.server_id = server.id
+
+    job.refresh_id_jobstate_id()
+
 
     if attrdir.has_key('owner'):
         shname = attrdir['owner'].split('@')[1]
         submithost,created = getSubmitHost(shname)
         if created:
             log(LOG_INFO, "new submit host will be created: %s" % shname)
-#        job.submithost = submithost
+        job.submithost_id = submithost.pk
 
     if attrdir.has_key('requestor'):
         shname = attrdir['requestor'].split('@')[1]
         submithost,created = getSubmitHost(shname)
         if created:
             log(LOG_INFO, "new submit host will be created: %s" % shname)
-#        job.submithost = submithost
+        job.submithost_id = submithost.id
 
     if attrdir.has_key('group'):
         group,created = getGroup(attrdir['group'], server)
@@ -176,8 +219,9 @@ def parseOneLogLine(line,lineno):
         user,created = getUser(attrdir['user'], server, group)
         if created:
             log(LOG_INFO, "new user will be created: %s" % attrdir['user'])
-#        job.job_owner = user
-#        job.job_owner.group = group
+        job.job_owner_id = user.id
+        # TODO: convert this to SQL as well
+        user.group = group
 
     if attrdir.has_key('resources_used.cput'):
         h,m,s = attrdir['resources_used.cput'].split(":")
@@ -209,7 +253,7 @@ def parseOneLogLine(line,lineno):
     else:
         log(LOG_ERROR, "Unknown event type in accounting log file: %s" % line)
         return
-    if job.job_state != getJobState('C'):
+    if job.job_state_id != getJobState('C').id:
 #        if new_state == getJobState('R') and job.job_state != getJobState('R'):
 #            RunningJob.objects.get_or_create(mainjob=job)
 #        elif new_state != getJobState('R') and job.job_state == getJobState('R'):
@@ -219,7 +263,7 @@ def parseOneLogLine(line,lineno):
 #            except RunningJob.DoesNotExist:
 #                pass
 
-        job.job_state = new_state
+        job.job_state_id = new_state.id
     else:
         log(LOG_INFO, "Job %s.%s is already finished, not changing the state." % (job.jobid,server.name))
     # running job cache update
@@ -229,7 +273,7 @@ def parseOneLogLine(line,lineno):
         queue,created = getQueue(attrdir['queue'], server)
         if created:
             log(LOG_INFO, "new queue will be created: %s" % attrdir['queue'])
-        job.queue = queue
+        job.queue_id = queue.id
     if attrdir.has_key('ctime'):
         job.ctime = datetime.datetime.fromtimestamp(int(attrdir['ctime']))
     if attrdir.has_key('mtime'):
@@ -244,7 +288,7 @@ def parseOneLogLine(line,lineno):
         job.comp_time = datetime.datetime.fromtimestamp(int(attrdir['end']))
     if attrdir.has_key('exec_host'):
         exec_host_names_slots = attrdir['exec_host'].split('+')
-        job.jobslots.clear()
+        job.jobslots = []
 
         # convert PBSPro records like 'node1/0*2' to more generic 'node1/0+node1/1'
         exec_host_names_slots_new = []
@@ -266,18 +310,25 @@ def parseOneLogLine(line,lineno):
             node,created = getNode(name, server)
             if created:
                 log(LOG_INFO, "new node will be created: node name: %s" % (name))
+            node.save()
             js,created = JobSlot.objects.get_or_create(slot=slot,node=node)
             if created:
                 log(LOG_INFO, "new jobslot will be created: slot: %d, node name: %s" % (slot,name))
-            job.jobslots.add(js)
+            job.jobslots.append(js.id)
+            js.save()
     job.save()
 
+
+    if job.id == -1:
+        job.refresh_id_jobstate_id()
     d,t = date.split(' ')
     m,d,y = d.split('/')
-    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
-    if created:
-        log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
-        ae.save()
+#    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
+    timestamp='%s-%s-%s %s' % (y,m,d,t)
+    cursor.execute("INSERT IGNORE INTO trq_accountingevent (timestamp, type, job_id) VALUES (%s,%s,%s)", [timestamp, event, job.id])
+#    if created:
+#        log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
+#        ae.save()
 
 #   This can be used if we are sure that we process
 #   new files. We can skip many SELECTs this way
@@ -292,12 +343,12 @@ def feedJobsLog(logfile):
     as described at http://www.clusterresources.com/products/torque/docs/9.1accounting.shtml
     """
     lineno = 0
-    transaction.set_dirty()
+    #transaction.set_dirty()
     for line in logfile:
         lineno += 1
         parseOneLogLine(line, lineno)
-        transaction.commit()
 #        fixExitStatusLogLine(line, lineno)
+    transaction.commit()
 
 
 def openfile(filename):
