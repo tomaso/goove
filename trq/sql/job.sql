@@ -20,5 +20,6 @@ ALTER TABLE trq_submithost ENGINE=INNODB;
 ALTER TABLE trq_torqueserver ENGINE=INNODB;
 ALTER TABLE trq_user ENGINE=INNODB;
 
+ALTER TABLE trq_accountingevent ADD UNIQUE ttj(timestamp,type,job_id);
 
 CREATE INDEX `trq_job_comp_time` on `trq_job` (`comp_time`);
