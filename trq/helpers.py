@@ -1,6 +1,6 @@
 from django import forms
 from django.shortcuts import render_to_response
-from models import Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, User, Group, JobState, Queue, AccountingEvent, SubmitHost, GlobalConfiguration
+from models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, User, Group, JobState, Queue, AccountingEvent, SubmitHost, GlobalConfiguration
 import subprocess
 from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
@@ -16,6 +16,7 @@ LOG_INFO=2
 LOG_DEBUG=3
 
 JobStateCache = {}
+JobSlotCache = {}
 QueueCache = {}
 NodeCache = {}
 TorqueServerCache = {}
@@ -42,6 +43,19 @@ def getJobState(state):
     if not JobStateCache.has_key(state):
         JobStateCache[state] =  JobState.objects.get(shortname=state)
     return JobStateCache[state]
+
+def getJobSlot(slot,node):
+    """
+    Get JobSlot db object (from cache or database).
+    """
+    global JobSlotCache
+    created = False
+    if not JobSlotCache.has_key(node):
+        JobSlotCache[node] = {}
+    if not JobSlotCache[node].has_key(slot):
+        JobSlotCache[node][slot],created = JobSlot.objects.get_or_create(slot=slot,node=node)
+    return (JobSlotCache[node][slot],created)
+#    return JobSlot.objects.get_or_create(name=qname, server=ts)
 
 
 def getQueue(qname,ts):
@@ -72,19 +86,19 @@ def getTorqueServer(tsname):
 
 def getUser(uname, ts, group=None):
     global UserCache
-#    created = False
-#    if not UserCache.has_key(uname):
-#        UserCache[uname],created = User.objects.get_or_create(name=uname, group=group)
-#    return (UserCache[uname],created)
-    return User.objects.get_or_create(name=uname, group=group, server=ts)
+    created = False
+    if not UserCache.has_key(uname):
+        UserCache[uname],created = User.objects.get_or_create(name=uname, server=ts, group=group)
+    return (UserCache[uname],created)
+#    return User.objects.get_or_create(name=uname, group=group, server=ts)
 
 def getGroup(gname,ts):
     global GroupCache
-#    created = False
-#    if not GroupCache.has_key(gname):
-#        GroupCache[gname],created = Group.objects.get_or_create(name=gname)
-#    return (GroupCache[gname],created)
-    return Group.objects.get_or_create(name=gname, server=ts)
+    created = False
+    if not GroupCache.has_key(gname):
+        GroupCache[gname],created = Group.objects.get_or_create(name=gname,server=ts)
+    return (GroupCache[gname],created)
+#    return Group.objects.get_or_create(name=gname, server=ts)
 
 def getSubmitHost(shname):
     global SubmitHostCache

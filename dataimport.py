@@ -26,7 +26,7 @@ from xml.parsers.expat import ExpatError
 
 from goove.trq.helpers import feedJobsXML,Configuration
 from goove.trq.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
-from goove.trq.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup, getSubmitHost
+from goove.trq.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup, getSubmitHost, getJobSlot
 from goove.trq.helpers import getRunningCountQstat
 
 import maintenance
@@ -311,7 +311,7 @@ def parseOneLogLine(line,lineno):
             if created:
                 log(LOG_INFO, "new node will be created: node name: %s" % (name))
             node.save()
-            js,created = JobSlot.objects.get_or_create(slot=slot,node=node)
+            js,created = getJobSlot(slot=slot,node=node)
             if created:
                 log(LOG_INFO, "new jobslot will be created: slot: %d, node name: %s" % (slot,name))
             job.jobslots.append(js.id)
@@ -343,12 +343,21 @@ def feedJobsLog(logfile):
     as described at http://www.clusterresources.com/products/torque/docs/9.1accounting.shtml
     """
     lineno = 0
-    #transaction.set_dirty()
-    for line in logfile:
-        lineno += 1
-        parseOneLogLine(line, lineno)
-#        fixExitStatusLogLine(line, lineno)
-    transaction.commit()
+    lasttime = time.time()
+    try:
+        for line in logfile:
+            lineno += 1
+            parseOneLogLine(line, lineno)
+            if (lineno % 1000)==0:
+                transaction.commit()
+                duration = time.time() - lasttime
+                print "1000 lines took: %d secs, it is %d l/s" % (int(duration), int(1000/duration))
+                lasttime = time.time()
+    #        fixExitStatusLogLine(line, lineno)
+    except BaseException, e:
+        raise e
+    finally:
+        transaction.commit()
 
 
 def openfile(filename):
