@@ -50,11 +50,9 @@ def getJobSlot(slot,node):
     """
     global JobSlotCache
     created = False
-    if not JobSlotCache.has_key(node):
-        JobSlotCache[node] = {}
-    if not JobSlotCache[node].has_key(slot):
-        JobSlotCache[node][slot],created = JobSlot.objects.get_or_create(slot=slot,node=node)
-    return (JobSlotCache[node][slot],created)
+    if not JobSlotCache.has_key((slot,node)):
+        JobSlotCache[(slot,node)],created = JobSlot.objects.get_or_create(slot=slot,node=node)
+    return (JobSlotCache[(slot,node)],created)
 #    return JobSlot.objects.get_or_create(name=qname, server=ts)
 
 
@@ -63,19 +61,19 @@ def getQueue(qname,ts):
     Return tuple (queue object, created)
     """
     global QueueCache
-#    created = False
-#    if not QueueCache.has_key(qname):
-#        QueueCache[qname],created = Queue.objects.get_or_create(name=qname)
-#    return (QueueCache[qname],created)
-    return Queue.objects.get_or_create(name=qname, server=ts)
+    created = False
+    if not QueueCache.has_key((qname,ts)):
+        QueueCache[(qname,ts)],created = Queue.objects.get_or_create(name=qname,server=ts)
+    return (QueueCache[(qname,ts)],created)
+#    return Queue.objects.get_or_create(name=qname, server=ts)
 
 def getNode(nname, ts):
     global NodeCache
-#    created = False
-#    if not NodeCache.has_key(nname):
-#        NodeCache[nname],created = Node.objects.get_or_create(name=nname)
-#    return (NodeCache[nname],created)
-    return Node.objects.get_or_create(name=nname, server=ts)
+    created = False
+    if not NodeCache.has_key((nname,ts)):
+        NodeCache[(nname,ts)],created = Node.objects.get_or_create(name=nname,server=ts)
+    return (NodeCache[(nname,ts)],created)
+#    return Node.objects.get_or_create(name=nname, server=ts)
 
 def getTorqueServer(tsname):
     global TorqueServerCache
