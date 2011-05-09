@@ -64,9 +64,6 @@ class SQLJob:
             log(LOG_INFO, "new job will be created")
             sqlkeys = ",".join(attrs)
             sqlvalues = '%s,'*(len(attrs)-1) + '%s'
-            #print attrs
-            #print dir(self)
-            #print [getattr(self,x) for x in attrs]
             cursor.execute("INSERT INTO trq_job (%s) VALUES (%s)" % (sqlkeys,sqlvalues), 
                 [getattr(self,x) for x in attrs]
             )
@@ -310,12 +307,12 @@ def parseOneLogLine(line,lineno):
             node,created = getNode(name, server)
             if created:
                 log(LOG_INFO, "new node will be created: node name: %s" % (name))
-            node.save()
+                node.save()
             js,created = getJobSlot(slot=slot,node=node)
             if created:
                 log(LOG_INFO, "new jobslot will be created: slot: %d, node name: %s" % (slot,name))
+                js.save()
             job.jobslots.append(js.id)
-            js.save()
     job.save()
 
 
@@ -343,16 +340,12 @@ def feedJobsLog(logfile):
     as described at http://www.clusterresources.com/products/torque/docs/9.1accounting.shtml
     """
     lineno = 0
-    lasttime = time.time()
     try:
         for line in logfile:
             lineno += 1
             parseOneLogLine(line, lineno)
             if (lineno % 1000)==0:
                 transaction.commit()
-                duration = time.time() - lasttime
-                print "1000 lines took: %d secs, it is %d l/s" % (int(duration), int(1000/duration))
-                lasttime = time.time()
     #        fixExitStatusLogLine(line, lineno)
     except BaseException, e:
         raise e
