@@ -1,0 +1,23 @@
+{% extends "trq/base.html" %}
+
+{% block content %}
+
+<div class="leftmenu">
+
+</div>
+
+<div class="maintext">
+
+    <table>
+    {% for key,val in session.items %}
+    <tr><th>{{ session.key }}</th><td>{{ session.val }}</td></tr>
+    {% endfor %}
+    </table>
+
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

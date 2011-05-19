@@ -111,17 +111,20 @@ def nodes_listing(request, filtertype=None, filtervalue=None):
 
 
     subclusters2 = [(x.pk,x.name) for x in SubCluster.objects.all()]
-    subcluster2_form = forms.Form()
+#    subcluster2_form = forms.Form()
+    subcluster2_form = BooleanListForm('subcluster')
     subcluster2_form.fields['subclusters'] = forms.MultipleChoiceField(choices=subclusters2, label='Subclusters', widget=forms.SelectMultiple(attrs={'class':'dropdown_qlist'})) 
     subcluster2_form.is_bound = True
 
     properties2 = [(x.pk,x.name) for x in NodeProperty.objects.all()]
-    properties2_form = forms.Form()
+#    properties2_form = forms.Form()
+    properties2_form = BooleanListForm('properties')
     properties2_form.fields['properties'] = forms.MultipleChoiceField(choices=properties2, label='Node properties', widget=forms.SelectMultiple(attrs={'class':'dropdown_qlist'})) 
     properties2_form.is_bound = True
 
     states2 = [(x.pk,x.name) for x in NodeState.objects.all()]
-    states2_form = forms.Form()
+#    states2_form = forms.Form()
+    states2_form = BooleanListForm('states')
     states2_form.fields['states'] = forms.MultipleChoiceField(choices=states2, label='Node states', widget=forms.SelectMultiple(attrs={'class':'dropdown_qlist'})) 
     states2_form.is_bound = True
 

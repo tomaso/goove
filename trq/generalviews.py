@@ -24,20 +24,20 @@ def overview(request):
         info.append(item)
 
     tsdata = {}
-    for ts in TorqueServer.objects.all():
-        tsdata[ts] = {'queues':[],'starttime':0,'endtime':0}
-        qdb=Queue.objects.filter(server=ts)
-        for q in qdb:
-            numsq = Job.objects.filter(queue=q,job_state__shortname='Q').count()
-            numsr = Job.objects.filter(queue=q,job_state__shortname='R').count()
-            tsdata[ts]['queues'].append(
-                {'queue':q,'Q':numsq,'R':numsr}
-            )
-        try:
-            tsdata[ts]['starttime'] = Job.objects.filter(job_state=getJobState('C')).order_by('comp_time').filter(server=ts)[0].comp_time
-            tsdata[ts]['endtime'] = Job.objects.filter(job_state=getJobState('C')).order_by('-comp_time').filter(server=ts)[0].comp_time
-        except IndexError:
-            pass
+#    for ts in TorqueServer.objects.all():
+#        tsdata[ts] = {'queues':[],'starttime':0,'endtime':0}
+#        qdb=Queue.objects.filter(server=ts)
+#        for q in qdb:
+#            numsq = Job.objects.filter(queue=q,job_state__shortname='Q').count()
+#            numsr = Job.objects.filter(queue=q,job_state__shortname='R').count()
+#            tsdata[ts]['queues'].append(
+#                {'queue':q,'Q':numsq,'R':numsr}
+#            )
+#        try:
+#            tsdata[ts]['starttime'] = Job.objects.filter(job_state=getJobState('C')).order_by('comp_time').filter(server=ts)[0].comp_time
+#            tsdata[ts]['endtime'] = Job.objects.filter(job_state=getJobState('C')).order_by('-comp_time').filter(server=ts)[0].comp_time
+#        except IndexError:
+#            pass
 
     return render_to_response_with_config(
         'trq/overview.html', 
