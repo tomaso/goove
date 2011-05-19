@@ -1,6 +1,8 @@
 from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
+    (r'^config/personal/$', 'goove.trq.configviews.personal'),
+
     (r'^nodes/detail/(?P<nodename>.*)/$', 'goove.trq.nodeviews.node_detail'),
     (r'^nodes/detail/$', 'goove.trq.nodeviews.node_detail'),
     (r'^nodes/listing/(?P<filtertype>.*)/(?P<filtervalue>.*)/$', 'goove.trq.nodeviews.nodes_listing'),
