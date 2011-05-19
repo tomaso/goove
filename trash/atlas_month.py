@@ -21,8 +21,8 @@ def print_jobs(jobs):
 	cputime = secondsToHours(res['cput__sum']).split('h')[0]
 	print "Group: %s, Count: %d, Walltime(h): %s, Cputime(h): %s " % (gr.name, cnt, walltime, cputime)
 
-start = '2011-02-01 00:00'
-end = '2011-03-01 00:00'
+start = '2011-03-01 00:00'
+end = '2011-04-01 00:00'
 
 ts = TorqueServer.objects.get(name='torque.farm.particle.cz')
 

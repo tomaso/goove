@@ -34,10 +34,10 @@ class NodeDetailForm(forms.Form):
     )
 
 def index(request):
-    return render_to_response_with_config('trq/index.html', {})
+    return render_to_response_with_config('trqacc/index.html', {})
 
 def nodes(request):
-	return render_to_response_with_config('trq/nodes.html', {})
+	return render_to_response_with_config('trqacc/nodes.html', {})
 
 def nodes_table(request, nodename=None):
     # Tabulka vsech uzlu s graficky naznacenim v jakem stavu jsou
@@ -72,7 +72,7 @@ def nodes_table(request, nodename=None):
 
     nodestates = NodeState.objects.all().order_by('name')
     return render_to_response_with_config(
-        'trq/nodes_table.html', 
+        'trqacc/nodes_table.html', 
         {'sc_nodes':sc_nodes, 'nodestates':nodestates, 'colswidth':cols, 'detailnode':detailnode, 'detailform':node_form}
         )
     
@@ -151,7 +151,7 @@ def nodes_listing(request, filtertype=None, filtervalue=None):
         states2_form.setData( dict(zip(states, len(states)*[True])) )
 
     return render_to_response_with_config(
-        'trq/nodes_listing.html', 
+        'trqacc/nodes_listing.html', 
         {'nodes_list':nodes, 'subcluster2_form':subcluster2_form, 
         'properties2_form':properties2_form,
         'states2_form':states2_form}
@@ -180,7 +180,7 @@ def node_detail(request, nodename=None):
 
     node_form = NodeDetailForm()
     if not request.POST and not nodename:
-        return render_to_response_with_config('trq/node_detail.html', 
+        return render_to_response_with_config('trqacc/node_detail.html', 
             {'node':None, 'node_form':node_form})
         
     if nodename:
@@ -197,7 +197,7 @@ def node_detail(request, nodename=None):
             rj = Job.objects.get(pk=rj.pk)
             updated_running_jobs.append(rj)
 
-    return render_to_response_with_config('trq/node_detail.html', 
+    return render_to_response_with_config('trqacc/node_detail.html', 
         {'node':n, 'running_jobs': updated_running_jobs, 'node_form':node_form
         }
     )

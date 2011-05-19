@@ -17,7 +17,7 @@ from django import forms
 def personal(request):
 
     return render_to_response_with_config(
-        'trq/config_personal.html', 
+        'trqacc/config_personal.html', 
         { 'session': request.session }
     )
 

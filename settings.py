@@ -91,6 +91,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'goove.trq',
+    'goove.trqacc',
     'goove.gridftp',
 )

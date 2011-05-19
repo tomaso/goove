@@ -30,7 +30,7 @@ Web interface:
 - list completed jobs on node detail page in pages not the entire list
 - administration interface
 
-- The main form for querying db for finished jobs is /trq/jobs/completed_listing
+- The main form for querying db for finished jobs is /trqacc/jobs/completed_listing
   - make this form much richer and configurable
   - aborted jobs in recent time period (per node/queue/user)
 

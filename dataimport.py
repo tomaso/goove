@@ -18,16 +18,16 @@ import re
 from django.db import transaction, connection
 from django.db.models import Avg, Max, Min, Count
 
-from goove.trq.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
+from goove.trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
 
 from xml.dom.minidom import parse, parseString
 from optparse import OptionParser, OptionGroup
 from xml.parsers.expat import ExpatError
 
-from goove.trq.helpers import feedJobsXML,Configuration
-from goove.trq.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
-from goove.trq.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup, getSubmitHost, getJobSlot
-from goove.trq.helpers import getRunningCountQstat
+from goove.trqacc.helpers import feedJobsXML,Configuration
+from goove.trqacc.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
+from goove.trqacc.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup, getSubmitHost, getJobSlot
+from goove.trqacc.helpers import getRunningCountQstat
 
 import maintenance
 
@@ -48,7 +48,7 @@ class SQLJob:
         jobid and server_id must be set.
         """
         cursor = connection.cursor()
-        if(cursor.execute("SELECT id,job_state_id FROM trq_job WHERE jobid=%s AND server_id=%s", [self.jobid,self.server_id])==0):
+        if(cursor.execute("SELECT id,job_state_id FROM trqacc_job WHERE jobid=%s AND server_id=%s", [self.jobid,self.server_id])==0):
             self.id = -1
             self.job_state_id = -1
         else:
@@ -64,13 +64,13 @@ class SQLJob:
             log(LOG_INFO, "new job will be created")
             sqlkeys = ",".join(attrs)
             sqlvalues = '%s,'*(len(attrs)-1) + '%s'
-            cursor.execute("INSERT INTO trq_job (%s) VALUES (%s)" % (sqlkeys,sqlvalues), 
+            cursor.execute("INSERT INTO trqacc_job (%s) VALUES (%s)" % (sqlkeys,sqlvalues), 
                 [getattr(self,x) for x in attrs]
             )
         else:
             log(LOG_INFO, "the updated job id: %d" % self.id)
             sqlitems = ",".join([("%s=%%s" % i) for i in attrs])
-            cursor.execute("UPDATE trq_job SET %s WHERE id=%d" % (sqlitems,self.id), 
+            cursor.execute("UPDATE trqacc_job SET %s WHERE id=%d" % (sqlitems,self.id), 
                 [getattr(self,x) for x in attrs]
             )
             
@@ -322,7 +322,7 @@ def parseOneLogLine(line,lineno):
     m,d,y = d.split('/')
 #    ae,created = AccountingEvent.objects.get_or_create(timestamp='%s-%s-%s %s' % (y,m,d,t), type=event, job=job)
     timestamp='%s-%s-%s %s' % (y,m,d,t)
-    cursor.execute("INSERT IGNORE INTO trq_accountingevent (timestamp, type, job_id) VALUES (%s,%s,%s)", [timestamp, event, job.id])
+    cursor.execute("INSERT IGNORE INTO trqacc_accountingevent (timestamp, type, job_id) VALUES (%s,%s,%s)", [timestamp, event, job.id])
 #    if created:
 #        log(LOG_INFO, "new accounting event will be created: %s" % ae.timestamp)
 #        ae.save()

@@ -9,7 +9,7 @@ urlpatterns = patterns('',
     # Only for development. TODO: remove
     (r'^site_media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '%s/site_media/' % settings.ROOT_PATH}),
     # (r'^goove/', include('goove.foo.urls')),
-    (r'^trq/', include('goove.trq.urls')),
+    (r'^trqacc/', include('goove.trqacc.urls')),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:

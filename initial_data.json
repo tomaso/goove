@@ -1,6 +1,6 @@
 [
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 1,
     "fields": {
       "name": "Completed",
@@ -9,7 +9,7 @@
     }
   },
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 2,
     "fields": {
       "name": "Exiting",
@@ -18,7 +18,7 @@
     }
   },
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 3,
     "fields": {
       "name": "Held",
@@ -27,7 +27,7 @@
     }
   },
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 4,
     "fields": {
       "name": "Queued",
@@ -36,7 +36,7 @@
     }
   },
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 5,
     "fields": {
       "name": "Running",
@@ -45,7 +45,7 @@
     }
   },
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 6,
     "fields": {
       "name": "Transferred",
@@ -54,7 +54,7 @@
     }
   },
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 7,
     "fields": {
       "name": "Waiting",
@@ -63,7 +63,7 @@
     }
   },
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 8,
     "fields": {
       "name": "Suspended",
@@ -72,7 +72,7 @@
     }
   },
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 9,
     "fields": {
       "name": "Lost",
@@ -81,7 +81,7 @@
     }
   },
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 10,
     "fields": {
       "name": "Aborted",
@@ -90,7 +90,7 @@
     }
   },
   {
-    "model" : "trq.jobstate",
+    "model" : "trqacc.jobstate",
     "pk": 11,
     "fields": {
       "name": "Deleted",
@@ -99,14 +99,14 @@
     }
   },
   {
-    "model" : "trq.TorqueServer",
+    "model" : "trqacc.TorqueServer",
     "pk": 1,
     "fields": {
       "name": "torque.farm.particle.cz"
     }
   },
   {
-    "model" : "trq.GlobalConfiguration",
+    "model" : "trqacc.GlobalConfiguration",
     "pk": 1,
     "fields": {
       "livestatus" : false,
@@ -115,7 +115,7 @@
     }
   },
   {
-    "model" : "trq.NodeLink",
+    "model" : "trqacc.NodeLink",
     "pk": 1,
     "fields": {
       "name": "Nagios",
@@ -124,7 +124,7 @@
     }
   },
   {
-    "model" : "trq.NodeLink",
+    "model" : "trqacc.NodeLink",
     "pk": 2,
     "fields": {
       "name": "Munin",
