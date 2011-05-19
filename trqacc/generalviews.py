@@ -40,7 +40,7 @@ def overview(request):
 #            pass
 
     return render_to_response_with_config(
-        'trq/overview.html', 
+        'trqacc/overview.html', 
         { 'info': info,
           'tsdata' : tsdata
         }

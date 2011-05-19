@@ -39,7 +39,7 @@ class Node(models.Model):
     percentage_load.short_description = "Number of job slots occupied in percents"
 
     def get_absolute_url(self):
-        return u"/trq/nodes/detail/%s/" % (self.name)
+        return u"/trqacc/nodes/detail/%s/" % (self.name)
 
     def __unicode__(self):
     	return self.name
@@ -54,7 +54,7 @@ class Node(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/nodes/listing/'
+        return u'/trqacc/nodes/listing/'
 
 class NodeProperty(models.Model):
     name = models.CharField(verbose_name="property name", max_length=50)
@@ -62,7 +62,7 @@ class NodeProperty(models.Model):
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
 
     def get_nodeslist_url(self):
-        return u"/trq/nodes/listing/property/%s/" % (self.name)
+        return u"/trqacc/nodes/listing/property/%s/" % (self.name)
 
     def __unicode__(self):
     	return self.name
@@ -76,7 +76,7 @@ class NodeProperty(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/nodes/table/'
+        return u'/trqacc/nodes/table/'
 
 
 class JobSlot(models.Model):
@@ -109,7 +109,7 @@ class SubCluster(models.Model):
     	return self.name
 
     def get_nodeslist_url(self):
-        return u"/trq/nodes/listing/subcluster/%s/" % (self.name)
+        return u"/trqacc/nodes/listing/subcluster/%s/" % (self.name)
 
     @staticmethod
     def get_overview_name():
@@ -117,7 +117,7 @@ class SubCluster(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/nodes/table/'
+        return u'/trqacc/nodes/table/'
 
 
 class SubmitHost(models.Model):
@@ -130,7 +130,7 @@ class SubmitHost(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/'
+        return u'/trqacc/'
 
 
 class Job(models.Model):
@@ -160,7 +160,7 @@ class Job(models.Model):
     exit_status = models.IntegerField('Exit status', null=True)
 
     def get_absolute_url(self):
-        return u"/trq/jobs/detail/%s/%s/" % (self.server,self.jobid)
+        return u"/trqacc/jobs/detail/%s/%s/" % (self.server,self.jobid)
 
     def __unicode__(self):
     	return "%s.%s" % (self.jobid, self.server)
@@ -188,7 +188,7 @@ class Job(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/jobs/detail/'
+        return u'/trqacc/jobs/detail/'
 
 # Kind of a view to Job table - so we can quickly obtain not finished jobs
 class RunningJob(models.Model):
@@ -207,7 +207,7 @@ class TorqueServer(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/'
+        return u'/trqacc/'
 
 
 class User(models.Model):
@@ -219,7 +219,7 @@ class User(models.Model):
     	return "%s@%s" % (self.name,self.server.name)
 
     def get_absolute_url(self):
-        return u"/trq/users/user_detail/%s/%s/" % (self.server.name, self.name)
+        return u"/trqacc/users/user_detail/%s/%s/" % (self.server.name, self.name)
 
     def get_user_numbers(self):
         job_states = JobState.objects.all().order_by('name')
@@ -237,7 +237,7 @@ class User(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/users/'
+        return u'/trqacc/users/'
 
 
 class Group(models.Model):
@@ -248,7 +248,7 @@ class Group(models.Model):
     	return self.name
 
     def get_absolute_url(self):
-        return u"/trq/users/group_detail/%s/" % (self.name)
+        return u"/trqacc/users/group_detail/%s/" % (self.name)
 
     def get_group_numbers(self):
         job_states = JobState.objects.all().order_by('name')
@@ -266,7 +266,7 @@ class Group(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/group/'
+        return u'/trqacc/group/'
 
 
 class GridUser(models.Model):
@@ -276,7 +276,7 @@ class GridUser(models.Model):
     	return self.dn
 
     def get_absolute_url(self):
-        return u"/trq/users/griduser_detail/%s/" % (self.dn)
+        return u"/trqacc/users/griduser_detail/%s/" % (self.dn)
 
     def get_user_numbers(self):
         job_states = JobState.objects.all().order_by('name')
@@ -294,7 +294,7 @@ class GridUser(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/gridusers/'
+        return u'/trqacc/gridusers/'
     
 
 class JobState(models.Model):
@@ -317,7 +317,7 @@ class Queue(models.Model):
     	return self.name
 
     def get_absolute_url(self):
-        return u"/trq/queues/detail/%s/%s" % (self.server.name, self.name)
+        return u"/trqacc/queues/detail/%s/%s" % (self.server.name, self.name)
 
     @staticmethod
     def get_overview_name():
@@ -325,7 +325,7 @@ class Queue(models.Model):
 
     @staticmethod
     def get_overview_url():
-        return u'/trq/queues/table/'
+        return u'/trqacc/queues/table/'
 
 
 EVENT_CHOICES = (

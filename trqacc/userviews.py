@@ -40,7 +40,7 @@ def users_overview(request):
     users = User.objects.all()
     job_states = JobState.objects.all()
     return render_to_response_with_config(
-        'trq/users_overview.html',
+        'trqacc/users_overview.html',
         {'users_list':users, 'job_states':job_states}
         )
 
@@ -121,7 +121,7 @@ def user_detail(request, servername=None, username=None):
             summary = create_summary({'job_owner': detailuser})
         
     return render_to_response_with_config(
-        'trq/user_detail.html',
+        'trqacc/user_detail.html',
         {'user':detailuser, 'user_form':user_form,
         'summary':summary}
         )
@@ -146,7 +146,7 @@ def griduser_detail(request, gridusername=None):
             summary = create_summary({'job_gridowner': detailuser})
 
     return render_to_response_with_config(
-        'trq/user_detail.html',
+        'trqacc/user_detail.html',
         {'user':detailuser, 'user_form':griduser_form,
         'summary':summary}
         )
@@ -173,7 +173,7 @@ def group_detail(request, groupname=None):
         
 
     return render_to_response_with_config(
-        'trq/user_detail.html',
+        'trqacc/user_detail.html',
         {'user':detailgroup, 'user_form':group_form,
         'summary':summary}
         )

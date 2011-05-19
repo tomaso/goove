@@ -43,7 +43,7 @@ def queues_overview(request):
         restable[qr['server__name']][qr['queue__name']][qr['job_state__name']] += qr['job_state__count']
 
     return render_to_response_with_config(
-        'trq/queues_overview.html',
+        'trqacc/queues_overview.html',
         {'restable':restable
         }
     )
@@ -60,7 +60,7 @@ def queue_detail(request, servername=None, queuename=None):
 
     if not queue:
         return render_to_response_with_config(
-            'trq/queue_detail.html',
+            'trqacc/queue_detail.html',
             {'queue':None, 'queue_form':queue_form}
             )
 
@@ -69,7 +69,7 @@ def queue_detail(request, servername=None, queuename=None):
 
     running_jobs = Job.objects.filter(queue=queue, job_state__shortname="R")
     return render_to_response_with_config(
-        'trq/queue_detail.html',
+        'trqacc/queue_detail.html',
         {'queue':queue, 'running_jobs':running_jobs, 'queue_form':queue_form}
         )
 
@@ -127,7 +127,7 @@ def queues_stats(request):
         graph_data = request.POST
         graph_values = get_graph_values(graph_data)
     return render_to_response_with_config(
-        'trq/queues_stats.html',
+        'trqacc/queues_stats.html',
         {'stat_form':stat_form, 'queues_form':queues_form,
         'graph_data':graph_data, 'graph_values':graph_values}
         )

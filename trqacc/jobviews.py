@@ -228,7 +228,7 @@ def jobs_running(request):
     run_form = RunningForm()
     if not request.POST:
         return render_to_response_with_config(
-            'trq/jobs_running.html',
+            'trqacc/jobs_running.html',
             {'jobs_page':[], 'paginator':None,
             'run_form':run_form}
         )
@@ -276,7 +276,7 @@ def jobs_running(request):
     jobs_page = paginator.page(page)
 
     return render_to_response_with_config(
-        'trq/jobs_running.html',
+        'trqacc/jobs_running.html',
         {'jobs_page':jobs_page, 'paginator':paginator,
         'run_form':run_form}
         )
@@ -285,7 +285,7 @@ def jobs_completed_listing(request):
     comp_form = CompletedForm()
     if not request.POST:
         return render_to_response_with_config(
-            'trq/jobs_completed_listing.html',
+            'trqacc/jobs_completed_listing.html',
             {'jobs_page':[], 'paginator':None,
             'comp_form':comp_form}
         )
@@ -354,7 +354,7 @@ def jobs_completed_listing(request):
     jobs_page = paginator.page(page)
 
     return render_to_response_with_config(
-        'trq/jobs_completed_listing.html',
+        'trqacc/jobs_completed_listing.html',
         {'jobs_page':jobs_page, 'paginator':paginator,
         'comp_form':comp_form}
         )
@@ -364,7 +364,7 @@ def job_detail(request, servername=None, jobid=None):
     select_form = JobSelectForm()
     if not request.POST and jobid==None:
         return render_to_response_with_config(
-            'trq/job_detail.html',
+            'trqacc/job_detail.html',
             {'select_form':select_form, 'unknownjob': False, 'job':None, 'accevents':[]}
         )
     try:
@@ -381,7 +381,7 @@ def job_detail(request, servername=None, jobid=None):
         select_form.is_bound = True
     except Job.DoesNotExist:
         return render_to_response_with_config(
-            'trq/job_detail.html',
+            'trqacc/job_detail.html',
             {'select_form':select_form, 'unknownjob': True, 'job':None, 'accevents':[]}
         )
         
@@ -391,7 +391,7 @@ def job_detail(request, servername=None, jobid=None):
 
     accevents = AccountingEvent.objects.filter(job=job)
     return render_to_response_with_config(
-        'trq/job_detail.html',
+        'trqacc/job_detail.html',
         {'select_form':select_form, 'unknownjob': False, 'job':job, 'accevents':accevents}
         )
 
@@ -415,7 +415,7 @@ def stats(request):
         query_form.data['wto'] = request.POST['wto']
         query_form.is_bound = True
     return render_to_response_with_config(
-        'trq/jobs_stats.html', 
+        'trqacc/jobs_stats.html', 
         {'query_form':query_form, 'jobs':jobs, 'graph_data':graph_data}
         )
 
@@ -453,7 +453,7 @@ def suspicious(request):
     sf = SuspicionForm()
     if not request.POST:
         return render_to_response_with_config(
-            'trq/jobs_suspicious.html',
+            'trqacc/jobs_suspicious.html',
             {'suspicion_form':sf, 'jobs_page':None, 'paginator':None}
         )
 
@@ -476,7 +476,7 @@ def suspicious(request):
     jobs_page = paginator.page(page)
 
     return render_to_response_with_config(
-        'trq/jobs_suspicious.html', 
+        'trqacc/jobs_suspicious.html', 
         {'suspicion_form':sf, 'jobs_page':jobs_page, 'paginator':paginator}
         )
 
@@ -485,7 +485,7 @@ def report_form(request):
     View form for reporting job data. This report is than returned as html or pdf.
     """
     return render_to_response_with_config(
-        'trq/jobs_report_form.html',
+        'trqacc/jobs_report_form.html',
         {}
         )
     
@@ -503,7 +503,7 @@ def fairshare(request):
     fs_form = FairshareForm()
     if not request.POST:
         return render_to_response_with_config(
-            'trq/jobs_fairshare.html',
+            'trqacc/jobs_fairshare.html',
             {'fs_form':fs_form}
         )
 
@@ -567,7 +567,7 @@ def fairshare(request):
             row['percentage'] = 100*float(row['walltime__sum'])/total_sum
 
     return render_to_response_with_config(
-        'trq/jobs_fairshare.html',
+        'trqacc/jobs_fairshare.html',
         {'fs_form':fs_form, 'result':result, 'total':total}
     )
 
