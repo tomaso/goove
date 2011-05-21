@@ -11,6 +11,8 @@ urlpatterns = patterns('',
     # (r'^goove/', include('goove.foo.urls')),
     (r'^trqacc/', include('goove.trqacc.urls')),
 
+    (r'^trqlive/', include('goove.trqlive.urls')),
+
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
