@@ -1,0 +1,51 @@
+{% extends "trqacc/base.html" %}
+
+{% block content %}
+
+<div class="maintextwide">
+
+    {% for ts,queues in restable.items %}
+    <h3>{{ ts }}</h3>
+
+    <table class="overview sortable" id="overview_table">
+
+        {% for queue, values in queues.items %}
+
+        {% if forloop.first %}
+     
+            <thead>
+                <tr class="sortable">
+                    <th>Name</th>
+                    {% for js in values.keys %}
+                    <th>{{ js }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+
+        {% endif %}
+
+            <tr>
+                <td class="left">{{queue}}</td>
+                {% for js,val in values.items %}
+                <td>{{ val }}</td>
+                {% endfor %}
+            </tr>
+
+            {% if forloop.last %}
+            </tbody>
+            {% endif %}
+
+        {% endfor %}
+
+    </table>
+
+    {% endfor %}
+
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

@@ -1,0 +1,35 @@
+{% extends "trqlive/base.html" %}
+
+{% block head %}
+    <!-- Include Ext and app-specific scripts: -->
+<!--    <script type="text/javascript" src="/site_media/js/ext/adapter/ext/ext-base.js"></script>
+-->
+    <script type="text/javascript" src="/site_media/js/ext/ext-all-debug.js"></script>
+    <script type="text/javascript" src="/site_media/js/basic.js"></script>
+    
+    <!-- Include Ext stylesheets here: -->
+    <link rel="stylesheet" type="text/css" href="/site_media/js/ext/resources/css/ext-all.css">
+
+{% endblock head %}
+
+
+
+{% block dynamiccontent %}
+<input type="button" id="myButton" value="Click me" />
+<div id="myDiv"></div>
+{% endblock dynamiccontent %}
+
+
+{% block staticcontent %}
+
+<ul>
+{% for node in nodes %}
+<li>{{node.name}}</li>
+{% endfor %}
+</ul>
+
+{% endblock staticcontent %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

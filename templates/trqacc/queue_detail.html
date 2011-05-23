@@ -1,0 +1,56 @@
+{% extends "trqacc/base.html" %}
+
+{% block content %}
+
+<div class="leftmenu">
+
+        <form action="" method="post">
+
+        <h3>Queue selection</h3>
+        <table>
+        {% for field in queue_form.visible_fields %}
+        <tr>
+            <th>{{ field.label_tag }}</th><td>{{ field }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+        <input type="submit" value="Submit" name="submit" />
+
+        </form>
+</div>
+
+
+<div class="maintext">
+
+    {% if queue %}
+
+    <h2 style="background-color: blue; color: white; text-shadow: black 0.1em 0.1em 0.1em">Queue: {{ queue.name }}</h2>
+    <h3>Currently running jobs</h3>
+    <table class="nodejoblist">
+        <tr>
+            <th>JobId</th>
+            <th>Owner</th>
+            <th>Node</th>
+            <th>CpuTime</th>
+            <th>WallTime</th>
+        </tr>
+    {% for job in running_jobs %}
+        <tr>
+            <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
+            <td><a href="{{ job.job_owner.get_absolute_url }}">{{ job.job_owner }}</a></td>
+            <td><a href="TODO">TODO</a></td>
+            <td>{{ job.cput }}</td>
+            <td>{{ job.walltime }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+
+    {% endif %}
+
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

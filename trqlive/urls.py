@@ -3,6 +3,7 @@ from django.conf.urls.defaults import *
 urlpatterns = patterns('',
     (r'^api/', include('goove.trqlive.api.urls')),
 
+    (r'^nodes/$', 'goove.trqlive.nodeviews.node_overview'),
     (r'^nodes/detail/(?P<nodename>.*)/$', 'goove.trqlive.nodeviews.node_detail'),
 #    (r'^nodes/detail/(?P<nodename>.*)/$', 'goove.trqacc.nodeviews.node_detail'),
 #    (r'^nodes/detail/$', 'goove.trqacc.nodeviews.node_detail'),

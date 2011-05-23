@@ -1,0 +1,128 @@
+{% extends "trqacc/base.html" %}
+
+
+{% block content %}
+
+<script>
+$(document).ready(function() {
+    var func1 = function() {
+        var data = {};
+        data['pk'] = $("#id_node").val();
+        var args = { type:"POST", url:"json_detail/", data:data, complete:done };
+        $.ajax(args);
+    };
+
+    var listProperties = function(obj) {
+       var propList = "";
+       for(var propName in obj) {
+          if(typeof(obj[propName]) != "undefined") {
+             propList += (propName + ", ");
+          }
+       }
+       alert(propList);
+    }
+
+    var func3 = function(obj) {
+        var data = {};
+        data['pk'] = obj.currentTarget.id;
+        $("#id_node").val(data['pk']);
+        var args = { type:"POST", url:"json_detail/", data:data, complete:done };
+        $.ajax(args);
+    };
+
+    var func2  = function() {
+//        $("#node_detail > tbody:last").empty();
+    }
+
+    var done = function(res, status) {
+        if(status=="success"){
+            data = eval('(' +res.responseText+ ');');
+            $("#node_detail > tbody:last").empty();
+            jobs = data["jobs"];
+            for(i=0;i<jobs.length;i++) {
+                $("#node_detail > tbody:last").append("<tr><td><a href=\""+jobs[i]["joburl"]+"\">"+jobs[i]["jobid"]+"</a></td><td><a href=\""+jobs[i]["queueurl"]+"\">"+jobs[i]["queue"]+"</a></td></tr>");
+            }
+        }
+    };
+
+    $("#id_node").change(func1);
+    $("input[type=submit]").remove();
+    $(".overview_node").hover(func3, func2);
+    $("table.subcluster thead").toggle(function() {
+        $(this).parent().children("tbody").hide();
+        $(this).removeClass('uncollapsed').addClass('collapsed');
+    }, function() {
+        $(this).parent().children("tbody").show();
+        $(this).removeClass('collapsed').addClass('uncollapsed');
+    });
+});
+</script>
+
+<div class="leftmenu">
+
+    <h3>State</h3>
+    <table>
+    {% for ns in nodestates %}
+        <tr><td>{{ ns }}</td><td><span class="node_state_{{ ns }}"><span /></td></tr>
+    {% endfor %}
+    </table>
+
+    <form action="/trqacc/nodes/table/" method="post">
+    <h3>Node detail</h3>
+    <table>
+    {% for field in detailform.visible_fields %}
+    <tr>
+        <th>{{ field.label_tag }}</th><td>{{ field }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+    <input type="submit" value="Submit" name="submit" />
+    </form>
+
+    <table id="node_detail">
+    <thead>
+        <tr><th>Job id</th><th>Queue</th></tr>
+    </thead>
+    <tbody>
+    {% if detailnode %}
+    {% for j in detailnode.running_jobs %}
+        <tr><td><a href="{{j.get_absolute_url}}">{{j.jobid}}</a></td><td><a href="{{j.queue.get_absolute_url}}">{{j.queue}}</a></td></tr>
+    {% endfor %}
+    {% endif %}
+    </tbody>
+    </table>
+
+</div>
+
+<div class="maintext">
+    {% for sc_node in sc_nodes %}
+    <div class="subclusters">
+        <table class="subcluster" id="{{sc_node.subcluster}}">
+        <thead class="uncollapsed">
+        <tr><th colspan="{{ colswidth }}">{{ sc_node.subcluster }}</th></tr>
+        </thead>
+        <tbody>
+        {% for row in sc_node.rows %}
+            <tr>
+            {% for n in row %}
+                <td class="overview_node" id="{{ n.pk }}">
+                    <div style="position: relative">
+                        <a href="{{ n.get_absolute_url }}">{{ n.name }}</a>{% for c in n.state.all %}<span class="node_state_{{ c }}" title="{{ c }}"></span>{% endfor %}
+                    </div>
+                </td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+    </div>
+    {% endfor %}
+
+</div>
+
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->
