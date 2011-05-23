@@ -1,0 +1,117 @@
+{% extends "trqacc/base.html" %}
+
+{% block content %}
+
+<div class="leftmenu">
+
+        <form action="" method="post">
+
+        <h3>Node selection</h3>
+        <table>
+        {% for field in node_form.visible_fields %}
+        <tr>
+            <th>{{ field.label_tag }}</th><td>{{ field }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+        <input type="submit" value="Submit" name="submit" />
+
+        </form>
+
+        {% if node %}
+        <h3>Links</h3>
+        <ul>
+        {% for name,url in node.get_node_links %}
+            <li><a href="{{ url }}">{{ name }}</a></li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+</div>
+
+<div class="maintext">
+
+    {% if node %}
+    <div class="infopanel">
+    <h3>Details</h3>
+    <table class="nodejoblist">
+        <tr><th>Name</th><td>{{ node.name }}</td></tr>
+        <tr><th>Job slots</th><td>{{ node.np }}</td></tr>
+        <tr><th>State</th>
+            <td>
+                {% for ns in  node.state.all %}
+                    {{ ns.name }}<br />
+                {% endfor %}
+            </td>
+        </tr>
+        <tr><th>Subcluster</th>
+            <td>
+            <a href="{{ node.subcluster.get_nodeslist_url }}">{{ node.subcluster }}</a>
+            </td>
+        </tr>
+        <tr><th>Properties</th>
+            <td>
+                {% for np in  node.properties.all %}
+                    <a href="{{ np.get_nodeslist_url }}"</a>{{ np.name }}</a><br />
+                {% endfor %}
+            </td>
+        </tr>
+    </table>
+    </div>
+
+    <div class="infopanel">
+    <h3>Currently running jobs</h3>
+    <table class="nodejoblist sortable" id="runningjobs">
+    <thead>
+        <tr>
+            <th>JobId</th>
+            <th>Owner</th>
+            <th>CpuTime</th>
+            <th>WallTime</th>
+            <th>Queue</th>
+        </tr>
+    </thead>
+    {% for job in running_jobs %}
+        <tr>
+            <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
+            <td><a href="{{ job.job_owner.absolute_url }}">{{ job.job_owner }}</a></td>
+            <td>{{ job.cput }}</td>
+            <td>{{ job.walltime }}</td>
+            <td><a href="{{ job.queue.get_absolute_url }}">{{ job.queue }}</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+    </div>
+
+<!--
+    <div class="infopanel">
+    <h3>Jobs completed during last hour</h3>
+    <table class="nodejoblist">
+        <tr>
+            <th>JobId</th>
+            <th>Owner</th>
+            <th>CpuTime</th>
+            <th>WallTime</th>
+            <th>Queue</th>
+        </tr>
+    {% for job in completed_jobs %}
+        <tr>
+            <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
+            <td><a href="{{ job.job_owner.absolute_url }}">{{ job.job_owner }}</a></td>
+            <td>{{ job.cput }}</td>
+            <td>{{ job.walltime }}</td>
+            <td>{{ job.queue }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+    </div>
+-->
+
+    {% endif %}
+
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

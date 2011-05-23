@@ -1,0 +1,45 @@
+{% extends "trqacc/users_base.html" %}
+
+{% block submenu %}
+<div class="menu bubplastic horizontal lime">
+    <ul>
+        <li class="highlight"><span class="menu_r"><a href="/trqacc/users/"><span class="menu_ar">Overview</span></a></span></li>
+        <li><span class="menu_r"><a href="/trqacc/users/stats/"><span class="menu_ar">Graphs</span></a></span></li>
+    </ul>
+    <br class="clearit" />
+</div>
+{% endblock submenu %}
+
+{% block content %}
+
+<div class="maintext">
+    <table class="overview">
+        <thead>
+            <tr>
+                <th>Login</th>
+                {% for js in job_states %}
+                <th>{{ js.name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in users_list %}
+            <tr>
+                <td class="left">
+                    <a href="{{ object.get_absolute_url }}">{{ object.name }}</a>
+                </td>
+                <!-- This is not very good as we relly on ordering -->
+                {% for key,val in object.get_user_numbers.items %}
+                <td>{{ val }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

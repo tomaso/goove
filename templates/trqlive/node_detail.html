@@ -1,0 +1,14 @@
+{% extends "trqlive/base.html" %}
+
+{% block staticcontent %}
+
+    {% if node %}
+        <em>Name:</em>&nbsp;<span>{{ node.name }}</span>
+
+    {% endif %}
+
+{% endblock staticcontent %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

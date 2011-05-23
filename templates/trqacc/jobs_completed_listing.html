@@ -1,0 +1,84 @@
+{% extends "trqacc/base.html" %}
+
+{% block content %}
+
+<form action="" method="post">
+
+<div class="leftmenu">
+
+        <h3>Job attributes</h3>
+        <table>
+        {% for field in comp_form.visible_fields %}
+        <tr>
+            <th>{{ field.label_tag }}</th><td>{{ field }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+        {% for field in comp_form.hidden_fields %}
+        {{ field }}
+        {% endfor %}
+        <input type="submit" value="Submit" name="submit" />
+
+</div>
+
+
+<div class="maintext">
+    <table class="nodejoblist sortable" id="completed_listing">
+        <thead>
+            <tr>
+                <th>JobId</th>
+                <th>Owner</th>
+                <th>Queue</th>
+                <th>CpuTime</th>
+                <th>WallTime</th>
+                <th>Efficiency</th>
+                <th>State</th>
+                <th>Completion time</th>
+                <th>Host</th>
+                <th>Submit Host</th>
+                <th>Exit code</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs_page.object_list %}
+            <tr>
+                <td><a href="{{ job.get_absolute_url }}">{{ job.jobid }}</a></td>
+                <td><a href="{{ job.job_owner.get_absolute_url }}">{{ job.job_owner }}</a></td>
+                <td><a href="{{ job.queue.get_absolute_url }}">{{ job.queue }}</a></td>
+                <td>{{ job.cput }}</td>
+                <td>{{ job.walltime }}</td>
+                <td>{{ job.efficiency }}</td>
+                <td>{{ job.job_state.shortname }}</td>
+                <td>{{ job.comp_time }}</td>
+                <td>
+                {% for slot in job.jobslots.all %}
+                <a href="{{slot.node.get_absolute_url}}">{{slot.node.name}}</a>/{{slot.slot}}{% if not forloop.last %}<br />{% endif %}
+                {% endfor %}
+                </td>
+                <td>{{ job.submithost.name }}</td>
+                <td>{{ job.exit_status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if paginator %}
+        <span class="paging">
+        Page: 
+        {% if jobs_page.has_previous %}
+        <input type="submit" value="<<" name="submit" />
+        {% endif %}
+        {{ jobs_page.number }} of {{ paginator.num_pages }} ({{ paginator.count }} total jobs)
+        {% if jobs_page.has_next %}
+        <input type="submit" value=">>" name="submit" />
+        {% endif %}
+        </span>
+    {% endif %}
+</div>
+
+</form>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

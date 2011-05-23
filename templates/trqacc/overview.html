@@ -1,0 +1,57 @@
+{% extends "trqacc/base.html" %}
+
+{% block content %}
+
+
+<div class="leftmenu">
+
+
+    <h3>Database content</h3>
+    <table>
+    {% for item in info %}
+    <tr>
+    <td class="coldesc"><a href="{{ item.url }}">{{ item.name }}s</a></td>
+    <td class="colnumber">{{ item.count }}</a></td>
+    </tr>
+    {% endfor %}
+
+    </table>
+    
+</div>
+
+<div class="maintext">
+{% for ts,data in tsdata.items %}
+
+    <div class="infopanel">
+
+
+        <h3>{{ts.name}} queues</h3>
+        <table class="overview">
+        <tr><th>&nbsp;</th><th>Q</th><th>R</th></tr>
+        {% for q in data.queues  %}
+        <tr>
+        <td class="coldesc"><a href="{{ q.queue.get_absolute_url}}">{{ q.queue.name }}</a></td>
+        <td class="colnumber">{{ q.Q }}</a></td>
+        <td class="colnumber">{{ q.R }}</a></td>
+        </tr>
+        {% endfor %}
+
+        </table>
+
+        <h3>Completed times</h3>
+        <table class="overview">
+        <tr><td>First job</td><td>{{ data.starttime }}</td></tr>
+        <tr><td>Last job</td><td>{{ data.endtime }}</td></tr>
+        </table>
+        
+    </div>
+
+{% endfor %}
+
+</div>
+
+{% endblock content %}
+
+<!-- 
+vi:sw=4:ts=4:et
+-->

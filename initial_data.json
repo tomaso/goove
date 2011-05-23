@@ -136,7 +136,7 @@
     "model" : "trqlive.Node",
     "pk": 1,
     "fields": {
-      "name": "ib01.farm.particle.cz",
+      "name": "ib01.farm.particle.cz"
     }
-  },
+  }
 ]
