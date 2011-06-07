@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" media="all" type="text/css" href="/site_media/css/layout.css" />
+    <title>{% block title %}Torque live view{% endblock %}</title>
+
+    <!-- Include Ext and app-specific scripts: -->
+<!--    <script type="text/javascript" src="/site_media/js/ext/adapter/ext/ext-base.js"></script>
+-->
+    <script type="text/javascript" src="/site_media/js/ext/ext-all-debug.js"></script>
+    
+    <!-- Include Ext stylesheets here: -->
+    <link rel="stylesheet" type="text/css" href="/site_media/js/ext/resources/css/ext-all.css">
+    <link rel="stylesheet" type="text/css" href="/site_media/css/trqlive.css" />
+
+    {% block head %}
+    {% endblock %}
+
+<!-- This template contains the main ext js application.
+     If the browser does not support javascript - this page should redirect user to a static version of the application.
+-->
+
+    <script type="text/javascript" src="/site_media/js/trqlive/start.js"></script>
+
+</head>
+
+<body>
+    <noscript>
+        <p>Javascript seems to be off - redirecting to static version.</p>
+        <meta http-equiv="refresh" content="3; URL=static/">
+    </noscript>
+
+</body>
+</html>
+<!-- 
+vi:sw=4:ts=4:et
+-->
