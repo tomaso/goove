@@ -1,1 +1,0 @@
-ALTER TABLE trqlive_node ENGINE=MEMORY;

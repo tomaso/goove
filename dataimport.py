@@ -56,7 +56,6 @@ class SQLJob:
             self.id = row[0]
             self.job_state_id = row[1]
         
-
     def save(self):
         cursor = connection.cursor()
         attrs = [a for a in SUPPORTED_JOB_ATTRS if hasattr(self,a)]
@@ -73,7 +72,14 @@ class SQLJob:
             cursor.execute("UPDATE trqacc_job SET %s WHERE id=%d" % (sqlitems,self.id), 
                 [getattr(self,x) for x in attrs]
             )
-            
+        # Save jobslots data if it is present
+        if hasattr(self,'jobslots'):
+            # TODO: This query can be very slow - I don't know how to do it better now
+            j = Job.objects.get(server__pk=self.server_id,jobid=self.jobid)
+            job_id = j.id
+
+            for jobslot_id in self.jobslots:
+                cursor.execute("INSERT IGNORE INTO trqacc_job_jobslots (job_id,jobslot_id) VALUES (%d,%d)" % (job_id, jobslot_id))
 
 
 

@@ -45,6 +45,71 @@ def log(level, message):
     if level <= Configuration['loglevel']:
         print "<%d> %s" % (level, message)
 
+def attribs_to_dict(attribs):
+    """ Convert list of swig attributes
+    to a python dictionary """
+    return dict([ (x.name,x.value) for x in attribs])
+
+
+def update_one_node(conn,bs,nodename):
+    """
+    """
+    # TODO
+    pass
+
+def update_all_nodes(conn,bs):
+    """
+    Update all nodes in the database using the given pbs connection conn
+    and batch server bs.
+    """
+    statnodes = pbs.pbs_statnode(conn,"",[],"")
+    for sn in statnodes:
+        if sn.name.find('.')==-1:
+            longname = sn.name+'.'+bs.domainname
+        else:
+            longname = sn.name
+        n,created = Node.objects.get_or_create(name=longname, server=bs)
+        if created:
+            log(LOG_INFO, "new node will be created: %s" % (longname))
+            n.server = bs
+            try:
+                n.subcluster = Subcluster.objects.get(name=n.name_without_number())
+                log(LOG_INFO, "new node will be put in subluster: %s" % (n.subcluster.name))
+            except Subcluster.DoesNotExist:
+                log(LOG_INFO, "new node will be out of any subcluster: %s" % (longname))
+        dattrs = {}
+        for a in sn.attribs:
+            dattrs[a.name] = a.value
+        n.state = dattrs['state']
+        log(LOG_INFO, "name: %s, state: %s" % (n.name, n.state))
+        n.save()
+
+
+def update_all_queues(conn,bs):
+    """
+    Update all queue information in the database using the given pbs connection conn
+    and batch server bs.
+    """
+    # TODO
+    pass
+
+
+def update_all_jobs(conn,bs):
+    """
+    Update all job information in the database using the given pbs connection conn
+    and batch server bs.
+    """
+    Job.objects.all().delete()
+    statjobs = pbs.pbs_statjobs(conn,"",[],"")
+    for sj in statjobs:
+        j = Job.objects.create(jobid=sj.name.split('.',1)[0], server__name=sj.name.split('.',1)[1])
+        da = attribs_to_dict(sj.attribs)
+#        for h,jsn in [ x.split('/') for x in da['exec_host'].split('+') ]:
+#            j.get
+        j.save()
+
+
+
 
 def runAsDaemon():
     """
@@ -57,27 +122,7 @@ def runAsDaemon():
         if conn == -1:
             log(LOG_ERROR, "Cannot connect to batch server %s" % bs.name)
             continue
-        statnodes = pbs.pbs_statnode(conn,"",[],"")
-        for sn in statnodes:
-            if sn.name.find('.')==-1:
-                longname = sn.name+'.'+bs.domainname
-            else:
-                longname = sn.name
-            n,created = Node.objects.get_or_create(name=longname, server=bs)
-            if created:
-                log(LOG_INFO, "new node will be created: %s" % (longname))
-                n.server = bs
-                try:
-                    n.subcluster = Subcluster.objects.get(name=n.name_without_number())
-                    log(LOG_INFO, "new node will be put in subluster: %s" % (n.subcluster.name))
-                except Subcluster.DoesNotExist:
-                    log(LOG_INFO, "new node will be out of any subcluster: %s" % (longname))
-            dattrs = {}
-            for a in sn.attribs:
-                dattrs[a.name] = a.value
-            n.state = dattrs['state']
-            log(LOG_INFO, "name: %s, state: %s" % (n.name, n.state))
-            n.save()
+        update_all_nodes(conn,bs)
         
 
 

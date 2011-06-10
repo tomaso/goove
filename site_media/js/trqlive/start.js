@@ -54,7 +54,7 @@ Ext.onReady(function () {
         itemSelector: 'span.node_overview',
         cls: 'x-node-overview',
 
-        tpl: ['<tpl for=".">', '<div class="node_overview {state}">', '<span id="overview_{name}" data-qtip="<h3>{name}</h3><i>{state}</i>" class="qtip-target">&nbsp;</span>', '</div>', '</tpl>']
+        tpl: ['<tpl for=".">', '<div id=overview_{name}" class="node_overview {state}">', '</div>', '</tpl>']
     });
 
     var tabs_nodes = [{

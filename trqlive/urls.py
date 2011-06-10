@@ -1,10 +1,20 @@
 from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
+    (r'^$', 'goove.trqlive.mainviews.homepage'),
+
+    (r'^static/$', 'goove.trqlive.mainviews.homepage_static'),
+
+    (r'^dynamic/nodes_overview/$', 'goove.trqlive.dynamicviews.nodes_overview'),
+    (r'^dynamic/nodes_overview/(?P<subcluster_name>.*)/$', 'goove.trqlive.dynamicviews.nodes_overview'),
+    (r'^dynamic/subclusters_list/$', 'goove.trqlive.dynamicviews.subclusters_list'),
+
     (r'^api/', include('goove.trqlive.api.urls')),
 
     (r'^nodes/$', 'goove.trqlive.nodeviews.node_overview'),
-    (r'^nodes/detail/(?P<nodename>.*)/$', 'goove.trqlive.nodeviews.node_detail'),
+
+
+#    (r'^/(?P<servername>.*)/nodes/detail/(?P<nodename>.*)/$', 'goove.trqlive.nodeviews.node_detail'),
 #    (r'^nodes/detail/(?P<nodename>.*)/$', 'goove.trqacc.nodeviews.node_detail'),
 #    (r'^nodes/detail/$', 'goove.trqacc.nodeviews.node_detail'),
 #    (r'^nodes/listing/(?P<filtertype>.*)/(?P<filtervalue>.*)/$', 'goove.trqacc.nodeviews.nodes_listing'),
