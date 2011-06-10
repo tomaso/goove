@@ -132,11 +132,59 @@
       "config": 1
     }
   },
+
+
+
+
   {
-    "model" : "trqlive.Node",
+    "model" : "trqlive.BatchServer",
     "pk": 1,
     "fields": {
-      "name": "ib01.farm.particle.cz"
+      "name": "torque.farm.particle.cz",
+      "domainname": "farm.particle.cz"
+    }
+  },
+
+  {
+    "model" : "trqlive.Subcluster",
+    "pk": 1,
+    "fields": {
+      "name": "salix"
+    }
+  },
+  {
+    "model" : "trqlive.Subcluster",
+    "pk": 2,
+    "fields": {
+      "name": "saltix"
+    }
+  },
+  {
+    "model" : "trqlive.Subcluster",
+    "pk": 3,
+    "fields": {
+      "name": "iberis"
+    }
+  },
+  {
+    "model" : "trqlive.Subcluster",
+    "pk": 4,
+    "fields": {
+      "name": "ibis"
+    }
+  },
+  {
+    "model" : "trqlive.Subcluster",
+    "pk": 5,
+    "fields": {
+      "name": "ib"
+    }
+  },
+  {
+    "model" : "trqlive.Subcluster",
+    "pk": 6,
+    "fields": {
+      "name": "golias"
     }
   }
 ]

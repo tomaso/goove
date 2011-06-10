@@ -27,3 +27,6 @@ cd /home/koubat/repos/goove
 
 /usr/bin/python dataimport.py -l0 -g /egee_cesnet/ce1_opt_edg_var/gatekeeper/grid-jobmap_${DATE2}
 /usr/bin/python dataimport.py -l0 -g /egee_cesnet/ce1_opt_edg_var/gatekeeper/grid-jobmap_${DATE1}
+
+/usr/bin/python dataimport.py -l0 -g /egee_cesnet/cream1_opt_glite_var_log_accounting/blahp.log-${DATE2}
+/usr/bin/python dataimport.py -l0 -g /egee_cesnet/cream1_opt_glite_var_log_accounting/blahp.log-${DATE1}

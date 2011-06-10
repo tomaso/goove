@@ -6,7 +6,6 @@ class NodeHandler(BaseHandler):
     model = Node   
 
     def read(self, request, nodename=None):
-        print nodename
         if nodename:
             return Node.objects.get(name=nodename)
         else:
