@@ -78,11 +78,29 @@ Ext.onReady(function () {
                                 type: 'ajax',
                                 url: '/trqlive/dynamic/nodes_overview/'
                             },
-                            autoLoad: false
+                            autoLoad: false,
                         });
 
                         itm.store.proxy.url = '/trqlive/dynamic/nodes_overview/' + sc.get('name') + '/';
-                        console.info(itm.store.proxy.url);
+                        itm.on('render', function (view) {
+                            console.info("In render function");
+                            view.tip = Ext.create('Ext.tip.ToolTip', {
+                                // The overall target element.
+                                target: view.el,
+                                // Each grid row causes its own seperate show and hide.
+                                delegate: view.itemSelector,
+                                // Moving within the row should not hide the tip.
+                                trackMouse: true,
+                                // Render immediately so that tip.body can be referenced prior to the first show.
+                                renderTo: Ext.getBody(),
+                                listeners: {
+                                    beforeshow: function updateTipBody(tip) {
+                                        console.info(tip);
+                                    }
+                                }
+                            });
+                        });
+                        //console.info(itm.store.proxy.url);
                         thistab.add({
                             id: sc.get('name'),
                             xtype: 'panel',
@@ -98,7 +116,7 @@ Ext.onReady(function () {
                         }
                         );
                         tab = thistab.items.get(sc.get('name'));
-                        console.info(tab.items.get(0).store.proxy);
+                        //console.info(tab.items.get(0).store.proxy);
 /*                        
                         var operation = new Ext.data.Operation({
                             action: 'read',
@@ -111,7 +129,7 @@ Ext.onReady(function () {
                 }
             },
             deactivate: function(thistab) {
-                console.info('deactivated');
+                //console.info('deactivated');
             }
         }
     }, {
@@ -253,7 +271,8 @@ Ext.onReady(function () {
                     });
                     */
     //      console.info(tp.store.tree.root);
-    Ext.QuickTips.init();
+    //Ext.QuickTips.init();
+
 }
 
 ); //end onReady

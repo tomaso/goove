@@ -15,7 +15,7 @@ os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
 
 import re
 
-from goove.trqlive.models import Node, BatchServer, Subcluster
+from goove.trqlive.models import Node, BatchServer, Subcluster, JobSlot, Job
 
 from xml.dom.minidom import parse, parseString
 from optparse import OptionParser, OptionGroup
@@ -77,11 +77,26 @@ def update_all_nodes(conn,bs):
                 log(LOG_INFO, "new node will be put in subluster: %s" % (n.subcluster.name))
             except Subcluster.DoesNotExist:
                 log(LOG_INFO, "new node will be out of any subcluster: %s" % (longname))
-        dattrs = {}
-        for a in sn.attribs:
-            dattrs[a.name] = a.value
+        dattrs = attribs_to_dict(sn.attribs)
         n.state = dattrs['state']
         log(LOG_INFO, "name: %s, state: %s" % (n.name, n.state))
+        if dattrs.has_key('jobs'):
+            try:
+                slotnum_fulljobid = [ x.strip().split('/') for x in dattrs['jobs'].split(',') ]
+            except KeyError:
+                log(LOG_ERROR, "dattrs: %s" % str(dattrs))
+            for slotnum, fulljobid in slotnum_fulljobid:
+                jobid,servername = fulljobid.split('.',1)
+                js,created = JobSlot.objects.get_or_create(slot=slotnum, node=n)
+                if created:
+                    log(LOG_INFO, "new jobslot will be created: %s in %s" % (slotnum, longname))
+                j,created = Job.objects.get_or_create(jobid=jobid, server=bs)
+                if created:
+                    log(LOG_INFO, "new job will be created: %s in %s" % (jobid, bs.name))
+                j.save()
+                js.job = j
+                js.save()
+            
         n.save()
 
 
@@ -99,14 +114,15 @@ def update_all_jobs(conn,bs):
     Update all job information in the database using the given pbs connection conn
     and batch server bs.
     """
-    Job.objects.all().delete()
-    statjobs = pbs.pbs_statjobs(conn,"",[],"")
-    for sj in statjobs:
-        j = Job.objects.create(jobid=sj.name.split('.',1)[0], server__name=sj.name.split('.',1)[1])
-        da = attribs_to_dict(sj.attribs)
+    pass
+#    Job.objects.all().delete()
+#    statjobs = pbs.pbs_statjobs(conn,"",[],"")
+#    for sj in statjobs:
+#        j = Job.objects.create(jobid=sj.name.split('.',1)[0], server__name=sj.name.split('.',1)[1])
+#        da = attribs_to_dict(sj.attribs)
 #        for h,jsn in [ x.split('/') for x in da['exec_host'].split('+') ]:
 #            j.get
-        j.save()
+#        j.save()
 
 
 

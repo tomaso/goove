@@ -41,6 +41,9 @@ class JobSlot(models.Model):
     slot = models.IntegerField(verbose_name="Job slot number")
     node = models.ForeignKey('Node')
 
+    # Current job attached to this jobslot
+    job = models.ForeignKey('Job', null=True)
+
     class Meta:
         ordering = ['node','slot']
         unique_together = (('node', 'slot'),)
@@ -52,7 +55,6 @@ class JobSlot(models.Model):
 class Job(models.Model):
     jobid = models.CharField(max_length=16, db_index=True, editable=False)
     server = models.ForeignKey('BatchServer', editable=False)
-    jobslots = models.ManyToManyField('JobSlot', null=True)
 
 
  
