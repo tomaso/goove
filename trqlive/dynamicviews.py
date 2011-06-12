@@ -14,7 +14,11 @@ def nodes_overview(request, subcluster_name=None):
         qs = Node.objects.all()
 
     for n in qs:
-        l.append({'name': n.name, 'state': n.state.replace(',',' ')})
+        l.append({
+            'name': n.name, 
+            'state': n.state.replace(',',' '),
+            'jobs': [ j.job.jobid for j in n.jobslot_set.all() ]
+            })
     return HttpResponse(simplejson.dumps(l))
 
 
