@@ -2,13 +2,10 @@ Ext.onReady(function () {
 /*
  * MODELS
  */
-    Ext.define('Node', {
+    Ext.define('BatchServer', {
         extend: 'Ext.data.Model',
         fields: [{
             name: 'name',
-            type: 'string'
-        }, {
-            name: 'state',
             type: 'string'
         }]
     });
@@ -20,10 +17,37 @@ Ext.onReady(function () {
             type: 'string'
         }]
     });
+    
+    Ext.define('Node', {
+        extend: 'Ext.data.Model',
+        fields: [{
+            name: 'name',
+            type: 'string'
+        }, {
+            name: 'shortname',
+            type: 'string'
+        }, {
+            name: 'state',
+            type: 'string'
+        }, {
+            name: 'ttiphtml',
+            type: 'string'
+        }]
+    });
+
 
 /*
  * STORES
  */
+    var batchserver_store = Ext.create('Ext.data.Store', {
+        model: 'BatchServer',
+        proxy: {
+            type: 'ajax',
+            url: '/trqlive/dynamic/batchservers_list/',
+        },
+        autoLoad: true
+    });
+
     var subcluster_store = Ext.create('Ext.data.Store', {
         model: 'Subcluster',
         proxy: {
@@ -32,7 +56,6 @@ Ext.onReady(function () {
         },
         autoLoad: true
     });
-
 
     // See API docs for loading nested data - Ext.data.reader.Reader
     var node_store = Ext.create('Ext.data.Store', {
@@ -51,10 +74,10 @@ Ext.onReady(function () {
         extend: 'Ext.view.View',
         alias: 'widget.nodesview',
         requires: ['Ext.data.Store'],
-        itemSelector: 'span.node_overview',
+        itemSelector: 'div.node_overview',
         cls: 'x-node-overview',
 
-        tpl: ['<tpl for=".">', '<div id=overview_{name}" class="node_overview {state}">', '</div>', '</tpl>']
+        tpl: ['<tpl for=".">', '<div data-qtitle="{shortname}" data-qtip="{ttiphtml}" id="overview_id_{name}" class="node_overview {state}">', '</div>', '</tpl>']
     });
 
     var tabs_nodes = [{
@@ -76,14 +99,13 @@ Ext.onReady(function () {
                             model: 'Node',
                             proxy: {
                                 type: 'ajax',
-                                url: '/trqlive/dynamic/nodes_overview/'
+                                url: '/trqlive/dynamic/nodes_overview/' + sc.get('name') + '/'
                             },
-                            autoLoad: false,
+                            autoLoad: true,
                         });
 
-                        itm.store.proxy.url = '/trqlive/dynamic/nodes_overview/' + sc.get('name') + '/';
+                        /*                        
                         itm.on('render', function (view) {
-                            console.info("In render function");
                             view.tip = Ext.create('Ext.tip.ToolTip', {
                                 // The overall target element.
                                 target: view.el,
@@ -93,20 +115,26 @@ Ext.onReady(function () {
                                 trackMouse: true,
                                 // Render immediately so that tip.body can be referenced prior to the first show.
                                 renderTo: Ext.getBody(),
+                                html: 'This is the default tooltip',
                                 listeners: {
                                     beforeshow: function updateTipBody(tip) {
+                                        //                                        console.info(view.getStore());
+                                        //                                        var node = view.getNode(view.el);
                                         console.info(tip);
+                                        console.info(tip.triggerElement);
+                                        //                                        console.info(view.getRecord(tip));
+                                        //                                        tip.update(view.getRecord().jobs[0]);
                                     }
                                 }
                             });
                         });
-                        //console.info(itm.store.proxy.url);
+                        //*/                        
                         thistab.add({
                             id: sc.get('name'),
                             xtype: 'panel',
                             title: sc.get('name'),
                             //flex: 1,
-                            width: 175,
+                            width: 100,
                             /*
                             items: {
                                 xtype: 'nodesview'
@@ -123,8 +151,20 @@ Ext.onReady(function () {
                             sname : sc.get('name')
                         });
 */                        
-                        tab.items.get(0).store.load();
-                        
+//                        tab.items.get(0).store.load();
+/*                        
+                        console.info(itm);
+                        console.info(itm.store);
+                        console.info(itm.store.totalCount);
+                        itm.store.each(function (n) {
+                            Ext.create('Ext.tip.ToolTip', {
+                                target: Ext.getCmp(n),
+                                trackMouse: true,
+                                html: n
+                            });
+                            console.info(n);
+                        });
+*/                        
                     });
                 }
             },
@@ -137,28 +177,15 @@ Ext.onReady(function () {
         id: "nodes_list"
     }];
 
-    var store = Ext.create('Ext.data.TreeStore', {
+    var tp_store = Ext.create('Ext.data.TreeStore', {
         root: {
             expanded: true,
-            text: "",
+            text: "root",
             user: "",
             status: "",
-            children: [{
-                text: "torque.farm.particle.cz",
-                expanded: true,
-                children: [{
-                    text: "Queues",
-                    leaf: true,
-                    id: "queues_torque.farm.particle.cz"
-                }, {
-                    text: "Nodes",
-                    leaf: true,
-                    id: "nodes_torque.farm.particle.cz"
-                }, {
-                    text: "Users",
-                    leaf: true,
-                    id: "users_torque.farm.particle.cz"
-                }],
+            children: []
+
+/*            
             }, {
                 text: "service0.dorje.fzu.cz",
                 expanded: false,
@@ -199,6 +226,7 @@ Ext.onReady(function () {
                     leaf: true
                 }],
             }, ]
+*/            
         }
     });
     var tp = Ext.create('Ext.tree.Panel', {
@@ -211,6 +239,44 @@ Ext.onReady(function () {
         useArrows: true,
         rootVisible: false,
         listeners: {
+/*            
+            afterrender: function(thispanel) {
+                var root = thispanel.store.getRootNode();
+                root.appendChild({
+                    text: "name_",
+                    expanded: true,
+                    children: [{
+                        text: "Queues",
+                        leaf: true,
+                        id: "queues_"
+                    }]
+                });
+                console.info('listener');
+                console.info(root);
+                console.info(batchserver_store);
+                batchserver_store.load();
+                batchserver_store.each(function (bs) {
+                    console.info(bs.name);
+                    root.appendChild({
+                        text: bs.name,
+                        expanded: true,
+                        children: [{
+                            text: "Queues",
+                            leaf: true,
+                            id: "queues_"+bs.name
+                        }, {
+                            text: "Nodes",
+                            leaf: true,
+                            id: "nodes_"+bs.name
+                        }, {
+                            text: "Users",
+                            leaf: true,
+                            id: "users_"+bs.name
+                        }]
+                    });
+                });
+            },
+*/            
             itemclick: function (view, rec, item, index, eventObj) {
                 var mp = Ext.getCmp('main-panel');
                 mp.removeAll();
@@ -233,8 +299,30 @@ Ext.onReady(function () {
                                     */
             }
         },
-        store: store
+        store: tp_store
         // could use a TreePanel or AccordionLayout for navigational items
+    });
+    batchserver_store.on('load', function (store, records, successful) {
+        var root = tp_store.getRootNode();
+        Ext.Array.each(records, function(rec) {
+            root.appendChild({
+                text: rec.get('name'),
+                expanded: true,
+                children: [{
+                    text: "Queues",
+                    leaf: true,
+                    id: "queues_"+rec.get('name')
+                }, {
+                    text: "Nodes",
+                    leaf: true,
+                    id: "nodes_"+rec.get('name')
+                }, {
+                    text: "Users",
+                    leaf: true,
+                    id: "users_"+rec.get('name')
+                }]
+            });
+        });
     });
     var vp = Ext.create('Ext.container.Viewport', {
         layout: 'border',
@@ -260,19 +348,12 @@ Ext.onReady(function () {
             }]
         }]
     });
-/*    tooltips = [{
-                    target: 'overview_salix01',
-                    html: 'salix01 tooltip'
-                    }
-                    ];
-
-                    Ext.each(tooltips, function(config) {
-                    Ext.create('Ext.tip.ToolTip', config);
-                    });
-                    */
-    //      console.info(tp.store.tree.root);
-    //Ext.QuickTips.init();
-
+    Ext.tip.QuickTipManager.init();
+    Ext.apply(Ext.tip.QuickTipManager.getQuickTip(), {
+        minWidth: 100,
+        trackMouse: false,
+        showDelay: 0
+    });
 }
 
 ); //end onReady

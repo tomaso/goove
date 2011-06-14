@@ -144,6 +144,14 @@
       "domainname": "farm.particle.cz"
     }
   },
+  {
+    "model" : "trqlive.BatchServer",
+    "pk": 2,
+    "fields": {
+      "name": "service0.dorje.fzu.cz",
+      "domainname": "dorje.fzu.cz"
+    }
+  },
 
   {
     "model" : "trqlive.Subcluster",
@@ -185,6 +193,35 @@
     "pk": 6,
     "fields": {
       "name": "golias"
+    }
+  },
+
+  {
+    "model" : "trqlive.Subcluster",
+    "pk": 7,
+    "fields": {
+      "name": "r1i0n"
+    }
+  },
+  {
+    "model" : "trqlive.Subcluster",
+    "pk": 8,
+    "fields": {
+      "name": "r1i1n"
+    }
+  },
+  {
+    "model" : "trqlive.Subcluster",
+    "pk": 9,
+    "fields": {
+      "name": "r1i2n"
+    }
+  },
+  {
+    "model" : "trqlive.Subcluster",
+    "pk": 10,
+    "fields": {
+      "name": "r1i3n"
     }
   }
 ]

@@ -12,6 +12,7 @@ class BatchServer(models.Model):
 
 class Subcluster(models.Model):
     name = models.CharField(verbose_name="Name of the subcluster", max_length=100)
+    # TODO: foreign key BatchServer
     
 
 class Node(models.Model):
