@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.utils import simplejson
 
-from models import Node,Subcluster
+from models import Node,Subcluster,BatchServer
 
 def nodes_overview(request, subcluster_name=None):
     l = []
@@ -14,10 +14,22 @@ def nodes_overview(request, subcluster_name=None):
         qs = Node.objects.all()
 
     for n in qs:
+        th = "<table style='border: 1px'><tr>"
+        c = 0
+        for x in n.jobslot_set.all():
+            jobid = x.job.jobid
+            th += "<td><a href='#'>%s</a>&nbsp;</td>" % jobid
+            if c%2 == 1:
+                th += "</tr><tr>"
+            c += 1
+        th += "</tr></table>"
+
         l.append({
             'name': n.name, 
+            'shortname': n.shortname(), 
             'state': n.state.replace(',',' '),
-            'jobs': [ j.job.jobid for j in n.jobslot_set.all() ]
+            'ttiphtml': th,
+#            'jobs': [ j.job.jobid for j in n.jobslot_set.all() ]
             })
     return HttpResponse(simplejson.dumps(l))
 
@@ -28,6 +40,14 @@ def subclusters_list(request):
     for i in Subcluster.objects.values_list('name'):
         l.append({'name': i[0]})
     return HttpResponse(simplejson.dumps(l))
+
+
+def batchservers_list(request):
+    """ Return the list of batchserver hostnames """
+    bs = []
+    for i in BatchServer.objects.values_list('name'):
+        bs.append({'name': i[0]})
+    return HttpResponse(simplejson.dumps(bs))
 
 
 # vi:ts=4:sw=4:expandtab
