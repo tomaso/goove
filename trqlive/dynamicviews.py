@@ -34,10 +34,17 @@ def nodes_overview(request, subcluster_name=None):
     return HttpResponse(simplejson.dumps(l))
 
 
-def subclusters_list(request):
-    """ Return just the list of subcluster names """
+def subclusters_list(request, batchserver_name=None):
+    """ Return just the list of subcluster names (optionally withing given batch server) """
     l = []
-    for i in Subcluster.objects.values_list('name'):
+    if request.GET.has_key('batchserver_name') and not batchserver_name:
+        batchserver_name = request.GET['batchserver_name']
+    if batchserver_name:
+        scl = Subcluster.objects.filter(server__name=batchserver_name)
+    else:
+        scl = Subcluster.objects.all()
+
+    for i in scl.values_list('name'):
         l.append({'name': i[0]})
     return HttpResponse(simplejson.dumps(l))
 
