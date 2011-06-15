@@ -48,6 +48,7 @@ Ext.onReady(function () {
         autoLoad: true
     });
 
+/*
     var subcluster_store = Ext.create('Ext.data.Store', {
         model: 'Subcluster',
         proxy: {
@@ -56,6 +57,8 @@ Ext.onReady(function () {
         },
         autoLoad: true
     });
+*/
+    var subcluster_stores = {};
 
     // See API docs for loading nested data - Ext.data.reader.Reader
     var node_store = Ext.create('Ext.data.Store', {
@@ -85,7 +88,7 @@ Ext.onReady(function () {
         id: "nodes_overview",
         xtype: 'panel',
         autoScroll: true,
-        layout: {                        
+        layout: {
             type: 'hbox',
             align: 'stretch'
         },
@@ -103,43 +106,12 @@ Ext.onReady(function () {
                             },
                             autoLoad: true,
                         });
-
-                        /*                        
-                        itm.on('render', function (view) {
-                            view.tip = Ext.create('Ext.tip.ToolTip', {
-                                // The overall target element.
-                                target: view.el,
-                                // Each grid row causes its own seperate show and hide.
-                                delegate: view.itemSelector,
-                                // Moving within the row should not hide the tip.
-                                trackMouse: true,
-                                // Render immediately so that tip.body can be referenced prior to the first show.
-                                renderTo: Ext.getBody(),
-                                html: 'This is the default tooltip',
-                                listeners: {
-                                    beforeshow: function updateTipBody(tip) {
-                                        //                                        console.info(view.getStore());
-                                        //                                        var node = view.getNode(view.el);
-                                        console.info(tip);
-                                        console.info(tip.triggerElement);
-                                        //                                        console.info(view.getRecord(tip));
-                                        //                                        tip.update(view.getRecord().jobs[0]);
-                                    }
-                                }
-                            });
-                        });
-                        //*/                        
                         thistab.add({
                             id: sc.get('name'),
                             xtype: 'panel',
                             title: sc.get('name'),
                             //flex: 1,
                             width: 100,
-                            /*
-                            items: {
-                                xtype: 'nodesview'
-                            }
-                            */
                             items: itm
                         }
                         );
@@ -185,48 +157,6 @@ Ext.onReady(function () {
             status: "",
             children: []
 
-/*            
-            }, {
-                text: "service0.dorje.fzu.cz",
-                expanded: false,
-                children: [{
-                    text: "Queues",
-                    leaf: true
-                }, {
-                    text: "Nodes",
-                    leaf: true
-                }, {
-                    text: "Users",
-                    leaf: true
-                }],
-            }, {
-                text: "golias.farm.particle.cz",
-                expanded: false,
-                children: [{
-                    text: "Queues",
-                    leaf: true
-                }, {
-                    text: "Nodes",
-                    leaf: true
-                }, {
-                    text: "Users",
-                    leaf: true
-                }],
-            }, {
-                text: "ce2.egee.cesnet.cz",
-                expanded: false,
-                children: [{
-                    text: "Queues",
-                    leaf: true
-                }, {
-                    text: "Nodes",
-                    leaf: true
-                }, {
-                    text: "Users",
-                    leaf: true
-                }],
-            }, ]
-*/            
         }
     });
     var tp = Ext.create('Ext.tree.Panel', {
@@ -239,47 +169,12 @@ Ext.onReady(function () {
         useArrows: true,
         rootVisible: false,
         listeners: {
-/*            
-            afterrender: function(thispanel) {
-                var root = thispanel.store.getRootNode();
-                root.appendChild({
-                    text: "name_",
-                    expanded: true,
-                    children: [{
-                        text: "Queues",
-                        leaf: true,
-                        id: "queues_"
-                    }]
-                });
-                console.info('listener');
-                console.info(root);
-                console.info(batchserver_store);
-                batchserver_store.load();
-                batchserver_store.each(function (bs) {
-                    console.info(bs.name);
-                    root.appendChild({
-                        text: bs.name,
-                        expanded: true,
-                        children: [{
-                            text: "Queues",
-                            leaf: true,
-                            id: "queues_"+bs.name
-                        }, {
-                            text: "Nodes",
-                            leaf: true,
-                            id: "nodes_"+bs.name
-                        }, {
-                            text: "Users",
-                            leaf: true,
-                            id: "users_"+bs.name
-                        }]
-                    });
-                });
-            },
-*/            
             itemclick: function (view, rec, item, index, eventObj) {
                 var mp = Ext.getCmp('main-panel');
                 mp.removeAll();
+                console.info(rec);
+                console.info(rec.parentNode);
+                console.info(rec.parentNode.get('text'));
                 if (rec.get('text') == 'Nodes') {
                     Ext.Array.each(tabs_nodes, function (tab) {
                         mp.add(tab);
@@ -322,7 +217,17 @@ Ext.onReady(function () {
                     id: "users_"+rec.get('name')
                 }]
             });
+            subcluster_stores[rec.get('name')] = Ext.create('Ext.data.Store', {
+                model: 'Subcluster',
+                proxy: {
+                    type: 'ajax',
+                    url: '/trqlive/dynamic/subclusters_list/'+rec.get('name')+'/',
+                },
+                autoLoad: true
+            });
         });
+        console.info("subcluster_stores:");
+        console.info(subcluster_stores);
     });
     var vp = Ext.create('Ext.container.Viewport', {
         layout: 'border',
