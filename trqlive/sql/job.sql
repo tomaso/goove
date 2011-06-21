@@ -1,0 +1,1 @@
+ALTER TABLE trqlive_job ENGINE=MEMORY;
