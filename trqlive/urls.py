@@ -7,9 +7,17 @@ urlpatterns = patterns('',
 
     (r'^dynamic/nodes_overview/$', 'goove.trqlive.dynamicviews.nodes_overview'),
     (r'^dynamic/nodes_overview/(?P<subcluster_name>.*)/$', 'goove.trqlive.dynamicviews.nodes_overview'),
+    (r'^dynamic/nodes_list/(?P<batchserver_name>.*)/$', 'goove.trqlive.dynamicviews.nodes_list'),
+
+
     (r'^dynamic/subclusters_list/$', 'goove.trqlive.dynamicviews.subclusters_list'),
     (r'^dynamic/subclusters_list/(?P<batchserver_name>.*)/$', 'goove.trqlive.dynamicviews.subclusters_list'),
     (r'^dynamic/batchservers_list/$', 'goove.trqlive.dynamicviews.batchservers_list'),
+
+    (r'^dynamic/queues_list/(?P<batchserver_name>.*)/$', 'goove.trqlive.dynamicviews.queues_list'),
+
+    (r'^dynamic/jobs_list/(?P<batchserver_name>.*)/$', 'goove.trqlive.dynamicviews.jobs_list'),
+
 
     (r'^api/', include('goove.trqlive.api.urls')),
 
