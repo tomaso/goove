@@ -233,5 +233,96 @@
       "name": "r1i3n",
       "server": 2
     }
+  },
+
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 1,
+    "fields": {
+      "name": "Completed",
+      "shortname": "C"
+    }
+  },
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 2,
+    "fields": {
+      "name": "Exiting",
+      "shortname": "E"
+    }
+  },
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 3,
+    "fields": {
+      "name": "Held",
+      "shortname": "H"
+    }
+  },
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 4,
+    "fields": {
+      "name": "Queued",
+      "shortname": "Q"
+    }
+  },
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 5,
+    "fields": {
+      "name": "Running",
+      "shortname": "R"
+    }
+  },
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 6,
+    "fields": {
+      "name": "Transferred",
+      "shortname": "T"
+    }
+  },
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 7,
+    "fields": {
+      "name": "Waiting",
+      "shortname": "W"
+    }
+  },
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 8,
+    "fields": {
+      "name": "Suspended",
+      "shortname": "S"
+    }
+  },
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 9,
+    "fields": {
+      "name": "Lost",
+      "shortname": "L"
+    }
+  },
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 10,
+    "fields": {
+      "name": "Aborted",
+      "shortname": "A"
+    }
+  },
+  {
+    "model" : "trqlive.jobstate",
+    "pk": 11,
+    "fields": {
+      "name": "Deleted",
+      "shortname": "D"
+    }
   }
+
+
 ]

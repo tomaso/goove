@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+#TODOs:
+# - clear jobs not present in the batch system any more
+
 import sys
 sys.path.append("../..")
 import goove
@@ -15,7 +18,7 @@ os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
 
 import re
 
-from goove.trqlive.models import Node, BatchServer, Subcluster, JobSlot, Job
+from goove.trqlive.models import Node, BatchServer, Subcluster, JobSlot, Job, Queue, JobState
 
 from xml.dom.minidom import parse, parseString
 from optparse import OptionParser, OptionGroup
@@ -80,20 +83,28 @@ def update_all_nodes(conn,bs):
         dattrs = attribs_to_dict(sn.attribs)
         n.state = dattrs['state']
         log(LOG_INFO, "name: %s, state: %s" % (n.name, n.state))
+        try:
+            n.properties = dattrs['properties']
+            log(LOG_INFO, "name: %s, properties: %s" % (n.name, n.properties))
+        except KeyError:             
+            n.properties = ''
         if dattrs.has_key('jobs'):
             try:
                 slotnum_fulljobid = [ x.strip().split('/') for x in dattrs['jobs'].split(',') ]
             except KeyError:
                 log(LOG_ERROR, "dattrs: %s" % str(dattrs))
             for slotnum, fulljobid in slotnum_fulljobid:
+                # soon pbspro will be gone
+                if bs.name=='ce2.egee.cesnet.cz':
+                    tmp = slotnum
+                    slotnum = fulljobid
+                    fulljobid = tmp
                 jobid,servername = fulljobid.split('.',1)
                 js,created = JobSlot.objects.get_or_create(slot=slotnum, node=n)
                 if created:
                     log(LOG_INFO, "new jobslot will be created: %s in %s" % (slotnum, longname))
-                j,created = Job.objects.get_or_create(jobid=jobid, server=bs)
-                if created:
-                    log(LOG_INFO, "new job will be created: %s in %s" % (jobid, bs.name))
-                j.save()
+
+                j = update_one_job(conn, jobid, bs)
                 js.job = j
                 js.save()
             
@@ -105,8 +116,40 @@ def update_all_queues(conn,bs):
     Update all queue information in the database using the given pbs connection conn
     and batch server bs.
     """
-    # TODO
-    pass
+    statqueues = pbs.pbs_statque(conn,"",[],"")
+    for sq in statqueues:
+        name = sq.name
+        q,created = Queue.objects.get_or_create(name=name, server=bs)
+        if created:
+            log(LOG_INFO, "new queue will be created: %s @ %s" % (name,bs.name))
+            q.server = bs
+        dattrs = attribs_to_dict(sq.attribs)
+        for key,val in dattrs.items():
+            setattr(q,key,val)
+        q.save()
+
+
+def update_one_job(conn, jobid, bs):
+    """ Update info about one job """
+    # TODO: I am a bit afraid this will take a lot of time
+    fulljobid = "%s.%s" % (jobid, bs.name)
+    sj = pbs.pbs_statjob(conn, fulljobid.encode('iso-8859-1', 'replace'), [], "")
+    if len(sj)==0:
+        log(LOG_ERROR, "failed to update info from pbs about job: %s.%s" % (jobid,bs.name))
+        return None
+    
+    dj = attribs_to_dict(sj[0].attribs)
+    
+    j,created = Job.objects.get_or_create(jobid=jobid, server=bs)
+    if created:
+        log(LOG_INFO, "new job will be created: %s @ %s in queue: %s" % (jobid, bs.name, dj['queue']))
+    j.job_name = dj['Job_Name']
+    j.queue = Queue.objects.get(name=dj['queue'])
+    j.job_state = JobState.objects.get(shortname=dj['job_state'])
+
+    j.save()
+    return j
+
 
 
 def update_all_jobs(conn,bs):
@@ -138,6 +181,8 @@ def runAsDaemon():
         if conn == -1:
             log(LOG_ERROR, "Cannot connect to batch server %s" % bs.name)
             continue
+        update_all_queues(conn,bs)
+#        update_all_jobs(conn,bs)
         update_all_nodes(conn,bs)
         
 

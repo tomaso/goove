@@ -22,6 +22,7 @@ class Node(models.Model):
     subcluster = models.ForeignKey('Subcluster', null=True)
     lastupdate = models.DateTimeField(verbose_name='Last update date and time', default=datetime.datetime.now);
     state = models.CharField(verbose_name="Node state", max_length=100)
+    properties = models.CharField(verbose_name="Properties list", max_length=256)
 
     class Meta:
         ordering = ["name"]
@@ -57,7 +58,29 @@ class JobSlot(models.Model):
 class Job(models.Model):
     jobid = models.CharField(max_length=16, db_index=True, editable=False)
     server = models.ForeignKey('BatchServer', editable=False)
+    job_name = models.CharField(max_length=256)
+    queue = models.ForeignKey('Queue', null=True)
+    job_state = models.ForeignKey('JobState', null=True)
+
+class JobState(models.Model):
+    name = models.CharField(verbose_name="job state name", max_length=100)
+    shortname = models.CharField(verbose_name="abbreviation", max_length=1)
 
 
+class Queue(models.Model):
+    name = models.CharField(max_length=64, editable=False)
+    server = models.ForeignKey('BatchServer', editable=False)
+    state_count = models.CharField(max_length=256)
+    # TODO: boolean
+    started = models.CharField(max_length=256)
+    # TODO: boolean
+    enabled = models.CharField(max_length=256)
+    queue_type = models.CharField(max_length=256)
+    # TODO: int
+    mtime = models.CharField(max_length=256)
+    # TODO: int
+    max_running = models.CharField(max_length=256)
+    # TODO: int
+    total_jobs = models.CharField(max_length=256)
  
 # vi:ts=4:sw=4:expandtab

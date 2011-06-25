@@ -18,7 +18,7 @@ Ext.onReady(function () {
         }]
     });
     
-    Ext.define('Node', {
+    Ext.define('NodeOverview', {
         extend: 'Ext.data.Model',
         fields: [{
             name: 'name',
@@ -35,6 +35,71 @@ Ext.onReady(function () {
         }]
     });
 
+    // TODO: filter for properties
+    Ext.define('NodeProperty', {
+    });
+
+    Ext.define('NodeForList', {
+        extend: 'Ext.data.Model',
+        fields: [{
+            name: 'name',
+            type: 'string'
+        }, {
+            name: 'state',
+            type: 'string'
+        }, {
+            name: 'properties',
+            type: 'string'
+        }, {
+            name: 'subcluster',
+            type: 'string'
+        }]
+    });
+
+    Ext.define('QueueForList', {
+        extend: 'Ext.data.Model',
+        fields: [{
+            name: 'name',
+            type: 'string'
+        }, {
+            name: 'state_count',
+            type: 'string'
+        }, {
+            name: 'started',
+            type: 'string'
+        }, {
+            name: 'enabled',
+            type: 'string'
+        }, {
+            name: 'queue_type',
+            type: 'string'
+        }, {
+            name: 'max_running',
+            type: 'string'
+        }, {
+            name: 'total_jobs',
+            type: 'string'
+        }]
+    });
+
+    Ext.define('JobForList', {
+        extend: 'Ext.data.Model',
+        fields: [{
+            name: 'jobid',
+            type: 'string'
+        }, {
+            name: 'job_name',
+            type: 'string'
+        }, {
+            name: 'queue',
+            type: 'string'
+        }, {
+            name: 'job_state',
+            type: 'string'
+        }]
+    });
+
+
 
 /*
  * STORES
@@ -48,31 +113,12 @@ Ext.onReady(function () {
         autoLoad: true
     });
 
-/*
-    var subcluster_store = Ext.create('Ext.data.Store', {
-        model: 'Subcluster',
-        proxy: {
-            type: 'ajax',
-            url: '/trqlive/dynamic/subclusters_list/',
-        },
-        autoLoad: true
-    });
-*/
     var subcluster_stores = {};
 
-    // See API docs for loading nested data - Ext.data.reader.Reader
-    var node_store = Ext.create('Ext.data.Store', {
-        model: 'Node',
-        proxy: {
-            type: 'ajax',
-            url: '/trqlive/dynamic/nodes_overview/'
-        },
-        autoLoad: false
-    });
 
-    /*
-    * VIEWS
-    */
+/*
+ * VIEWS
+ */
     Ext.define('Ext.org.NodesView', {
         extend: 'Ext.view.View',
         alias: 'widget.nodesview',
@@ -80,13 +126,54 @@ Ext.onReady(function () {
         itemSelector: 'div.node_overview',
         cls: 'x-node-overview',
 
-        tpl: ['<tpl for=".">', '<div data-qtitle="{shortname}" data-qtip="{ttiphtml}" id="overview_id_{name}" class="node_overview {state}">', '</div>', '</tpl>']
+        tpl: ['<tpl for=".">', '<div data-qtitle="{shortname}" data-qtip="{ttiphtml}" id="overview_id_{name}" class="node_overview {state}">', '</div>', '</tpl>'],
+
+        listeners: {
+            itemclick: function (view, rec, item, index, eventObj) {
+                tip = Ext.tip.QuickTipManager.getQuickTip();
+                console.info(tip);
+                tip.hide();
+                Ext.create('Ext.panel.Panel', {
+                    floating: true,
+                    closable: true,
+                    alignTo: item,
+                    title: tip.title,
+                    html: tip.body.dom.innerHTML,
+                    autoRender: true,
+                    autoShow: true,
+                    width: 100,
+                    resizable: true,
+                    draggable: {
+                        insertProxy: false,
+
+                        onDrag : function(e){
+                            var pel = this.proxy.getEl();
+                            this.x = pel.getLeft(true);
+                            this.y = pel.getTop(true);
+
+                            var s = this.panel.getEl().shadow;
+                            if (s) {
+                                s.realign(this.x, this.y, pel.getWidth(), pel.getHeight());
+                            }
+                        },
+
+                        endDrag : function(e){
+                            this.panel.setPosition(this.x, this.y);
+                        }
+                    },
+                    layout: 'fit'
+                }).setPosition(tip.x,tip.y,false);
+            }
+        }
     });
 
+    var tabs_queues = {};
     var tabs_nodes = {};
+    var tabs_users = {};
+    var tabs_jobs = {};
 
 
-    var tp_store = Ext.create('Ext.data.TreeStore', {
+    var maintree_store = Ext.create('Ext.data.TreeStore', {
         root: {
             expanded: true,
             text: "root",
@@ -109,9 +196,23 @@ Ext.onReady(function () {
             itemclick: function (view, rec, item, index, eventObj) {
                 var mp = Ext.getCmp('main-panel');
                 mp.removeAll();
+                if (rec.get('text') == 'Queues') {
+                    Ext.Array.each(tabs_queues[rec.parentNode.get('text')], function (tab) {
+                        mp.add(tab);
+                    });
+                }
                 if (rec.get('text') == 'Nodes') {
                     Ext.Array.each(tabs_nodes[rec.parentNode.get('text')], function (tab) {
-                        console.info(tab);
+                        mp.add(tab);
+                    });
+                }
+                if (rec.get('text') == 'Users') {
+                    Ext.Array.each(tabs_users[rec.parentNode.get('text')], function (tab) {
+                        mp.add(tab);
+                    });
+                }
+                if (rec.get('text') == 'Jobs') {
+                    Ext.Array.each(tabs_jobs[rec.parentNode.get('text')], function (tab) {
                         mp.add(tab);
                     });
                 }
@@ -129,12 +230,45 @@ Ext.onReady(function () {
                 */
             }
         },
-        store: tp_store
+        store: maintree_store
         // could use a TreePanel or AccordionLayout for navigational items
     });
     batchserver_store.on('load', function (store, records, successful) {
-        var root = tp_store.getRootNode();
+        var root = maintree_store.getRootNode();
         Ext.Array.each(records, function(bs) {
+            // Create stores for node lists
+            Ext.create('Ext.data.Store', {
+                storeId: 'store_nodes_list_'+bs.get('name'),
+                model: 'NodeForList',
+                groupField: 'subcluster',
+                proxy: {
+                    type: 'ajax',
+                    url: '/trqlive/dynamic/nodes_list/' + bs.get('name') + '/'
+                },
+                autoLoad: false
+            });
+            // Create stores for queue lists
+            Ext.create('Ext.data.Store', {
+                storeId: 'store_queues_list_'+bs.get('name'),
+                model: 'QueueForList',
+                proxy: {
+                    type: 'ajax',
+                    url: '/trqlive/dynamic/queues_list/' + bs.get('name') + '/'
+                },
+                autoLoad: false
+            });
+            // Create stores for queue lists
+            Ext.create('Ext.data.Store', {
+                storeId: 'store_jobs_list_'+bs.get('name'),
+                model: 'JobForList',
+                proxy: {
+                    type: 'ajax',
+                    url: '/trqlive/dynamic/jobs_list/' + bs.get('name') + '/'
+                },
+                autoLoad: false
+            });
+
+            // Fill the left tree 
             root.appendChild({
                 text: bs.get('name'),
                 expanded: true,
@@ -150,6 +284,10 @@ Ext.onReady(function () {
                     text: "Users",
                     leaf: true,
                     id: "users_"+bs.get('name')
+                }, {
+                    text: "Jobs",
+                    leaf: true,
+                    id: "jobs_"+bs.get('name')
                 }]
             });
             subcluster_stores[bs.get('name')] = Ext.create('Ext.data.Store', {
@@ -158,11 +296,36 @@ Ext.onReady(function () {
                     type: 'ajax',
                     url: '/trqlive/dynamic/subclusters_list/'+bs.get('name')+'/',
                 },
-                autoLoad: true,
+                autoLoad: true
             });
+            tabs_queues[bs.get('name')] = [{
+                title: "List",
+                id: "queues_list_"+bs.get('name'),
+                xtype: "gridpanel",
+                selType: 'cellmodel',
+                features: [{ftype:'grouping'}],
+                columns: [
+                    {header: 'Name',  dataIndex: 'name'},
+                    {header: 'State count',  dataIndex: 'state_count', flex:1},
+                    {header: 'Started',  dataIndex: 'started'},
+                    {header: 'Enabled', dataIndex: 'enabled'},
+                    {header: 'Queue type', dataIndex: 'queue_type'},
+                    {header: 'Max running', dataIndex: 'max_running'},
+                    {header: 'Total jobs', dataIndex: 'total_jobs'}
+                ],
+                store: Ext.data.StoreManager.lookup('store_queues_list_'+bs.get('name')),
+                listeners: {
+                    show: function(thistab) {
+                        thistab.store.load()
+                    }
+                }
+            },{
+                title: "Graphs",
+                id: "queues_graphs_"+bs.get('name')
+            }];
             tabs_nodes[bs.get('name')] = [{
                 title: "Overview",
-                id: "nodes_overview",
+                id: "nodes_overview_"+bs.get('name'),
                 xtype: 'panel',
                 autoScroll: true,
                 layout: {
@@ -176,12 +339,12 @@ Ext.onReady(function () {
                             subcluster_stores[bs.get('name')].each(function (sc) {
                                 itm = Ext.create('Ext.org.NodesView');
                                 itm.store = Ext.create('Ext.data.Store', {
-                                    model: 'Node',
+                                    model: 'NodeOverview',
                                     proxy: {
                                         type: 'ajax',
                                         url: '/trqlive/dynamic/nodes_overview/' + sc.get('name') + '/'
                                     },
-                                    autoLoad: true,
+                                    autoLoad: true
                                 });
                                 thistab.add({
                                     id: sc.get('name'),
@@ -201,11 +364,48 @@ Ext.onReady(function () {
                 }
             }, {
                 title: "List",
-                id: "nodes_list"
+                id: "nodes_list" + bs.get('name'),
+                xtype: "gridpanel",
+                features: [{ftype:'grouping'}],
+                columns: [
+                    {header: 'Name',  dataIndex: 'name', flex:1},
+                    {header: 'Subcluster',  dataIndex: 'subcluster', flex:1, hidden: true},
+                    {header: 'State', dataIndex: 'state', flex: 1},
+                    {header: 'Properties', dataIndex: 'properties', flex:2}
+                ],
+                store: Ext.data.StoreManager.lookup('store_nodes_list_'+bs.get('name')),
+                listeners: {
+                    show: function(thistab) {
+                        thistab.store.load()
+                    }
+                }
+                
+            }];
+            tabs_users[bs.get('name')] = [{
+                title: "Active users",
+                id: "users_list_"+bs.get('name')
+            }];
+            tabs_jobs[bs.get('name')] = [{
+                title: "Current jobs list",
+                id: "jobs_list_"+bs.get('name'),
+                xtype: "gridpanel",
+                columns: [
+                    {header: 'JobId',  dataIndex: 'jobid', flex:1},
+                    {header: 'Job Name', dataIndex: 'job_name', flex:1},
+                    {header: 'Queue', dataIndex: 'queue', flex:1},
+                    {header: 'Job state', dataIndex: 'job_state', flex:1}
+                ],
+                store: Ext.data.StoreManager.lookup('store_jobs_list_'+bs.get('name')),
+                listeners: {
+                    show: function(thistab) {
+                        console.info(thistab.store.count())
+                        if(thistab.store.count()==0) {
+                            thistab.store.load()
+                        }
+                    }
+                }
             }];
         });
-        console.info("subcluster_stores:");
-        console.info(subcluster_stores);
     });
     var vp = Ext.create('Ext.container.Viewport', {
         layout: 'border',
