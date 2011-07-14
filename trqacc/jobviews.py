@@ -7,7 +7,7 @@ from models import User
 from models import Group
 from models import GridUser
 from models import Node
-from models import TorqueServer
+from models import BatchServer
 from models import AccountingEvent
 from models import SubmitHost
 from helpers import BooleanListForm,UpdateRunningJob,render_to_response_with_config,getColorArrayHTML
@@ -86,8 +86,8 @@ class FairshareForm(forms.Form):
     )
     server = forms.ChoiceField(
         label="Server",
-        initial=TorqueServer.objects.all()[0],
-        choices=[ (ts.pk,ts.name) for ts in TorqueServer.objects.all() ]
+        initial=BatchServer.objects.all()[0],
+        choices=[ (ts.pk,ts.name) for ts in BatchServer.objects.all() ]
     )
 
 class RunningForm(forms.Form):
@@ -215,8 +215,8 @@ class CompletedForm(forms.Form):
 class JobSelectForm(forms.Form):
     server = forms.ChoiceField(
         label="Server",
-        initial=TorqueServer.objects.all()[0],
-        choices=[ (ts.pk,ts.name) for ts in TorqueServer.objects.all() ]
+        initial=BatchServer.objects.all()[0],
+        choices=[ (ts.pk,ts.name) for ts in BatchServer.objects.all() ]
     )
     jobid = forms.IntegerField(
         label="Job ID",
@@ -369,12 +369,12 @@ def job_detail(request, servername=None, jobid=None):
         )
     try:
         if request.POST:
-            server = TorqueServer.objects.get(pk=request.POST['server'])
+            server = BatchServer.objects.get(pk=request.POST['server'])
             job = Job.objects.get(jobid=request.POST['jobid'], server=server)
             select_form.data['server'] = request.POST['server']
             select_form.data['jobid'] = request.POST['jobid']
         else:
-            server = TorqueServer.objects.get(name=servername)
+            server = BatchServer.objects.get(name=servername)
             job = Job.objects.get(jobid=jobid, server=server)
             select_form.data['server'] = server.pk
             select_form.data['jobid'] = jobid

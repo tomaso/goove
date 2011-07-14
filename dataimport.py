@@ -18,7 +18,7 @@ import re
 from django.db import transaction, connection
 from django.db.models import Avg, Max, Min, Count
 
-from goove.trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
+from goove.trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, BatchServer, GridUser, User, Group, JobState, Queue, AccountingEvent
 
 from xml.dom.minidom import parse, parseString
 from optparse import OptionParser, OptionGroup
@@ -26,7 +26,7 @@ from xml.parsers.expat import ExpatError
 
 from goove.trqacc.helpers import feedJobsXML,Configuration
 from goove.trqacc.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
-from goove.trqacc.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup, getSubmitHost, getJobSlot
+from goove.trqacc.helpers import getJobState, getQueue, getNode, getBatchServer, getUser, getGroup, getSubmitHost, getJobSlot
 from goove.trqacc.helpers import getRunningCountQstat
 
 import maintenance
@@ -84,7 +84,7 @@ class SQLJob:
 
 
 def feedNodesXML(x, tsname):
-    ts = TorqueServer.objects.get(name=tsname)
+    ts = BatchServer.objects.get(name=tsname)
     sc_regex = re.compile("(\D+)")
 
     for i in x.childNodes[0].childNodes:
@@ -153,7 +153,7 @@ def fixExitStatusLogLine(line,lineno):
         log(LOG_WARNING, "skipping attributes parsing (line no %d has invalid attributes): '%s'" % (lineno,attrs))
 
     jobid_name, server_name = JOBID_REGEX.search(fulljobid).groups()
-    server,created = getTorqueServer(server_name)
+    server,created = getBatchServer(server_name)
     job,created = Job.objects.get_or_create(jobid=jobid_name, server=server)
     if attrdir.has_key('Exit_status'):
         job.exit_status = int(attrdir['Exit_status'])
@@ -187,7 +187,7 @@ def parseOneLogLine(line,lineno):
         log(LOG_WARNING, "skipping line with invalid attribues %d: '%s'" % (lineno,attrs))
 
     jobid_name, server_name = JOBID_REGEX.search(fulljobid).groups()
-    server,created = getTorqueServer(server_name)
+    server,created = getBatchServer(server_name)
     if created:
         log(LOG_INFO, "new server will be created: %s" % server_name)
 
@@ -424,7 +424,7 @@ def updatePBSNodes():
     log(LOG_INFO, "pbsnodes data check, last: %d, now: %d" % (last_updatePBSNodes, now))
     if now - last_updatePBSNodes > updatePBSNodes_interval:
         log(LOG_INFO, "pbsnodes data outdated - getting new")
-        for ts in TorqueServer.objects.all():
+        for ts in BatchServer.objects.all():
             log(LOG_INFO, "pbsnodes data outdated - getting new for %s" % ts.name)
             # TODO: timeout after 1min
             p = subprocess.Popen(["pbsnodes", "-ax", "-s", ts.name], stdout=subprocess.PIPE)
@@ -519,20 +519,6 @@ def main():
 
     oneTimeGroup = OptionGroup(opt_parser, "Maintenance options",
         "Following options are/were handy for one-time fixes in database.")
-    oneTimeGroup.add_option("-m", "--mergenodes", action="append", dest="mergenodesfile", metavar="FILE",
-        help="Merge nodes according to a file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode. Please note that the new node must be already present in the database with all its jobslots.")
-    oneTimeGroup.add_option("-k", "--mergeusers", action="append", dest="mergeusersfile", metavar="FILE",
-        help="Merge users according to a file containing only records like 'server:usernameA=usernameB'. It reassociates jobs of usernameA to usernameB. After that it deletes usernameA. Please note that both usernames must be present in the database.")
-    oneTimeGroup.add_option("-p", "--mergegroups", action="append", dest="mergegroupsfile", metavar="FILE",
-        help="This function expects opened file with lines in format 'server:oldgroup=newgroup', where server is a name of torque server, oldgroup is the name of the group that should vanish and newgroup is the name of the group that should obtain all users belonging to old group. The old group is then deleted.")
-    oneTimeGroup.add_option("-x", "--removeall", action="store_true", dest="removeall", default=False, 
-        help="Remove everything from tables (debug option, use with care)")
-    oneTimeGroup.add_option("-t", "--deleted", action="store_true", dest="deletedjobs", default=False, 
-        help="Walk through all jobs and mark them as deleted if their last accounting record is 'deleted'")
-    oneTimeGroup.add_option("-r", "--runevents", action="store_true", dest="runevents", default=False, 
-        help="Test if running jobs are not completed in Accounting events log")
-    oneTimeGroup.add_option("-o", "--findlostjobs", action="store_true", dest="findlostjobs", default=False, 
-        help="Updates job info from torque server's qstat output. Mark jobs as Lost if they are not finished and not present in qstat output.")
 
     opt_parser.add_option_group(oneTimeGroup)
 

@@ -4,18 +4,6 @@ import datetime
 
 # Create your models here.
 
-class BatchServer(models.Model):
-    name = models.CharField(verbose_name="Batch server full hostname", max_length=100)
-    domainname = models.CharField(verbose_name="Domain name for the underlying worker nodes.", max_length=100)
-    def __unicode__(self):
-    	return self.name
-
-class Subcluster(models.Model):
-    name = models.CharField(verbose_name="Name of the subcluster", max_length=100)
-    # TODO: foreign key BatchServer
-    server = models.ForeignKey('BatchServer')
-    
-
 class Node(models.Model):
     name = models.CharField(verbose_name="Full host name of the node", max_length=30)
     server = models.ForeignKey('BatchServer')
@@ -38,7 +26,7 @@ class Node(models.Model):
 
     def name_without_number(self):
         n = self.name
-        return n[:n.rfind(self.number())]
+     
 
 class JobSlot(models.Model):
     slot = models.IntegerField(verbose_name="Job slot number")
@@ -55,12 +43,26 @@ class JobSlot(models.Model):
     	return "%s/%d" % (self.node.name,self.slot)
 
 
+class BatchServer(models.Model):
+    name = models.CharField(verbose_name="Batch server full hostname", max_length=100)
+    domainname = models.CharField(verbose_name="Domain name for the underlying worker nodes.", max_length=100)
+    def __unicode__(self):
+    	return self.name
+
+
+class Subcluster(models.Model):
+    name = models.CharField(verbose_name="Name of the subcluster", max_length=100)
+    # TODO: foreign key BatchServer
+    server = models.ForeignKey('BatchServer')
+
+
 class Job(models.Model):
     jobid = models.CharField(max_length=16, db_index=True, editable=False)
     server = models.ForeignKey('BatchServer', editable=False)
     job_name = models.CharField(max_length=256)
     queue = models.ForeignKey('Queue', null=True)
     job_state = models.ForeignKey('JobState', null=True)
+
 
 class JobState(models.Model):
     name = models.CharField(verbose_name="job state name", max_length=100)

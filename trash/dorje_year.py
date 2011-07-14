@@ -6,7 +6,7 @@ import sys
 sys.path.append("..")
 
 os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
-from goove.trq.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
+from goove.trq.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, BatchServer, GridUser, User, Group, JobState, Queue, AccountingEvent
 from django.db.models import Avg, Max, Min, Count, Sum
 from trq.helpers import secondsToHours
 from django.db.models.sql.aggregates import Aggregate
@@ -75,7 +75,7 @@ def month_overview(start, end, m, ts):
 if __name__=="__main__":
 	start = '2010-01-01 00:00'
 	end = '2011-01-01 00:00'
-	ts = TorqueServer.objects.get(name='service0.dorje.fzu.cz')
+	ts = BatchServer.objects.get(name='service0.dorje.fzu.cz')
 	users = User.objects.filter(server__name='service0.dorje.fzu.cz')
 	period_overview(start, end, users)
 

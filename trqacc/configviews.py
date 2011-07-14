@@ -7,7 +7,7 @@ from models import NodeState
 from models import Job
 from models import User
 from models import Queue
-from models import TorqueServer
+from models import BatchServer
 from models import AccountingEvent
 from models import SubmitHost
 

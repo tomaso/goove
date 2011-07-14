@@ -17,7 +17,7 @@ ALTER TABLE trqacc_queue ENGINE=INNODB;
 ALTER TABLE trqacc_runningjob ENGINE=INNODB;
 ALTER TABLE trqacc_subcluster ENGINE=INNODB;
 ALTER TABLE trqacc_submithost ENGINE=INNODB;
-ALTER TABLE trqacc_torqueserver ENGINE=INNODB;
+ALTER TABLE trqacc_batchserver ENGINE=INNODB;
 ALTER TABLE trqacc_user ENGINE=INNODB;
 
 ALTER TABLE trqacc_accountingevent ADD UNIQUE ttj(timestamp,type,job_id);

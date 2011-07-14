@@ -99,7 +99,7 @@
     }
   },
   {
-    "model" : "trqacc.TorqueServer",
+    "model" : "trqacc.BatchServer",
     "pk": 1,
     "fields": {
       "name": "torque.farm.particle.cz"
