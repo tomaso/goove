@@ -1,5 +1,5 @@
-from goove.trqacc.helpers import getJobState, getQueue, getNode, getTorqueServer, getUser, getGroup, getSubmitHost
-from goove.trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, GridUser, User, Group, JobState, Queue, AccountingEvent
+from goove.trqacc.helpers import getJobState, getQueue, getNode, getBatchServer, getUser, getGroup, getSubmitHost
+from goove.trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, BatchServer, GridUser, User, Group, JobState, Queue, AccountingEvent
 from django.db.models import Avg, Max, Min, Count
 from goove.trqacc.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log,feedJobsXML
 from django import db
@@ -49,13 +49,13 @@ def findLostJobs():
     """ Find jobs that are in active state (running) but
     torque server does know about them (mark them as lost).
     """
-    for dead_server in TorqueServer.objects.filter(isactive=False):
+    for dead_server in BatchServer.objects.filter(isactive=False):
         for job in Job.objects.filter(job_state=getJobState('R'), server=dead_server):
             job.job_state = getJobState('L')
             job.save()
             log(LOG_DEBUG, "Running job on inactive server marked Lost: %s@%s" % (job.jobid,job.server.name))
     
-    for live_server in TorqueServer.objects.filter(isactive=True):
+    for live_server in BatchServer.objects.filter(isactive=True):
         p = subprocess.Popen(["qstat", "-fx", "@%s" % live_server.name], stdout=subprocess.PIPE)
         (out,err) = p.communicate()
         log(LOG_DEBUG, "Qstat output from live server %s obtained" % (live_server.name))
@@ -192,5 +192,17 @@ def mergeGroups(mergegroupsfile):
             log(LOG_DEBUG, "Changing the old group: %s to the new group: %s for user %s" % (oldgroup, newgroup, u))
         oldgroup.delete()
         log(LOG_DEBUG, "Old group: %s deleted" % (oldgroup))
+
+
+if __name__=="__main__":
+    parser = argparse.ArgumentParser(description='Do various maintenance tasks with the goove database.')
+#    parser.add_argument("-m", "--mergenodes", action="append", dest="mergenodesfile", help="Merge nodes according to a file containing only records like 'oldnode=newnode' where all jobs with oldnode will be reattached to newnode. Please note that the new node must be already present in the database with all its jobslots.")
+#    parser.add_argument("-k", "--mergeusers", action="append", help="Merge users according to a file containing only records like 'server:usernameA=usernameB'. It reassociates jobs of usernameA to usernameB. After that it deletes usernameA. Please note that both usernames must be present in the database.")
+#    parser.add_argument("-p", "--mergegroups", action="append", help="This function expects opened file with lines in format 'server:oldgroup=newgroup', where server is a name of torque server, oldgroup is the name of the group that should vanish and newgroup is the name of the group that should obtain all users belonging to old group. The old group is then deleted.")
+
+#    parser.add_argument("-x", "--removeall", action="store_true", default=False, help="Remove everything from tables (debug option, use with care)")
+#    parser.add_argument("-t", "--deleted", action="store_true", default=False, help="Walk through all jobs and mark them as deleted if their last accounting record is 'deleted'")
+#    parser.add_argument("-r", "--runevents", action="store_true", default=False, help="Test if running jobs are not completed in Accounting events log")
+#    parser.add_argument("-o", "--findlostjobs", action="store_true", default=False, help="Updates job info from torque server's qstat output. Mark jobs as Lost if they are not finished and not present in qstat output.")
 
 # vi:ts=4:sw=4:expandtab

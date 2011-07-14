@@ -3,7 +3,7 @@ from models import NodeProperty
 from models import NodeState
 from models import SubCluster
 from models import Job
-from models import TorqueServer
+from models import BatchServer
 from models import User
 from models import GridUser
 from models import Group
@@ -46,7 +46,7 @@ admin.site.register(NodeProperty, NodePropertyAdmin)
 admin.site.register(NodeState, NodeStateAdmin)
 admin.site.register(SubCluster, SubClusterAdmin)
 admin.site.register(Job, JobAdmin)
-admin.site.register(TorqueServer)
+admin.site.register(BatchServer)
 admin.site.register(User)
 admin.site.register(GridUser)
 admin.site.register(Group)

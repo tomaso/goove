@@ -1,3 +1,4 @@
+
 from django.db import models
 import datetime
 
@@ -9,7 +10,9 @@ class Node(models.Model):
     properties = models.ManyToManyField('NodeProperty', null=True)
     state = models.ManyToManyField('NodeState', null=True)
     subcluster = models.ForeignKey('SubCluster', null=True)
-    server = models.ForeignKey('TorqueServer')
+    server = models.ForeignKey('BatchServer')
+    isactive = models.BooleanField(help_text="Is this node still used?")
+    lastupdate = models.DateTimeField(help_text='Last update date and time', default=datetime.datetime.now);
 
     class Meta:
         ordering = ["name"]
@@ -48,6 +51,16 @@ class Node(models.Model):
         gc = GlobalConfiguration.objects.get(pk=1)
         return [ (nl.name, nl.url.replace("<NODE>", self.name)) for nl in gc.nodelink_set.all() ]
 
+    def shortname(self):
+        return self.name.split('.')[0]
+
+    def number(self):
+        return re.search('[0-9]+$', self.shortname()).group()
+
+    def name_without_number(self):
+        n = self.name
+        return n[:n.rfind(self.number())]
+
     @staticmethod
     def get_overview_name():
         return u'worker node'
@@ -55,6 +68,7 @@ class Node(models.Model):
     @staticmethod
     def get_overview_url():
         return u'/trqacc/nodes/listing/'
+
 
 class NodeProperty(models.Model):
     name = models.CharField(verbose_name="property name", max_length=50)
@@ -104,7 +118,7 @@ class NodeState(models.Model):
 class SubCluster(models.Model):
     name = models.CharField(verbose_name="Subcluster name", max_length=30)	
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
-    server = models.ForeignKey('TorqueServer')
+    server = models.ForeignKey('BatchServer')
     def __unicode__(self):
     	return self.name
 
@@ -133,9 +147,20 @@ class SubmitHost(models.Model):
         return u'/trqacc/'
 
 
+class LiveJob(models.Model):
+    # Job info obtained from running batch system - not accounting logs
+    jobid = models.CharField(max_length=16, db_index=True, editable=False)
+    server = models.ForeignKey('BatchServer', editable=False)
+    job_name = models.CharField(max_length=256)
+    job_owner = models.ForeignKey('User', null=True)
+    queue = models.ForeignKey('Queue', null=True)
+    jobslots = models.ManyToManyField('JobSlot', null=True)
+    job_state = models.ForeignKey('JobState', null=True)
+
+
 class Job(models.Model):
     jobid = models.CharField(max_length=16, db_index=True, editable=False)
-    server = models.ForeignKey('TorqueServer', editable=False)
+    server = models.ForeignKey('BatchServer', editable=False)
     job_owner = models.ForeignKey('User', null=True)
     job_gridowner = models.ForeignKey('GridUser', null=True)
     cput = models.IntegerField('CPU time in seconds', null=True)
@@ -154,8 +179,8 @@ class Job(models.Model):
         help_text="The time that the job entered the current queue.")
     etime = models.DateTimeField(verbose_name='Eligible time', null=True,
         help_text="The time that the job became eligible to run, i.e. in a queued state while residing in an execution queue.")
-    start_time = models.DateTimeField(verbose_name='Start time', null=True)
-    comp_time = models.DateTimeField(verbose_name='Completion time', null=True)
+    start_time = models.DateTimeField(verbose_name='Start time', null=True, db_index=True)
+    comp_time = models.DateTimeField(verbose_name='Completion time', null=True, db_index=True)
     submithost = models.ForeignKey('SubmitHost', null=True)
     exit_status = models.IntegerField('Exit status', null=True)
 
@@ -190,14 +215,19 @@ class Job(models.Model):
     def get_overview_url():
         return u'/trqacc/jobs/detail/'
 
-# Kind of a view to Job table - so we can quickly obtain not finished jobs
-class RunningJob(models.Model):
-    mainjob = models.ForeignKey('Job', db_index=True)
-
+BATCHSYSTEM_CHOICES=(
+        (1,'Torque'),
+        (2,'PBSPro'),
+)
     
-class TorqueServer(models.Model):
-    name = models.CharField(verbose_name="torque server name", max_length=100)
+class BatchServer(models.Model):
+    name = models.CharField(help_text="Batch server full hostname", max_length=100)
+    domainname = models.CharField(help_text="Domain name for the underlying worker nodes.", max_length=256)
     isactive = models.BooleanField(help_text="Is this server still used?")
+    systemtype = models.IntegerField(help_text="Type of the batch system running", choices=BATCHSYSTEM_CHOICES)
+    accountingdir = models.CharField(help_text="Path to the directory where accounting logs are stored", max_length=256)
+    lastacc_update = models.DateTimeField(help_text="Time of the last update of the accounting data for this batch server")
+
     def __unicode__(self):
     	return self.name
 
@@ -214,7 +244,7 @@ class User(models.Model):
     name = models.CharField(verbose_name="user name", max_length=100)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     group = models.ForeignKey('Group', null=True)
-    server = models.ForeignKey('TorqueServer')
+    server = models.ForeignKey('BatchServer')
     def __unicode__(self):
     	return "%s@%s" % (self.name,self.server.name)
 
@@ -242,7 +272,7 @@ class User(models.Model):
 
 class Group(models.Model):
     name = models.CharField(verbose_name="group name", max_length=100)
-    server = models.ForeignKey('TorqueServer')
+    server = models.ForeignKey('BatchServer')
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     def __unicode__(self):
     	return self.name
@@ -312,7 +342,16 @@ class JobState(models.Model):
 class Queue(models.Model):
     name = models.CharField(verbose_name="queue name", max_length=100)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
-    server = models.ForeignKey('TorqueServer', editable=False)
+    server = models.ForeignKey('BatchServer', editable=False)
+    started = models.BooleanField()
+    enabled = models.BooleanField()
+    queue_type = models.CharField(max_length=256)
+    # TODO: not sure what mtime is in pbs.py output
+    mtime = models.IntegerField(null=True)
+    max_running = models.IntegerField(null=True)
+    total_jobs = models.IntegerField(null=True)
+
+
     def __unicode__(self):
     	return self.name
 

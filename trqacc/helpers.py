@@ -1,6 +1,6 @@
 from django import forms
 from django.shortcuts import render_to_response
-from models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, RunningJob, TorqueServer, User, Group, JobState, Queue, AccountingEvent, SubmitHost, GlobalConfiguration
+from models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, BatchServer, User, Group, JobState, Queue, AccountingEvent, SubmitHost, GlobalConfiguration
 import subprocess
 from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
@@ -19,7 +19,7 @@ JobStateCache = {}
 JobSlotCache = {}
 QueueCache = {}
 NodeCache = {}
-TorqueServerCache = {}
+BatchServerCache = {}
 UserCache = {}
 GroupCache = {}
 SubmitHostCache = {}
@@ -75,12 +75,12 @@ def getNode(nname, ts):
     return (NodeCache[(nname,ts)],created)
 #    return Node.objects.get_or_create(name=nname, server=ts)
 
-def getTorqueServer(tsname):
-    global TorqueServerCache
+def getBatchServer(tsname):
+    global BatchServerCache
     created = False
-    if not TorqueServerCache.has_key(tsname):
-        TorqueServerCache[tsname],created = TorqueServer.objects.get_or_create(name=tsname)
-    return (TorqueServerCache[tsname],created)
+    if not BatchServerCache.has_key(tsname):
+        BatchServerCache[tsname],created = BatchServer.objects.get_or_create(name=tsname)
+    return (BatchServerCache[tsname],created)
 
 def getUser(uname, ts, group=None):
     global UserCache
@@ -167,7 +167,7 @@ def feedJobsXML(x, cleanLostJobs=False):
         new_full_jobid = i.firstChild.nodeValue
         new_jobid_name, new_server_name = JOBID_REGEX.search(new_full_jobid).groups()
 
-        new_server,created = TorqueServer.objects.get_or_create(name=new_server_name)
+        new_server,created = BatchServer.objects.get_or_create(name=new_server_name)
         if created:
             log(LOG_INFO, "new server will be created: %s" % new_server_name)
 
@@ -262,45 +262,45 @@ class Alarm(Exception):
 def alarm_handler(signum, frame):
     raise Alarm
 
-def UpdateRunningJob(job):
-    """
-    Update data of a running job from torque server
-    Currently only xml output of `qstat -x` is supported
-    Returns True if the update was succesful. 
-    Returns False if the job could not be updated and it is then moved
-    to lost jobs.
-    """
-    # if the data feeder is currently running, some jobs may be marked Lost by mistake, but when the
-    # feeder runs again it finishes them correctly (switch them from Lost to Completed)
-
-#    TODO: does not work in multithreaded environment
-#    signal.signal(signal.SIGALRM, alarm_handler)
-#    signal.alarm(20)
-#    Currently this can block whole application if the torque server is not responding
-    return True
-
-    try:
-        starttime = time.time()
-        proc = subprocess.Popen(["qstat", "-x", "%s.%s" % (job.jobid, job.server.name)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdoutdata, stderrdata = proc.communicate()
-        if stderrdata and stderrdata.startswith("qstat: Unknown Job Id"):
-            log(LOG_INFO, "UpdateRunningJob() job %s.%s is in database unfinished but not present in torque anymore - job is Lost" % (job.jobid, job.server.name))
-            job.job_state = getJobState('L')
-            job.save()
-            return False
-            
-        log(LOG_INFO, "UpdateRunningJob() parsing: %s" % stdoutdata)
-#        signal.alarm(0)  # reset the alarm
-        jobsxml = parseString(stdoutdata)
-        feedJobsXML(jobsxml)
-        jobsxml.unlink()
-        endtime = time.time()
-        log(LOG_INFO, "UpdateRunningJob() took %f seconds" % (endtime-starttime))
-    except Alarm:
-        log(LOG_ERROR, "UpdateRunningJob() taking too long.")
-    except ExpatError:
-        log(LOG_ERROR, "Cannot parse line: %s, jobid: %s.%s" % (stdoutdata, job.jobid, job.server.name))
-    return True
+#def UpdateRunningJob(job):
+#    """
+#    Update data of a running job from torque server
+#    Currently only xml output of `qstat -x` is supported
+#    Returns True if the update was succesful. 
+#    Returns False if the job could not be updated and it is then moved
+#    to lost jobs.
+#    """
+#    # if the data feeder is currently running, some jobs may be marked Lost by mistake, but when the
+#    # feeder runs again it finishes them correctly (switch them from Lost to Completed)
+#
+##    TODO: does not work in multithreaded environment
+##    signal.signal(signal.SIGALRM, alarm_handler)
+##    signal.alarm(20)
+##    Currently this can block whole application if the torque server is not responding
+#    return True
+#
+#    try:
+#        starttime = time.time()
+#        proc = subprocess.Popen(["qstat", "-x", "%s.%s" % (job.jobid, job.server.name)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#        stdoutdata, stderrdata = proc.communicate()
+#        if stderrdata and stderrdata.startswith("qstat: Unknown Job Id"):
+#            log(LOG_INFO, "UpdateRunningJob() job %s.%s is in database unfinished but not present in torque anymore - job is Lost" % (job.jobid, job.server.name))
+#            job.job_state = getJobState('L')
+#            job.save()
+#            return False
+#            
+#        log(LOG_INFO, "UpdateRunningJob() parsing: %s" % stdoutdata)
+##        signal.alarm(0)  # reset the alarm
+#        jobsxml = parseString(stdoutdata)
+#        feedJobsXML(jobsxml)
+#        jobsxml.unlink()
+#        endtime = time.time()
+#        log(LOG_INFO, "UpdateRunningJob() took %f seconds" % (endtime-starttime))
+#    except Alarm:
+#        log(LOG_ERROR, "UpdateRunningJob() taking too long.")
+#    except ExpatError:
+#        log(LOG_ERROR, "Cannot parse line: %s, jobid: %s.%s" % (stdoutdata, job.jobid, job.server.name))
+#    return True
 
 def getRunningCountQstat(tsname):
     """

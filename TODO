@@ -52,7 +52,7 @@ Web interface:
 Database:
 ---------
 
-- check that TorqueServer is used properly (per queue etc.)
+- check that BatchServer is used properly (per queue etc.)
 
 Overview Mode
 -------------

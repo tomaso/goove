@@ -7,7 +7,7 @@ from models import NodeState
 from models import Job
 from models import User
 from models import Queue
-from models import TorqueServer
+from models import BatchServer
 from models import AccountingEvent
 from models import SubmitHost
 
@@ -16,7 +16,7 @@ from django import forms
 
 def overview(request):
     info = []
-    for c in (TorqueServer, Node, SubCluster, NodeProperty, User, Queue, Job, SubmitHost):
+    for c in (BatchServer, Node, SubCluster, NodeProperty, User, Queue, Job, SubmitHost):
         item = {}
         item['name'] = c.get_overview_name()
         item['count'] = c.objects.all().count()
@@ -24,7 +24,7 @@ def overview(request):
         info.append(item)
 
     tsdata = {}
-#    for ts in TorqueServer.objects.all():
+#    for ts in BatchServer.objects.all():
 #        tsdata[ts] = {'queues':[],'starttime':0,'endtime':0}
 #        qdb=Queue.objects.filter(server=ts)
 #        for q in qdb:

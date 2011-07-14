@@ -7,7 +7,7 @@ from models import NodeState
 from models import Job
 from models import JobState
 from models import Queue
-from models import TorqueServer
+from models import BatchServer
 from django import forms
 import matplotlib
 matplotlib.use('Agg')
@@ -27,7 +27,7 @@ class QueueSelectForm(forms.Form):
     )
 
 def queues_overview(request):
-    servers_name = TorqueServer.objects.all().values_list('name')
+    servers_name = BatchServer.objects.all().values_list('name')
     job_states_name = JobState.objects.all().values_list('name')
 
     restable = {}
@@ -100,7 +100,7 @@ def queues_stats(request):
     queues_form = forms.Form()
 
 
-    for ts in TorqueServer.objects.all():
+    for ts in BatchServer.objects.all():
         ch = []
         for q in Queue.objects.filter(server=ts).order_by('name'):
             ch.append(('queue_'+str(q.pk),q.name))
@@ -115,7 +115,7 @@ def queues_stats(request):
         stat_form.data['aggregation'] = request.POST['aggregation']
         stat_form.data['data_type'] = request.POST['data_type']
         stat_form.is_bound = True
-        for ts in TorqueServer.objects.all():
+        for ts in BatchServer.objects.all():
             if request.POST.has_key('server_'+str(ts.pk)):
                 queues_form.data['server_'+str(ts.pk)] = request.POST.getlist('server_'+str(ts.pk))
         queues_form.is_bound = True
@@ -207,7 +207,7 @@ def get_graph_values(items):
         data_type_res='walltime__sum'
 
     queue_pks = []
-    for ts in TorqueServer.objects.all():
+    for ts in BatchServer.objects.all():
         for q in items.getlist('server_'+str(ts.pk)):
             if q.startswith('queue_'):
                 queue_pks.append(q[len('queue_'):])
