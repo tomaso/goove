@@ -124,10 +124,34 @@ def open_or_exit(filename):
 
 
 def update_queue(queue, conn):
-    pass
+    """ Update live info about the given queue 
+    """
+    logger = logging.getLogger("goove_updater")
+    statqueues = pbs.pbs_statque(conn, queue.name.encode('iso-8859-1', 'replace') , [], "")
+    if len(statqueues)==0:
+        logger.error("pbs_statque failes for queue: %s" % queue.name)
+    if len(statqueues)>1:
+        logger.warning("pbs_statque returned more than one records for queue: %s" % queue.name)
+
+    attr_dict = dict([ (x.name,x.value) for x in statqueues[0].attribs])
+    state_count = attr_dict.pop('state_count')
+    state_count_dict=dict([('state_count_'+key.lower(),val) for key,val in [tuple(x.split(':')) for x in state_count.strip().split()]])
+    attr_dict.update(state_count_dict)
+    for key,val in attr_dict.items():
+        setattr(queue,key,val)
+    logger.debug("queue: %s updated with live info: %s" % (queue.name, attr_dict))
+    queue.save()
+
+
+def update_node(node, conn):
+    """ Update live info about the given node 
+    """
+    logger = logging.getLogger("goove_updater")
+    statnodes = pbs.pbs_statnode(conn, node.name.encode('iso-8859-1', 'replace') , [], "")
+
     
 
-def parse_accounting_line(line, lineno, live_update, batch_connection):
+def parse_accounting_line(line, lineno, live_update=False, batch_connection=-1):
     """ Parse one line from accounting log and insert the data into DB.
     """
     global server,last_event_time
@@ -234,8 +258,8 @@ def parse_accounting_line(line, lineno, live_update, batch_connection):
         if created:
             logger.info("new queue will be created: %s" % attrdir['queue'])
         job.queue_id = queue.id
-    if live_update:
-        update_queue(queue, batch_connection)
+        if live_update:
+            update_queue(queue, batch_connection)
 
     if attrdir.has_key('ctime'):
         job.ctime = datetime.datetime.fromtimestamp(int(attrdir['ctime']))
@@ -302,6 +326,7 @@ def process_accounting_file(filename):
             lineno += 1
             parse_accounting_line(l, lineno)
             if (lineno % 1000)==0:
+                save_server_lasttime()
                 transaction.commit()
     except BaseException, e:
         raise e
@@ -343,6 +368,9 @@ def proc_func(_server):
         
     
     batch_connection = pbs.pbs_connect(server.name.encode('iso-8859-1', 'replace'))
+    if batch_connection==-1:
+        logger.error("Cannot connect to %s - live data will be missing" % server.name)
+
     fd = open_or_exit(filename)
     lineno = 0
     last_event_time = server.lastacc_update
@@ -363,7 +391,10 @@ def proc_func(_server):
             else:
                 lineno += 1
                 logger.info("Processing line number %d" % lineno)
-                parse_accounting_line(l, lineno, True, batch_connection)
+                if batch_connection==-1:
+                    parse_accounting_line(l, lineno)
+                else:
+                    parse_accounting_line(l, lineno, True, batch_connection)
                 if (lineno % 20)==0:
                     transaction.commit()
     except BaseException, e:

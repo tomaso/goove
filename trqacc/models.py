@@ -350,6 +350,12 @@ class Queue(models.Model):
     mtime = models.IntegerField(null=True)
     max_running = models.IntegerField(null=True)
     total_jobs = models.IntegerField(null=True)
+    state_count_transit = models.IntegerField(default=0)
+    state_count_queued = models.IntegerField(default=0)
+    state_count_held = models.IntegerField(default=0)
+    state_count_waiting = models.IntegerField(default=0)
+    state_count_running = models.IntegerField(default=0)
+    state_count_exiting = models.IntegerField(default=0)
 
 
     def __unicode__(self):
