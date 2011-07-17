@@ -10,7 +10,7 @@ from django.db import transaction, connection
 import pbs
 
 # goove specific stuff
-from goove.trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, BatchServer, GridUser, User, Group, JobState, Queue, AccountingEvent, SubmitHost
+from goove.trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, BatchServer, GridUser, User, Group, JobState, Queue, AccountingEvent, SubmitHost, LiveJob
 from goove.updater_helpers import getJobState, getQueue, getNode, getUser, getGroup, getSubmitHost, getJobSlot
 
 
@@ -64,8 +64,9 @@ class SQLJob:
 
 def save_server_lasttime():
     global server,last_event_time
-    server.lastacc_update = last_event_time
-    server.save()
+    if server.lastacc_update < last_event_time:
+        server.lastacc_update = last_event_time
+        server.save()
 
 
 def signal_handler(signum, frame):
@@ -146,9 +147,42 @@ def update_queue(queue, conn):
 def update_node(node, conn):
     """ Update live info about the given node 
     """
+    global server
     logger = logging.getLogger("goove_updater")
     statnodes = pbs.pbs_statnode(conn, node.name.encode('iso-8859-1', 'replace') , [], "")
+    if len(statnodes)==0:
+        logger.error("pbs_statnode failes for node: %s" % node.name)
+    if len(statnodes)>1:
+        logger.warning("pbs_statnode returned more than one records for node: %s" % node.name)
 
+    attr_dict = dict([ (x.name,x.value) for x in statnodes[0].attribs])
+    if attr_dict.has_key('state'):
+        node.state.clear()
+        for statename in attr_dict['state'].split(','):
+            node.state.add(NodeState.objects.get(name=statename.strip()))
+
+    if attr_dict.has_key('properties'):
+        node.properties.clear()
+        for propertyname in attr_dict['properties'].split(','):
+            np,created = NodeProperty.objects.get_or_create(name=propertyname.strip())
+            if created:
+                logger.warning("New property created: %s" % propertyname)
+            node.properties.add(np)
+
+    if attr_dict.has_key('jobs'):
+        slot_jobs = dict([tuple(j.strip().split('/')) for j in attr_dict['jobs'].split(',')])
+        for slotstr, longjobid in slot_jobs.items():
+            slot = int(slotstr)
+            js,created = getJobSlot(slot=slot,node=node)
+            if created:
+                logger.info("new jobslot will be created: slot: %d, node name: %s" % (slot,name))
+            jobid = int(longjobid.split('.')[0])
+            js.livejob,created = LiveJob.objects.get_or_create(jobid=jobid, server=server)
+            if created:
+                logger.info("new livejob created: %d" % jobid)
+            js.save()
+
+    node.save()
     
 
 def parse_accounting_line(line, lineno, live_update=False, batch_connection=-1):
@@ -303,6 +337,8 @@ def parse_accounting_line(line, lineno, live_update=False, batch_connection=-1):
                 logger.info("new jobslot will be created: slot: %d, node name: %s" % (slot,name))
                 js.save()
             job.jobslots.append(js.id)
+            if live_update:
+                update_node(node, batch_connection)
     job.save()
 
 
@@ -352,7 +388,7 @@ def proc_func(_server):
         # this usually means that the update process did not update the lastacc_update
         # properly, so before we process the old accounting events, we make sure
         # the lastacc_update is correct
-        logger.info("Last processed accounting event is unknown or too old, trying to update it")
+        logger.info("Last processed accounting event is unknown or too old, trying to update it - this may take a while")
         update_lastacc(server)
 
     today_filename = get_today_filename(server.accountingdir)

@@ -12,7 +12,7 @@ class Node(models.Model):
     subcluster = models.ForeignKey('SubCluster', null=True)
     server = models.ForeignKey('BatchServer')
     isactive = models.BooleanField(help_text="Is this node still used?")
-    lastupdate = models.DateTimeField(help_text='Last update date and time', default=datetime.datetime.now);
+    lastupdate = models.DateTimeField(help_text='Last update date and time', default=datetime.datetime.now, null=True);
 
     class Meta:
         ordering = ["name"]
@@ -96,6 +96,7 @@ class NodeProperty(models.Model):
 class JobSlot(models.Model):
     slot = models.IntegerField(verbose_name="Job slot number")
     node = models.ForeignKey('Node')
+    livejob = models.ForeignKey('LiveJob', help_text='Current job occupying this jobslot', null=True)
 
     class Meta:
         ordering = ['node','slot']
@@ -154,7 +155,6 @@ class LiveJob(models.Model):
     job_name = models.CharField(max_length=256)
     job_owner = models.ForeignKey('User', null=True)
     queue = models.ForeignKey('Queue', null=True)
-    jobslots = models.ManyToManyField('JobSlot', null=True)
     job_state = models.ForeignKey('JobState', null=True)
 
 
@@ -226,7 +226,7 @@ class BatchServer(models.Model):
     isactive = models.BooleanField(help_text="Is this server still used?")
     systemtype = models.IntegerField(help_text="Type of the batch system running", choices=BATCHSYSTEM_CHOICES)
     accountingdir = models.CharField(help_text="Path to the directory where accounting logs are stored", max_length=256)
-    lastacc_update = models.DateTimeField(help_text="Time of the last update of the accounting data for this batch server")
+    lastacc_update = models.DateTimeField(help_text="Time of the last update of the accounting data for this batch server", null=True)
 
     def __unicode__(self):
     	return self.name

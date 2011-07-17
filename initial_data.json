@@ -102,7 +102,21 @@
     "model" : "trqacc.BatchServer",
     "pk": 1,
     "fields": {
-      "name": "torque.farm.particle.cz"
+      "name": "torque.farm.particle.cz",
+      "isactive": true,
+      "domainname": "farm.particle.cz",
+      "systemtype": 1,
+      "accountingdir": "/torque/accounting_nfs" 
+    }
+  },
+  {
+    "model" : "trqacc.BatchServer",
+    "pk": 2,
+    "fields": {
+      "name": "service0.dorje.fzu.cz",
+      "domainname": "dorje.fzu.cz",
+      "systemtype": 1,
+      "accountingdir": "/dorje/accounting_nfs" 
     }
   },
   {
@@ -133,28 +147,8 @@
     }
   },
 
-
-
-
   {
-    "model" : "trqlive.BatchServer",
-    "pk": 1,
-    "fields": {
-      "name": "torque.farm.particle.cz",
-      "domainname": "farm.particle.cz"
-    }
-  },
-  {
-    "model" : "trqlive.BatchServer",
-    "pk": 2,
-    "fields": {
-      "name": "service0.dorje.fzu.cz",
-      "domainname": "dorje.fzu.cz"
-    }
-  },
-
-  {
-    "model" : "trqlive.Subcluster",
+    "model" : "trqacc.Subcluster",
     "pk": 1,
     "fields": {
       "name": "salix",
@@ -162,7 +156,7 @@
     }
   },
   {
-    "model" : "trqlive.Subcluster",
+    "model" : "trqacc.Subcluster",
     "pk": 2,
     "fields": {
       "name": "saltix",
@@ -170,7 +164,7 @@
     }
   },
   {
-    "model" : "trqlive.Subcluster",
+    "model" : "trqacc.Subcluster",
     "pk": 3,
     "fields": {
       "name": "iberis",
@@ -178,7 +172,7 @@
     }
   },
   {
-    "model" : "trqlive.Subcluster",
+    "model" : "trqacc.Subcluster",
     "pk": 4,
     "fields": {
       "name": "ibis",
@@ -186,7 +180,7 @@
     }
   },
   {
-    "model" : "trqlive.Subcluster",
+    "model" : "trqacc.Subcluster",
     "pk": 5,
     "fields": {
       "name": "ib",
@@ -194,7 +188,7 @@
     }
   },
   {
-    "model" : "trqlive.Subcluster",
+    "model" : "trqacc.Subcluster",
     "pk": 6,
     "fields": {
       "name": "golias",
@@ -203,7 +197,7 @@
   },
 
   {
-    "model" : "trqlive.Subcluster",
+    "model" : "trqacc.Subcluster",
     "pk": 7,
     "fields": {
       "name": "r1i0n",
@@ -211,7 +205,7 @@
     }
   },
   {
-    "model" : "trqlive.Subcluster",
+    "model" : "trqacc.Subcluster",
     "pk": 8,
     "fields": {
       "name": "r1i1n",
@@ -219,7 +213,7 @@
     }
   },
   {
-    "model" : "trqlive.Subcluster",
+    "model" : "trqacc.Subcluster",
     "pk": 9,
     "fields": {
       "name": "r1i2n",
@@ -227,7 +221,7 @@
     }
   },
   {
-    "model" : "trqlive.Subcluster",
+    "model" : "trqacc.Subcluster",
     "pk": 10,
     "fields": {
       "name": "r1i3n",
@@ -235,94 +229,75 @@
     }
   },
 
+
   {
-    "model" : "trqlive.jobstate",
+    "model" : "trqacc.nodestate",
     "pk": 1,
     "fields": {
-      "name": "Completed",
-      "shortname": "C"
+      "name": "free"
     }
   },
   {
-    "model" : "trqlive.jobstate",
+    "model" : "trqacc.nodestate",
     "pk": 2,
     "fields": {
-      "name": "Exiting",
-      "shortname": "E"
+      "name": "offline"
     }
   },
   {
-    "model" : "trqlive.jobstate",
+    "model" : "trqacc.nodestate",
     "pk": 3,
     "fields": {
-      "name": "Held",
-      "shortname": "H"
+      "name": "down"
     }
   },
   {
-    "model" : "trqlive.jobstate",
+    "model" : "trqacc.nodestate",
     "pk": 4,
     "fields": {
-      "name": "Queued",
-      "shortname": "Q"
+      "name": "reserve"
     }
   },
   {
-    "model" : "trqlive.jobstate",
+    "model" : "trqacc.nodestate",
     "pk": 5,
     "fields": {
-      "name": "Running",
-      "shortname": "R"
+      "name": "job-exclusive"
     }
   },
   {
-    "model" : "trqlive.jobstate",
+    "model" : "trqacc.nodestate",
     "pk": 6,
     "fields": {
-      "name": "Transferred",
-      "shortname": "T"
+      "name": "job-sharing"
     }
   },
   {
-    "model" : "trqlive.jobstate",
+    "model" : "trqacc.nodestate",
     "pk": 7,
     "fields": {
-      "name": "Waiting",
-      "shortname": "W"
+      "name": "busy"
     }
   },
   {
-    "model" : "trqlive.jobstate",
+    "model" : "trqacc.nodestate",
     "pk": 8,
     "fields": {
-      "name": "Suspended",
-      "shortname": "S"
+      "name": "state-unknown"
     }
   },
   {
-    "model" : "trqlive.jobstate",
+    "model" : "trqacc.nodestate",
     "pk": 9,
     "fields": {
-      "name": "Lost",
-      "shortname": "L"
+      "name": "time-shared"
     }
   },
   {
-    "model" : "trqlive.jobstate",
+    "model" : "trqacc.nodestate",
     "pk": 10,
     "fields": {
-      "name": "Aborted",
-      "shortname": "A"
-    }
-  },
-  {
-    "model" : "trqlive.jobstate",
-    "pk": 11,
-    "fields": {
-      "name": "Deleted",
-      "shortname": "D"
+      "name": "cluster"
     }
   }
-
-
 ]
