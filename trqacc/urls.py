@@ -1,43 +1,24 @@
 from django.conf.urls.defaults import *
+from django.views.generic.simple import direct_to_template
 
 urlpatterns = patterns('',
+
+    # common pages
+    (r'^$', direct_to_template, {'template': 'main.html'}),
+
     (r'^config/personal/$', 'goove.trqacc.configviews.personal'),
 
-    (r'^nodes/detail/(?P<nodename>.*)/$', 'goove.trqacc.nodeviews.node_detail'),
-    (r'^nodes/detail/$', 'goove.trqacc.nodeviews.node_detail'),
-    (r'^nodes/listing/(?P<filtertype>.*)/(?P<filtervalue>.*)/$', 'goove.trqacc.nodeviews.nodes_listing'),
-    (r'^nodes/listing/$', 'goove.trqacc.nodeviews.nodes_listing'),
-    (r'^nodes/table/$', 'goove.trqacc.nodeviews.nodes_table'),
-    (r'^nodes/table/with_detail/(?P<nodename>.*)/$', 'goove.trqacc.nodeviews.nodes_table'),
-    (r'^nodes/table/json_detail/$', 'goove.trqacc.nodeviews.nodes_table_json_detail'),
-
-    (r'^queues/graph/$', 'goove.trqacc.queueviews.graph'),
-    (r'^queues/stats/$', 'goove.trqacc.queueviews.queues_stats'),
-    (r'^queues/detail/(?P<servername>.*)/(?P<queuename>.*)/$', 'goove.trqacc.queueviews.queue_detail'),
-    (r'^queues/detail/$', 'goove.trqacc.queueviews.queue_detail'),
-    (r'^queues/table/$', 'goove.trqacc.queueviews.queues_overview'),
-
-    (r'^users/user_detail/(?P<servername>.*)/(?P<username>.*)/$', 'goove.trqacc.userviews.user_detail'),
-    (r'^users/user_detail/$', 'goove.trqacc.userviews.user_detail'),
-    (r'^users/group_detail/(?P<groupname>.*)/$', 'goove.trqacc.userviews.group_detail'),
-    (r'^users/group_detail/$', 'goove.trqacc.userviews.group_detail'),
-    (r'^users/griduser_detail/(?P<gridusername>.*)/$', 'goove.trqacc.userviews.griduser_detail'),
-    (r'^users/griduser_detail/$', 'goove.trqacc.userviews.griduser_detail'),
-
-    (r'^jobs/suspicious/$', 'goove.trqacc.jobviews.suspicious'),
-    (r'^jobs/stats/$', 'goove.trqacc.jobviews.stats'),
-    (r'^jobs/detail/(?P<servername>.*)/(?P<jobid>.*)/$', 'goove.trqacc.jobviews.job_detail'),
-    (r'^jobs/detail/$', 'goove.trqacc.jobviews.job_detail'),
-    (r'^jobs/completed_listing/$', 'goove.trqacc.jobviews.jobs_completed_listing'),
-    (r'^jobs/running/$', 'goove.trqacc.jobviews.jobs_running'),
-    (r'^jobs/report_form/$', 'goove.trqacc.jobviews.report_form'),
-    (r'^jobs/report_output/$', 'goove.trqacc.jobviews.report_output'),
-    (r'^jobs/fairshare/$', 'goove.trqacc.jobviews.fairshare'),
-
-    (r'^jobs/graph/$', 'goove.trqacc.jobviews.graph'),
-
-    (r'^$', 'goove.trqacc.generalviews.overview'), 
 
 
-#    (r'^nodes/$', 'django.views.generic.list_detail.object_list', dict(queryset=nodes, paginate_by=10)),
+    # data for ext js (mainly json returning "pages")
+
+    (r'^dynamic.html$', direct_to_template, {'template': 'dynamic.html'}),
+
+    (r'^api/', include('goove.trqacc.api.urls')),
+
+    # static pages - really rendering templates
+
+    (r'^static/', include('goove.trqacc.static.urls')),
 )
+
+# vi:ts=4:sw=4:expandtab

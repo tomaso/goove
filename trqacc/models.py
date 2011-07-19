@@ -414,6 +414,7 @@ class GlobalConfiguration(models.Model):
     Object with global configuration.
     """
     livestatus = models.BooleanField(help_text="Should the node status be periodically updated and overview shown.")
+    max_lastupdate = models.IntegerField(default=300, help_text="How old can entries be before an update from pbs is performed.")
     graphtype = models.CharField(max_length=20, choices=GRAPH_CHOICES, help_text="What framework for graphs should be used.")
     dpmtransfers = models.BooleanField(help_text="Should the dpm transfers be watched.")
 
