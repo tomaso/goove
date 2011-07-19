@@ -148,84 +148,94 @@
   },
 
   {
-    "model" : "trqacc.Subcluster",
+    "model" : "trqacc.SubCluster",
     "pk": 1,
     "fields": {
       "name": "salix",
-      "server": 1
+      "server": 1,
+      "node_regexp": "salix[0-9]+$"
     }
   },
   {
-    "model" : "trqacc.Subcluster",
+    "model" : "trqacc.SubCluster",
     "pk": 2,
     "fields": {
       "name": "saltix",
-      "server": 1
+      "server": 1,
+      "node_regexp": "saltix[0-9]+$"
     }
   },
   {
-    "model" : "trqacc.Subcluster",
+    "model" : "trqacc.SubCluster",
     "pk": 3,
     "fields": {
       "name": "iberis",
-      "server": 1
+      "server": 1,
+      "node_regexp": "iberis[0-9]+$"
     }
   },
   {
-    "model" : "trqacc.Subcluster",
+    "model" : "trqacc.SubCluster",
     "pk": 4,
     "fields": {
       "name": "ibis",
-      "server": 1
+      "server": 1,
+      "node_regexp": "ibis[0-9]+$"
     }
   },
   {
-    "model" : "trqacc.Subcluster",
+    "model" : "trqacc.SubCluster",
     "pk": 5,
     "fields": {
       "name": "ib",
-      "server": 1
+      "server": 1,
+      "node_regexp": "ib[0-9]+$"
     }
   },
   {
-    "model" : "trqacc.Subcluster",
+    "model" : "trqacc.SubCluster",
     "pk": 6,
     "fields": {
       "name": "golias",
-      "server": 1
+      "server": 1,
+      "node_regexp": "golias[0-9]+$"
     }
   },
 
   {
-    "model" : "trqacc.Subcluster",
+    "model" : "trqacc.SubCluster",
     "pk": 7,
     "fields": {
       "name": "r1i0n",
-      "server": 2
+      "server": 2,
+      "node_regexp": "r1i0n[0-9]+$"
     }
   },
   {
-    "model" : "trqacc.Subcluster",
+    "model" : "trqacc.SubCluster",
     "pk": 8,
     "fields": {
       "name": "r1i1n",
-      "server": 2
+      "server": 2,
+      "node_regexp": "r1i1n[0-9]+$"
     }
   },
   {
-    "model" : "trqacc.Subcluster",
+    "model" : "trqacc.SubCluster",
     "pk": 9,
     "fields": {
       "name": "r1i2n",
-      "server": 2
+      "server": 2,
+      "node_regexp": "r1i2n[0-9]+$"
     }
   },
   {
-    "model" : "trqacc.Subcluster",
+    "model" : "trqacc.SubCluster",
     "pk": 10,
     "fields": {
       "name": "r1i3n",
-      "server": 2
+      "server": 2,
+      "node_regexp": "r1i3n[0-9]+$"
     }
   },
 

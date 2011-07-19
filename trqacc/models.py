@@ -117,7 +117,10 @@ class NodeState(models.Model):
 
 
 class SubCluster(models.Model):
-    name = models.CharField(verbose_name="Subcluster name", max_length=30)	
+    name = models.CharField(verbose_name="Subcluster name", max_length=30,
+            help_text="Name ot this subcluster.")
+    node_regexp = models.CharField(verbose_name="Regular expression for nodes", max_length=30, null=True,
+            help_text="The updater daemon will automatically attach new node to this subcluster if the regexp matches.")
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
     server = models.ForeignKey('BatchServer')
     def __unicode__(self):
