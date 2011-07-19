@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 
-import argparse,logging,logging.handlers,signal,multiprocessing,os,sys
-#import os.path,datetime,time,bz2,gzip
-import re
+# system stuff
+import argparse,logging,logging.handlers,signal,multiprocessing,os,sys,lockfile
+
+# in OpenSUSE this is in package python-python-daemon
+import daemon
+
+# Django stuff
 sys.path.append("..")
-#from goove.trqacc.helpers import LOG_ERROR,LOG_WARNING,LOG_INFO,LOG_DEBUG,log
 os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
 from goove.trqacc.models import BatchServer
 import updater_accounting
+
 
 VERSION = 1
 end_children = False
@@ -54,9 +58,20 @@ def main(args):
 
 
 
-def daemonize():
-    #TODO: detach this process from terminal 
-    pass
+def daemonize(args):
+    context = daemon.DaemonContext(
+            umask=0o002
+            )
+#    context = daemon.DaemonContext(
+#            working_directory='/var/lib/goove',
+#            umask=0o002,
+#            pidfile=lockfile.FileLock('/var/run/goove.pid'),
+#            )
+#    context.signal_map = {
+#            signal.SIGTERM: signal_handler
+#            }
+    with context:
+        main(args)
     
 
 if __name__=="__main__":
@@ -80,8 +95,8 @@ if __name__=="__main__":
     logger.addHandler(handler)
 
     if not args.debug:
-        daemonize()
-
-    main(args)
+        daemonize(args)
+    else:
+        main(args)
 
 # vi:ts=4:sw=4:expandtab

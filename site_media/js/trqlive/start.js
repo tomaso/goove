@@ -108,7 +108,7 @@ Ext.onReady(function () {
         model: 'BatchServer',
         proxy: {
             type: 'ajax',
-            url: '/trqlive/dynamic/batchservers_list/',
+            url: '/trqacc/api/batchservers_list/',
         },
         autoLoad: true
     });
@@ -243,7 +243,7 @@ Ext.onReady(function () {
                 groupField: 'subcluster',
                 proxy: {
                     type: 'ajax',
-                    url: '/trqlive/dynamic/nodes_list/' + bs.get('name') + '/'
+                    url: '/trqacc/api/nodes_list/' + bs.get('name') + '/'
                 },
                 autoLoad: false
             });
@@ -253,7 +253,7 @@ Ext.onReady(function () {
                 model: 'QueueForList',
                 proxy: {
                     type: 'ajax',
-                    url: '/trqlive/dynamic/queues_list/' + bs.get('name') + '/'
+                    url: '/trqacc/api/queues_list/' + bs.get('name') + '/'
                 },
                 autoLoad: false
             });
@@ -263,7 +263,7 @@ Ext.onReady(function () {
                 model: 'JobForList',
                 proxy: {
                     type: 'ajax',
-                    url: '/trqlive/dynamic/jobs_list/' + bs.get('name') + '/'
+                    url: '/trqacc/api/jobs_list/' + bs.get('name') + '/'
                 },
                 autoLoad: false
             });
@@ -294,7 +294,7 @@ Ext.onReady(function () {
                 model: 'Subcluster',
                 proxy: {
                     type: 'ajax',
-                    url: '/trqlive/dynamic/subclusters_list/'+bs.get('name')+'/',
+                    url: '/trqacc/api/subclusters_list/'+bs.get('name')+'/',
                 },
                 autoLoad: true
             });
@@ -342,7 +342,7 @@ Ext.onReady(function () {
                                     model: 'NodeOverview',
                                     proxy: {
                                         type: 'ajax',
-                                        url: '/trqlive/dynamic/nodes_overview/' + sc.get('name') + '/'
+                                        url: '/trqacc/api/nodes_overview/' + sc.get('name') + '/'
                                     },
                                     autoLoad: true
                                 });
