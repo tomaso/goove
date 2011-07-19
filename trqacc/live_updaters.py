@@ -43,12 +43,20 @@ def update_node(node, conn):
     """ Update live info about the given node 
     """
     global server
-    logger = logging.getLogger("goove_updater")
+
+    # put node under a subcluster if it does not have any yet
+    if not node.subcluster:
+        for id,node_regexp in SubCluster.objects.filter(server=n.server).values('id','node_regexp'):
+            if re.match(node_regexp,node.name):
+                node.subcluster_id = id
+                print "node: %s in added to subcluster %s" % (node, node.subcluster)
+                break
+
     statnodes = pbs.pbs_statnode(conn, node.name.encode('iso-8859-1', 'replace') , [], "")
     if len(statnodes)==0:
-        logger.error("pbs_statnode failes for node: %s" % node.name)
+        logging.error("pbs_statnode failes for node: %s" % node.name)
     if len(statnodes)>1:
-        logger.warning("pbs_statnode returned more than one records for node: %s" % node.name)
+        logging.warning("pbs_statnode returned more than one records for node: %s" % node.name)
 
     attr_dict = dict([ (x.name,x.value) for x in statnodes[0].attribs])
     if attr_dict.has_key('state'):
@@ -61,7 +69,7 @@ def update_node(node, conn):
         for propertyname in attr_dict['properties'].split(','):
             np,created = NodeProperty.objects.get_or_create(name=propertyname.strip())
             if created:
-                logger.warning("New property created: %s" % propertyname)
+                logging.warning("New property created: %s" % propertyname)
             node.properties.add(np)
 
     if attr_dict.has_key('jobs'):
@@ -70,14 +78,26 @@ def update_node(node, conn):
             slot = int(slotstr)
             js,created = getJobSlot(slot=slot,node=node)
             if created:
-                logger.info("new jobslot will be created: slot: %d, node name: %s" % (slot,name))
+                logging.info("new jobslot will be created: slot: %d, node name: %s" % (slot,name))
             jobid = int(longjobid.split('.')[0])
             js.livejob,created = LiveJob.objects.get_or_create(jobid=jobid, server=server)
             if created:
-                logger.info("new livejob created: %d" % jobid)
+                logging.info("new livejob created: %d" % jobid)
             js.save()
 
     node.save()
+
+def update_nodes_all(batchserver_name):
+    """ Update info about all nodes of the given batchserver.
+    """
+    batch_connection = pbs.pbs_connect(batchserver_name.encode('iso-8859-1', 'replace'))
+    if batch_connection==-1:
+        logging.error("Cannot connect to %s - live data will be missing" % server.name)
+        return
+    print node.objects.filter(server__name=batchserver_name)
+    for n in node.objects.filter(server__name=batchserver_name):
+        update_node(n, batch_connection)
+    pbs.pbs_disconnect(batch_connection)
     
 
 # vi:ts=4:sw=4:expandtab

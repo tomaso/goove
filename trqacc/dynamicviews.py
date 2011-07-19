@@ -11,11 +11,11 @@ def nodes_overview(request, subcluster_name=None):
     if request.GET.has_key('subcluster_name') and not subcluster_name:
         subcluster_name = request.GET['subcluster_name']
     if subcluster_name:
-        qs = Node.objects.filter(subcluster__name=subcluster_name)
+        ns = Node.objects.filter(subcluster__name=subcluster_name)
     else:
-        qs = Node.objects.all()
+        ns = Node.objects.all()
 
-    for n in qs:
+    for n in ns:
         th = "<table style='border: 1px'><tr>"
         c = 0
         for x in n.jobslot_set.all():
@@ -42,11 +42,12 @@ def nodes_list(request, batchserver_name=None):
     if request.GET.has_key('batchserver_name') and not batchserver_name:
         batchserver_name = request.GET['batchserver_name']
     if batchserver_name:
-        qs = Node.objects.filter(server__name=batchserver_name)
+        live_updaters.update_nodes_all(batchserver_name)
+        ns = Node.objects.filter(server__name=batchserver_name)
     else:
-        qs = Node.objects.all()
+        ns = Node.objects.all()
 
-    for n in qs:
+    for n in ns:
         l.append({
             'name': n.name,
             'state': n.state,
@@ -62,9 +63,9 @@ def subclusters_list(request, batchserver_name=None):
     if request.GET.has_key('batchserver_name') and not batchserver_name:
         batchserver_name = request.GET['batchserver_name']
     if batchserver_name:
-        scl = Subcluster.objects.filter(server__name=batchserver_name)
+        scl = SubCluster.objects.filter(server__name=batchserver_name)
     else:
-        scl = Subcluster.objects.all()
+        scl = SubCluster.objects.all()
 
     for i in scl.values_list('name'):
         l.append({'name': i[0]})
