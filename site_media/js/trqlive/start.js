@@ -1,4 +1,8 @@
 Ext.onReady(function () {
+
+Ext.Loader.setConfig({enabled: true});
+Ext.Loader.setPath('Ext.ux', '/site_media/js/ext/examples/ux');
+
 /*
  * MODELS
  */
@@ -62,8 +66,14 @@ Ext.onReady(function () {
             name: 'name',
             type: 'string'
         }, {
-            name: 'state_count',
-            type: 'string'
+            name: 'Q',
+            type: 'number'
+        }, {
+            name: 'W',
+            type: 'number'
+        }, {
+            name: 'R',
+            type: 'number'
         }, {
             name: 'started',
             type: 'string'
@@ -75,10 +85,10 @@ Ext.onReady(function () {
             type: 'string'
         }, {
             name: 'max_running',
-            type: 'string'
+            type: 'number'
         }, {
             name: 'total_jobs',
-            type: 'string'
+            type: 'number'
         }]
     });
 
@@ -122,7 +132,7 @@ Ext.onReady(function () {
     Ext.define('Ext.org.NodesView', {
         extend: 'Ext.view.View',
         alias: 'widget.nodesview',
-        requires: ['Ext.data.Store'],
+        requires: ['Ext.data.Store', 'Ext.ux.grid.FiltersFeature'],
         itemSelector: 'div.node_overview',
         cls: 'x-node-overview',
 
@@ -233,6 +243,19 @@ Ext.onReady(function () {
         store: maintree_store
         // could use a TreePanel or AccordionLayout for navigational items
     });
+
+    var node_filters = {
+        ftype: 'filters',
+        encode: false,
+        local: true,
+        filters: [{
+            type: 'list',
+            dataIndex: 'state',
+            options: ['free', 'job-exclusive', 'down', 'offline']
+        }]
+    };
+
+
     batchserver_store.on('load', function (store, records, successful) {
         var root = maintree_store.getRootNode();
         Ext.Array.each(records, function(bs) {
@@ -306,12 +329,14 @@ Ext.onReady(function () {
                 features: [{ftype:'grouping'}],
                 columns: [
                     {header: 'Name',  dataIndex: 'name'},
-                    {header: 'State count',  dataIndex: 'state_count', flex:1},
-                    {header: 'Started',  dataIndex: 'started'},
-                    {header: 'Enabled', dataIndex: 'enabled'},
-                    {header: 'Queue type', dataIndex: 'queue_type'},
-                    {header: 'Max running', dataIndex: 'max_running'},
-                    {header: 'Total jobs', dataIndex: 'total_jobs'}
+                    {header: 'Total jobs', dataIndex: 'total_jobs', align: 'right'},
+                    {header: 'Queued',  dataIndex: 'Q', align: 'right'},
+                    {header: 'Waiting',  dataIndex: 'W', align: 'right'},
+                    {header: 'Running',  dataIndex: 'R', align: 'right'},
+                    {header: 'Max. running', dataIndex: 'max_running', align: 'right'},
+                    {header: 'Started',  dataIndex: 'started', align: 'center'},
+                    {header: 'Enabled', dataIndex: 'enabled', align: 'center'},
+                    {header: 'Queue type', dataIndex: 'queue_type', align: 'center'}
                 ],
                 store: Ext.data.StoreManager.lookup('store_queues_list_'+bs.get('name')),
                 listeners: {
@@ -342,7 +367,7 @@ Ext.onReady(function () {
                                     model: 'NodeOverview',
                                     proxy: {
                                         type: 'ajax',
-                                        url: '/trqacc/api/nodes_overview/' + sc.get('name') + '/'
+                                        url: '/trqacc/api/nodes_overview/'+bs.get('name')+'/' + sc.get('name') + '/'
                                     },
                                     autoLoad: true
                                 });
@@ -366,7 +391,7 @@ Ext.onReady(function () {
                 title: "List",
                 id: "nodes_list" + bs.get('name'),
                 xtype: "gridpanel",
-                features: [{ftype:'grouping'}],
+                features: [{ftype:'grouping'}, node_filters],
                 columns: [
                     {header: 'Name',  dataIndex: 'name', flex:1},
                     {header: 'Subcluster',  dataIndex: 'subcluster', flex:1, hidden: true},

@@ -12,7 +12,6 @@ class Node(models.Model):
     subcluster = models.ForeignKey('SubCluster', null=True)
     server = models.ForeignKey('BatchServer')
     isactive = models.BooleanField(help_text="Is this node still used?")
-    lastupdate = models.DateTimeField(help_text='Last update date and time', default=datetime.datetime.now, null=True);
 
     class Meta:
         ordering = ["name"]
@@ -230,6 +229,8 @@ class BatchServer(models.Model):
     systemtype = models.IntegerField(help_text="Type of the batch system running", choices=BATCHSYSTEM_CHOICES)
     accountingdir = models.CharField(help_text="Path to the directory where accounting logs are stored", max_length=256)
     lastacc_update = models.DateTimeField(help_text="Time of the last update of the accounting data for this batch server", null=True)
+    queues_lastupdate = models.DateTimeField(help_text='Last update of the queues information', default=datetime.datetime.now, null=True);
+    nodes_lastupdate = models.DateTimeField(help_text='Last update of the nodes information', default=datetime.datetime.now, null=True);
 
     def __unicode__(self):
     	return self.name
@@ -360,6 +361,8 @@ class Queue(models.Model):
     state_count_running = models.IntegerField(default=0)
     state_count_exiting = models.IntegerField(default=0)
 
+    obsolete = models.BooleanField(default=False)
+
 
     def __unicode__(self):
     	return self.name
@@ -417,7 +420,7 @@ class GlobalConfiguration(models.Model):
     Object with global configuration.
     """
     livestatus = models.BooleanField(help_text="Should the node status be periodically updated and overview shown.")
-    max_lastupdate = models.IntegerField(default=300, help_text="How old can entries be before an update from pbs is performed.")
+    max_lastupdate = models.IntegerField(default=300, help_text="Maximum age of the queue and node information before an update from pbs is requested.")
     graphtype = models.CharField(max_length=20, choices=GRAPH_CHOICES, help_text="What framework for graphs should be used.")
     dpmtransfers = models.BooleanField(help_text="Should the dpm transfers be watched.")
 

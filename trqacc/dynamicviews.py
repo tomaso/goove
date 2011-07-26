@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpResponseNotFound
 from django.shortcuts import render_to_response
 from django.utils import simplejson
 
@@ -6,20 +6,27 @@ from models import Node,SubCluster,BatchServer,Queue,Job
 
 import live_updaters
 
-def nodes_overview(request, subcluster_name=None):
+testvar = 0
+pbs_data_nodes = {}
+
+def nodes_overview(request, batchserver_name=None,subcluster_name=None):
     l = []
     if request.GET.has_key('subcluster_name') and not subcluster_name:
         subcluster_name = request.GET['subcluster_name']
-    if subcluster_name:
-        ns = Node.objects.filter(subcluster__name=subcluster_name)
-    else:
-        ns = Node.objects.all()
+    if request.GET.has_key('batchserver_name') and not batchserver_name:
+        batchserver_name = request.GET['batchserver_name']
+
+    if not subcluster_name or not batchserver_name:
+        return HttpResponseNotFound()
+
+    updated_nodes = live_updaters.update_all_nodes(batchserver_name)
+
+    ns = Node.objects.filter(server__name=batchserver_name, subcluster__name=subcluster_name)
 
     for n in ns:
         th = "<table style='border: 1px'><tr>"
         c = 0
-        for x in n.jobslot_set.all():
-            jobid = x.job.jobid
+        for jobid in updated_nodes[batchserver_name]['nodes'][n]['jobs']:
             th += "<td><a href='#'>%s</a>&nbsp;</td>" % jobid
             if c%2 == 1:
                 th += "</tr><tr>"
@@ -29,7 +36,7 @@ def nodes_overview(request, subcluster_name=None):
         l.append({
             'name': n.name, 
             'shortname': n.shortname(), 
-            'state': n.state.replace(',',' '),
+            'state': " ".join([un.name for un in updated_nodes[batchserver_name]['nodes'][n]['state']]),
             'ttiphtml': th,
 #            'jobs': [ j.job.jobid for j in n.jobslot_set.all() ]
             })
@@ -41,17 +48,21 @@ def nodes_list(request, batchserver_name=None):
     l = []
     if request.GET.has_key('batchserver_name') and not batchserver_name:
         batchserver_name = request.GET['batchserver_name']
-    if batchserver_name:
-        live_updaters.update_nodes_all(batchserver_name)
-        ns = Node.objects.filter(server__name=batchserver_name)
-    else:
-        ns = Node.objects.all()
+
+    if not batchserver_name:
+        return HttpResponseNotFound()
+    
+    updated_nodes = live_updaters.update_all_nodes(batchserver_name)
+
+    ns = Node.objects.filter(server__name=batchserver_name)
 
     for n in ns:
+        if not n.isactive:
+            continue
         l.append({
             'name': n.name,
-            'state': n.state,
-            'properties': n.properties,
+            'state': ",".join([un.name for un in updated_nodes[batchserver_name]['nodes'][n]['state']]),
+            'properties': ",".join([un.name for un in updated_nodes[batchserver_name]['nodes'][n]['properties']]),
             'subcluster': n.subcluster.name
             })
     return HttpResponse(simplejson.dumps(l))
@@ -81,20 +92,27 @@ def batchservers_list(request):
 
 
 def queues_list(request, batchserver_name=None):
+    global testvar
+
     l = []
     if request.GET.has_key('batchserver_name') and not batchserver_name:
         batchserver_name = request.GET['batchserver_name']
     if batchserver_name:
-        live_updaters.update_queues_all(batchserver_name)
-        ql = Queue.objects.filter(server__name=batchserver_name)
+        live_updaters.update_all_queues(batchserver_name)
+        ql = Queue.objects.filter(server__name=batchserver_name, obsolete=False)
     else:
-        ql = Queue.objects.all()
+        ql = Queue.objects.filter(obsolete=False)
+
+    testvar += 1
+    print testvar
 
 
     for i in ql:
         l.append({
             'name': i.name,
-            'state_count': "Q: %d, W: %d, R: %d" % (i.state_count_queued, i.state_count_waiting, i.state_count_running),
+            'Q': i.state_count_queued,
+            'W': i.state_count_waiting,
+            'R': i.state_count_running,
             'started': i.started,
             'enabled': i.enabled,
             'queue_type': i.queue_type,
@@ -105,20 +123,20 @@ def queues_list(request, batchserver_name=None):
 
 
 def jobs_list(request, batchserver_name=None):
-    l = []
     if request.GET.has_key('batchserver_name') and not batchserver_name:
         batchserver_name = request.GET['batchserver_name']
-    if batchserver_name:
-        jl = Job.objects.filter(server__name=batchserver_name)
-    else:
-        jl = Job.objects.all()
+    if not batchserver_name:
+        return HttpResponseNotFound()
+
+    updated_jobs = live_updaters.update_all_jobs(batchserver_name)
     
-    for i in jl:
+    l = []
+    for jobid,data in updated_jobs[batchserver_name]['jobs'].items():
         l.append({
-            'jobid': i.jobid,
-            'job_name': i.job_name,
-            'queue': i.queue.name,
-            'job_state': i.job_state.name
+            'jobid': jobid,
+            'job_name': data['Job_Name'],
+            'queue': data['queue'].name,
+            'job_state': data['job_state'].name
             })
     return HttpResponse(simplejson.dumps(l))
 
