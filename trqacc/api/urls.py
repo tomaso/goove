@@ -4,7 +4,7 @@ from django.views.generic.simple import direct_to_template
 urlpatterns = patterns('',
 
     (r'^nodes_overview/$', 'goove.trqacc.dynamicviews.nodes_overview'),                                                                                                                                     
-    (r'^nodes_overview/(?P<subcluster_name>.*)/$', 'goove.trqacc.dynamicviews.nodes_overview'),                                                                                                             
+    (r'^nodes_overview/(?P<batchserver_name>.*)/(?P<subcluster_name>.*)/$', 'goove.trqacc.dynamicviews.nodes_overview'),                                                                                                             
     (r'^nodes_list/(?P<batchserver_name>.*)/$', 'goove.trqacc.dynamicviews.nodes_list'),                                                                                                                    
                                                                                                                                                                                                                      
                                                                                                                                                                                                                      
