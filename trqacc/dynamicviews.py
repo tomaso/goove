@@ -63,7 +63,9 @@ def nodes_list(request, batchserver_name=None):
             'name': n.name,
             'state': ",".join([un.name for un in updated_nodes[batchserver_name]['nodes'][n]['state']]),
             'properties': ",".join([un.name for un in updated_nodes[batchserver_name]['nodes'][n]['properties']]),
-            'subcluster': n.subcluster.name
+            'subcluster': n.subcluster.name,
+            'cputmult': n.cputmult,
+            'wallmult': n.wallmult
             })
     return HttpResponse(simplejson.dumps(l))
 

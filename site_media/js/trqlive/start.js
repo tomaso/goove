@@ -57,6 +57,12 @@ Ext.Loader.setPath('Ext.ux', '/site_media/js/ext/examples/ux');
         }, {
             name: 'subcluster',
             type: 'string'
+        }, {
+            name: 'cputmult',
+            type: 'float'
+        }, {
+            name: 'wallmult',
+            type: 'float'
         }]
     });
 
@@ -396,6 +402,8 @@ Ext.Loader.setPath('Ext.ux', '/site_media/js/ext/examples/ux');
                     {header: 'Name',  dataIndex: 'name', flex:1},
                     {header: 'Subcluster',  dataIndex: 'subcluster', flex:1, hidden: true},
                     {header: 'State', dataIndex: 'state', flex: 1},
+                    {header: 'CPU time multiplicator', dataIndex: 'cputmult', flex:1},
+                    {header: 'Wall time multiplicator', dataIndex: 'wallmult', flex:1},
                     {header: 'Properties', dataIndex: 'properties', flex:2}
                 ],
                 store: Ext.data.StoreManager.lookup('store_nodes_list_'+bs.get('name')),
@@ -437,11 +445,23 @@ Ext.Loader.setPath('Ext.ux', '/site_media/js/ext/examples/ux');
         renderTo: Ext.getBody(),
         items: [tp,
         {
+            id: 'reminder',
             region: 'south',
-            title: 'Help',
-            collapsible: true,
+//            collapsible: true,
             split: true,
-            height: 150
+            height: 150,
+            xtype: 'tabpanel',
+            enableDragDrop: true,
+            items: [{
+                id: 'help',
+                title: 'Help',
+                html: 'There should be a context help here'
+                },{
+                id: 'help2',
+                title: 'Help2',
+                closable: true,
+                html: 'There should be a context help here'
+            }]
         }, {
             id: 'main-panel',
             region: 'center',
@@ -450,9 +470,9 @@ Ext.Loader.setPath('Ext.ux', '/site_media/js/ext/examples/ux');
             activeTab: 0,
             // First tab active by default
             items: [{
-                id: 'overview',
-                title: 'Overview',
-                html: 'This page should contain welcome overview.'
+                id: 'welcome',
+                title: 'Welcome',
+                html: 'Use the menu on the left please.'
             }]
         }]
     });
