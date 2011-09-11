@@ -12,6 +12,8 @@ class Node(models.Model):
     subcluster = models.ForeignKey('SubCluster', null=True)
     server = models.ForeignKey('BatchServer')
     isactive = models.BooleanField(help_text="Is this node still used?")
+    cputmult = models.FloatField(default=1.0)
+    wallmult = models.FloatField(default=1.0)
 
     class Meta:
         ordering = ["name"]
