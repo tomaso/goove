@@ -1,5 +1,6 @@
 ALTER TABLE trqacc_accountingevent ENGINE=INNODB;
-ALTER TABLE trqacc_accountingevent ENGINE=INNODB;
+ALTER TABLE trqacc_eventattribute ENGINE=INNODB;
+ALTER TABLE trqacc_eventattributevalue ENGINE=INNODB;
 ALTER TABLE trqacc_globalconfiguration ENGINE=INNODB;
 ALTER TABLE trqacc_griduser ENGINE=INNODB;
 ALTER TABLE trqacc_group ENGINE=INNODB;
@@ -20,6 +21,8 @@ ALTER TABLE trqacc_submithost ENGINE=INNODB;
 ALTER TABLE trqacc_batchserver ENGINE=INNODB;
 ALTER TABLE trqacc_user ENGINE=INNODB;
 
-ALTER TABLE trqacc_accountingevent ADD UNIQUE ttj(timestamp,type,job_id);
+ALTER TABLE trqacc_accountingevent ADD UNIQUE ttj(timestamp,type,full_jobname);
 
 CREATE INDEX `trqacc_job_comp_time` on `trqacc_job` (`comp_time`);
+
+ALTER TABLE trqacc_eventattributevalue ADD UNIQUE ae_attr(ae_id,ea_id);

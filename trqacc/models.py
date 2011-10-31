@@ -169,6 +169,7 @@ class Job(models.Model):
     job_gridowner = models.ForeignKey('GridUser', null=True)
     cput = models.IntegerField('CPU time in seconds', null=True)
     walltime = models.IntegerField('Wall time in seconds', null=True)
+
     efficiency = models.IntegerField('Efficiency in percent', null=True)
     job_state = models.ForeignKey('JobState', null=True)
     # TODO: job can be moved from queue to queue during its lifetime
@@ -187,6 +188,7 @@ class Job(models.Model):
     comp_time = models.DateTimeField(verbose_name='Completion time', null=True, db_index=True)
     submithost = models.ForeignKey('SubmitHost', null=True)
     exit_status = models.IntegerField('Exit status', null=True)
+
 
     def get_absolute_url(self):
         return u"/trqacc/jobs/detail/%s/%s/" % (self.server,self.jobid)
@@ -345,6 +347,7 @@ class JobState(models.Model):
         ordering = ['name']
 
 
+
 class Queue(models.Model):
     name = models.CharField(verbose_name="queue name", max_length=100)
     color = models.CharField(max_length=6, null=True, help_text="Color in HTML encoding (3 hex numbers)")
@@ -399,7 +402,19 @@ class AccountingEvent(models.Model):
     """
     timestamp = models.DateTimeField(verbose_name='time stamp')
     type = models.CharField(max_length=1, choices=EVENT_CHOICES)
-    job = models.ForeignKey('Job')
+    job = models.ForeignKey('Job', null=True)
+    full_jobname = models.CharField(max_length=100)
+    attributes = models.ManyToManyField('EventAttribute', through='EventAttributeValue')
+
+
+class EventAttributeValue(models.Model):
+    ae = models.ForeignKey('AccountingEvent')
+    ea = models.ForeignKey('EventAttribute')
+    value = models.CharField(verbose_name="Value of the attribute", max_length=100)
+
+
+class EventAttribute(models.Model):
+    name = models.CharField(verbose_name="Attribute name", max_length=1024)
 
 
 class NodeLink(models.Model):
