@@ -1,4 +1,4 @@
-from goove.trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, GridUser, User, Group, JobState, Queue, SubmitHost
+from trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, GridUser, User, Group, JobState, Queue, SubmitHost, EventAttribute
 
 JobStateCache = {}
 JobSlotCache = {}
@@ -7,6 +7,7 @@ NodeCache = {}
 UserCache = {}
 GroupCache = {}
 SubmitHostCache = {}
+EventAttributeCache = {}
 
 #
 # Caching functions, we do not have one for Jobs as there are too many of them
@@ -73,3 +74,13 @@ def getSubmitHost(shname):
     if not SubmitHostCache.has_key(shname):
         SubmitHostCache[shname],created = SubmitHost.objects.get_or_create(name=shname)
     return (SubmitHostCache[shname],created)
+
+
+def getEventAttribute(eaname):
+    global EventAttributeCache
+    created = False
+    if not EventAttributeCache.has_key(eaname):
+        EventAttributeCache[eaname],created = EventAttribute.objects.get_or_create(name=eaname)
+    return (EventAttributeCache[eaname],created)
+
+# vi:ts=4:sw=4:expandtab

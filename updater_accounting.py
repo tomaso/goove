@@ -1,14 +1,14 @@
 # python system stuff
 import time,logging,os,signal,traceback,sys,datetime,re
 
-os.environ['DJANGO_SETTINGS_MODULE']="goove.settings"
+os.environ['DJANGO_SETTINGS_MODULE']="settings"
 
 # django stuff
 from django.db import transaction, connection
 
 # goove specific stuff
-from goove.trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, BatchServer, GridUser, User, Group, JobState, Queue, AccountingEvent, SubmitHost, LiveJob
-from goove.updater_helpers import getJobState, getQueue, getNode, getUser, getGroup, getSubmitHost, getJobSlot
+from trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, BatchServer, GridUser, User, Group, JobState, Queue, AccountingEvent, SubmitHost, LiveJob, JobResource
+from updater_helpers import getJobState, getQueue, getNode, getUser, getGroup, getSubmitHost, getJobSlot, getJobResource
 
 
 JOBID_REGEX = re.compile("(\d+-\d+|\d+)\.(.*)")
@@ -280,6 +280,15 @@ def parse_accounting_line(line, lineno):
     m,d,y = d.split('/')
     timestamp='%s-%s-%s %s' % (y,m,d,t)
     cursor.execute("INSERT IGNORE INTO trqacc_accountingevent (timestamp, type, job_id) VALUES (%s,%s,%s)", [timestamp, event, job.id])
+    cursor.execute("SELECT LAST_INSERT_ID()")
+    row = cursor.fetchone()
+    ae_id = row[0]
+
+    # already existing accounting event?
+    if ae_id > 0:
+        for key,val in attrdir.items():
+            ea = getEventAttribute(key)
+            cursor.execute("INSERT INTO trqacc_eventattributevalue (ae_id, ea_id, value) VALUES (%s,%s,%s)", [ae_id, ea.id, val])
 
     
 @transaction.commit_manually
@@ -349,12 +358,14 @@ def proc_func(_server):
                 if get_today_filename(server.accountingdir)==filename:
                     time.sleep(1)
                 else:
-                    time.sleep(10)
                     fd.close()
                     save_server_lasttime()
                     transaction.commit()
                     filename = get_today_filename(server.accountingdir)
                     logger.info("The date has changed - switching to new file: %s" % filename)
+                    while not os.path.exists(filename):
+                        logger.info("The file %s does not exist. Waiting for its presence ..." % filename)
+                        time.sleep(10)
                     fd = open_or_exit(filename)
             else:
                 lineno += 1
