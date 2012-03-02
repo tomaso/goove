@@ -15,7 +15,6 @@ ALTER TABLE trqacc_nodelink ENGINE=INNODB;
 ALTER TABLE trqacc_nodeproperty ENGINE=INNODB;
 ALTER TABLE trqacc_nodestate ENGINE=INNODB;
 ALTER TABLE trqacc_queue ENGINE=INNODB;
-ALTER TABLE trqacc_runningjob ENGINE=INNODB;
 ALTER TABLE trqacc_subcluster ENGINE=INNODB;
 ALTER TABLE trqacc_submithost ENGINE=INNODB;
 ALTER TABLE trqacc_batchserver ENGINE=INNODB;
