@@ -407,11 +407,11 @@ class AccountingEvent(models.Model):
 class EventAttributeValue(models.Model):
     ae = models.ForeignKey('AccountingEvent')
     ea = models.ForeignKey('EventAttribute')
-    value = models.CharField(verbose_name="Value of the attribute", max_length=100)
+    value = models.CharField(verbose_name="Value of the attribute", max_length=10240)
 
 
 class EventAttribute(models.Model):
-    name = models.CharField(verbose_name="Attribute name", max_length=1024)
+    name = models.CharField(verbose_name="Attribute name", max_length=128)
 
 
 class NodeLink(models.Model):
