@@ -9,7 +9,7 @@ rsync -avz --delete root@ce2.egee.cesnet.cz:/opt/edg/var/ /egee_cesnet/ce2_opt_e
 rsync -avz --delete root@ce1.egee.cesnet.cz:/opt/edg/var/ /egee_cesnet/ce1_opt_edg_var/
 
 
-for i in `seq 1 14`; do
-	rsync -avz root@dpmpool${i}.farm.particle.cz:/var/log/dpm-gsiftp/ /dpmpool_logs/dpmpool${i}.farm.particle.cz/dpm-gsiftp/
-	rsync -avz root@dpmpool${i}.farm.particle.cz:/var/log/rfio/ /dpmpool_logs/dpmpool${i}.farm.particle.cz/rfio/
-done
+#for i in `seq 1 14`; do
+#	rsync -avz root@dpmpool${i}.farm.particle.cz:/var/log/dpm-gsiftp/ /dpmpool_logs/dpmpool${i}.farm.particle.cz/dpm-gsiftp/
+#	rsync -avz root@dpmpool${i}.farm.particle.cz:/var/log/rfio/ /dpmpool_logs/dpmpool${i}.farm.particle.cz/rfio/
+#done
