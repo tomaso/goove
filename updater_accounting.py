@@ -7,8 +7,8 @@ os.environ['DJANGO_SETTINGS_MODULE']="settings"
 from django.db import transaction, connection
 
 # goove specific stuff
-from trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, BatchServer, GridUser, User, Group, JobState, Queue, AccountingEvent, SubmitHost, LiveJob, JobResource
-from updater_helpers import getJobState, getQueue, getNode, getUser, getGroup, getSubmitHost, getJobSlot, getJobResource
+from trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, Job, BatchServer, GridUser, User, Group, JobState, Queue, AccountingEvent, SubmitHost, LiveJob, EventAttribute
+from updater_helpers import getJobState, getQueue, getNode, getUser, getGroup, getSubmitHost, getJobSlot, getEventAttribute
 
 
 JOBID_REGEX = re.compile("(\d+-\d+|\d+)\.(.*)")
@@ -287,7 +287,7 @@ def parse_accounting_line(line, lineno):
     # already existing accounting event?
     if ae_id > 0:
         for key,val in attrdir.items():
-            ea = getEventAttribute(key)
+            ea,created = getEventAttribute(key)
             cursor.execute("INSERT INTO trqacc_eventattributevalue (ae_id, ea_id, value) VALUES (%s,%s,%s)", [ae_id, ea.id, val])
 
     
@@ -306,6 +306,9 @@ def process_accounting_file(filename):
                 save_server_lasttime()
                 transaction.commit()
     except BaseException, e:
+        logger.warning("%s" % (traceback.format_exc()))
+        for l in traceback.format_exception(exc_type, exc_value, exc_traceback):
+            logger.critical(l)
         raise e
     finally:
         transaction.commit()
@@ -372,6 +375,7 @@ def proc_func(_server):
                 logger.info("Processing line number %d" % lineno)
                 parse_accounting_line(l, lineno)
                 if (lineno % 20)==0:
+                    save_server_lasttime()
                     transaction.commit()
     except BaseException, e:
         raise e

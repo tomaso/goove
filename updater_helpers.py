@@ -1,4 +1,4 @@
-from goove.trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, GridUser, User, Group, JobState, Queue, SubmitHost, EventAttribute
+from trqacc.models import JobSlot, Node, NodeProperty, NodeState, SubCluster, GridUser, User, Group, JobState, Queue, SubmitHost, EventAttribute
 
 JobStateCache = {}
 JobSlotCache = {}
