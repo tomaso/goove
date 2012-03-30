@@ -6,7 +6,7 @@ import logging,logging.handlers,signal,multiprocessing,os,sys
 # Django stuff
 os.environ['DJANGO_SETTINGS_MODULE']="settings"
 from trqacc.models import BatchServer
-import updater_accounting
+import updater_accevents
 
 
 VERSION = 1
@@ -32,7 +32,7 @@ def main(batchnames, logger):
         bs = BatchServer.objects.get(name=bsname)
         if bs.isactive:
             logger.info("Starting process for %s" % (bs.name))
-            processes[bs] = multiprocessing.Process(target=updater_accounting.proc_func, args=(bs,))
+            processes[bs] = multiprocessing.Process(target=updater_accevents.proc_func, args=(bs,))
             processes[bs].start()
         else:
             logger.info("Skipping inactive batch system %s" % (bs.name))

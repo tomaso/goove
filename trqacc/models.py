@@ -400,7 +400,8 @@ class AccountingEvent(models.Model):
     timestamp = models.DateTimeField(verbose_name='time stamp')
     type = models.CharField(max_length=1, choices=EVENT_CHOICES)
     job = models.ForeignKey('Job', null=True)
-    full_jobname = models.CharField(max_length=100)
+    short_jobid = models.IntegerField(editable=False)
+    server = models.ForeignKey('BatchServer', null=False, editable=False)
     attributes = models.ManyToManyField('EventAttribute', through='EventAttributeValue')
 
 
