@@ -106,7 +106,8 @@
       "isactive": true,
       "domainname": "farm.particle.cz",
       "systemtype": 1,
-      "accountingdir": "/torque/accounting_nfs" 
+      "accountingdir": "/torque/accounting_nfs",
+      "lastacc_update": "1970-01-01 00:00"
     }
   },
   {
@@ -116,7 +117,8 @@
       "name": "service0.dorje.fzu.cz",
       "domainname": "dorje.fzu.cz",
       "systemtype": 1,
-      "accountingdir": "/dorje/accounting_nfs" 
+      "accountingdir": "/dorje/accounting_nfs",
+      "lastacc_update": "1970-01-01 00:00"
     }
   },
   {

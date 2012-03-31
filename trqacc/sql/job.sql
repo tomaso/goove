@@ -20,7 +20,7 @@ ALTER TABLE trqacc_submithost ENGINE=INNODB;
 ALTER TABLE trqacc_batchserver ENGINE=INNODB;
 ALTER TABLE trqacc_user ENGINE=INNODB;
 
-ALTER TABLE trqacc_accountingevent ADD UNIQUE ttj(timestamp,type,full_jobname);
+ALTER TABLE trqacc_accountingevent ADD UNIQUE ttj(timestamp,type,short_jobid,server_id);
 
 CREATE INDEX `trqacc_job_comp_time` on `trqacc_job` (`comp_time`);
 

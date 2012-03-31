@@ -12,52 +12,6 @@ from updater_helpers import getJobState, getQueue, getNode, getUser, getGroup, g
 
 
 JOBID_REGEX = re.compile("(\d+-\d+|\d+)\.(.*)")
-SUPPORTED_JOB_ATTRS = ['jobid', 'server_id', 'job_owner_id', 'job_gridowner_id', 'cput', 
-            'walltime', 'efficiency', 'job_state_id', 'queue_id', 'ctime', 'mtime', 
-            'qtime', 'etime', 'start_time', 'comp_time', 'submithost_id', 'exit_status']
-
-
-class SQLJob:
-    def refresh_id_jobstate_id(self):
-        """ 
-        Refresh id from the database. Sets id to -1 if the job is not present.
-        jobid and server_id must be set.
-        """
-        cursor = connection.cursor()
-        if(cursor.execute("SELECT id,job_state_id FROM trqacc_job WHERE jobid=%s AND server_id=%s", [self.jobid,self.server_id])==0):
-            self.id = -1
-            self.job_state_id = -1
-        else:
-            row = cursor.fetchone()
-            self.id = row[0]
-            self.job_state_id = row[1]
-        
-    def save(self):
-        logger = logging.getLogger("goove_updater")
-        cursor = connection.cursor()
-        attrs = [a for a in SUPPORTED_JOB_ATTRS if hasattr(self,a)]
-        if self.id == -1:
-            logger.debug("new job will be created")
-            sqlkeys = ",".join(attrs)
-            sqlvalues = '%s,'*(len(attrs)-1) + '%s'
-            cursor.execute("INSERT INTO trqacc_job (%s) VALUES (%s)" % (sqlkeys,sqlvalues), 
-                [getattr(self,x) for x in attrs]
-            )
-        else:
-            logger.debug("the updated job id: %d" % self.id)
-            sqlitems = ",".join([("%s=%%s" % i) for i in attrs])
-            cursor.execute("UPDATE trqacc_job SET %s WHERE id=%d" % (sqlitems,self.id), 
-                [getattr(self,x) for x in attrs]
-            )
-        # Save jobslots data if it is present
-        if hasattr(self,'jobslots'):
-            # TODO: This query can be very slow - I don't know how to do it better now
-            j = Job.objects.get(server__pk=self.server_id,jobid=self.jobid)
-            job_id = j.id
-
-            for jobslot_id in self.jobslots:
-                cursor.execute("INSERT IGNORE INTO trqacc_job_jobslots (job_id,jobslot_id) VALUES (%d,%d)" % (job_id, jobslot_id))
-
 
 def save_server_lasttime():
     global server,last_event_time
@@ -158,7 +112,7 @@ def parse_accounting_line(line, lineno):
     d,t = date.split(' ')
     m,d,y = d.split('/')
     timestamp='%s-%s-%s %s' % (y,m,d,t)
-    cursor.execute("INSERT IGNORE INTO trqacc_accountingevent (timestamp, type, short_jobid, server_id) VALUES (%s,%s,%s)", [timestamp, event, jobid_name, server.id])
+    cursor.execute("INSERT IGNORE INTO trqacc_accountingevent (timestamp, type, short_jobid, server_id) VALUES (%s,%s,%s,%s)", [timestamp, event, jobid_name, server.id])
     cursor.execute("SELECT LAST_INSERT_ID()")
     row = cursor.fetchone()
     ae_id = row[0]
@@ -171,9 +125,15 @@ def parse_accounting_line(line, lineno):
 
     
 @transaction.commit_manually
-def process_accounting_file(filename):
+def process_accounting_file(filename, _server):
+    global server
+
     logger = logging.getLogger("goove_updater")
     logger.info("process_accounting_file: opening file %s" % (filename))
+
+    server = _server
+    last_event_time = server.lastacc_update
+    logger.debug("timestamp of the last event in database: %s" % last_event_time)
     transaction.commit()
     fd = open_or_exit(filename)
     lineno = 0
@@ -190,6 +150,7 @@ def process_accounting_file(filename):
             logger.critical(l)
         raise e
     finally:
+        save_server_lasttime()
         transaction.commit()
 
 

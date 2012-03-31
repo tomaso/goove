@@ -24,15 +24,25 @@ def signal_handler(signum, frame):
     end_children = True
 
 
-def main(batchnames, logger):
+def main(args, logger):
     global end_children
+    if args.file:
+        if len(args.batch)>1:
+            logger.error("Only one batch server can be specified when processing old log files.")
+            sys.exit(-1)
+        worker_func = updater_accevents.process_accounting_file
+        worker_params = [args.file]
+    else:
+        worker_func = updater_accevents.proc_func
+        worker_params = []
+
     processes = {}
-    logger.debug("Known batch systems: %s" % (str(batchnames)))
-    for bsname in batchnames:
+    logger.debug("Known batch systems: %s" % (str(args.batch)))
+    for bsname in args.batch:
         bs = BatchServer.objects.get(name=bsname)
         if bs.isactive:
             logger.info("Starting process for %s" % (bs.name))
-            processes[bs] = multiprocessing.Process(target=updater_accevents.proc_func, args=(bs,))
+            processes[bs] = multiprocessing.Process(target=worker_func, args=worker_params+[bs])
             processes[bs].start()
         else:
             logger.info("Skipping inactive batch system %s" % (bs.name))
@@ -97,7 +107,7 @@ def daemonize(args, logger, our_home_dir='.', out_log='/dev/null',
         
     logger.debug("pid written to %s" % args.pid)
 
-    main(args.batch, logger)
+    main(args, logger)
 
 
 def proc_args_optparse():
@@ -112,6 +122,7 @@ def proc_args_optparse():
     parser.add_option("-b", "--batch", action="append", help="Hostname of a batch server. The updater gets its info from the database and starts feeding the data from log to the database.")
     parser.add_option("-p", "--pid", action="store", help="Name of the file where the pid of the main process is written.", default="/var/run/goove.pid")
     parser.add_option("-l", "--logfile", action="store", help="Name of the log file.", default=None)
+    parser.add_option("-f", "--file", action="store", help="Process this file and quit.", default=None)
     (options, arguments) = parser.parse_args()
     for key in ['verbose', 'debug', 'nodetach']:
         if getattr(options,key):
@@ -121,6 +132,7 @@ def proc_args_optparse():
     args.batch = options.batch
     args.pid = options.pid
     args.logfile = options.logfile
+    args.file = options.file
 
     return args
 
@@ -133,6 +145,7 @@ def proc_args_argparse():
     parser.add_argument("-b", "--batch", action="append", help="Hostname of a batch server. The updater gets its info from the database and starts feeding the data from log to the database.")
     parser.add_argument("-p", "--pid", action="store", help="Name of the file where the pid of the main process is written.", default="/var/run/goove.pid")
     parser.add_argument("-l", "--logfile", action="store", help="Name of the log file.", default=None)
+    parser.add_argument("-f", "--file", action="store", help="Process this file and quit.", default=None)
     args = parser.parse_args()
     return args
     
@@ -156,6 +169,7 @@ if __name__=="__main__":
     else:
         handler = logging.handlers.SysLogHandler(address="/dev/log")
         handler.setFormatter(logging.Formatter('%(name)s[%(process)s]: %(levelname)s - %(message)s'))
+    logger.addHandler(handler)
 
     logger.setLevel(logging.WARNING)
     if args.verbose:
@@ -163,10 +177,14 @@ if __name__=="__main__":
     if args.debug:
         logger.setLevel(logging.DEBUG)
 
-    logger.addHandler(handler)
+
+    if args.batch is None:
+        logger.error("The batch server must be specified.")
+        sys.exit(-1)
+
 
     if args.nodetach:
-        main(args.batch, logger)
+        main(args, logger)
     else:
         daemonize(args, logger)
 
