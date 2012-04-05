@@ -64,11 +64,25 @@ def get_nextday_filename(logdir, filename):
 
 
 def open_or_exit(filename):
+    """
+    Guess file type, open it appropriately
+    and return file handle
+    """
+    logger = logging.getLogger("goove_updater")
     try:
-        fd = open(filename)
+        ending = os.path.basename(filename).split('.')[-1]
+        if ending=="bz2":
+            logger.debug("opening file as bz2")
+            import bz2
+            fd = bz2.BZ2File(filename)
+        elif ending=="gz":
+            logger.debug("opening file as gzip")
+            import gzip
+            fd = gzip.GzipFile(filename)
+        else:
+            fd = open(filename, "r")
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        logger = logging.getLogger("goove_updater")
         for l in traceback.format_exception(exc_type, exc_value, exc_traceback):
             logger.critical(l)
         sys.exit(-1)
@@ -112,16 +126,19 @@ def parse_accounting_line(line, lineno):
     d,t = date.split(' ')
     m,d,y = d.split('/')
     timestamp='%s-%s-%s %s' % (y,m,d,t)
-    cursor.execute("INSERT IGNORE INTO trqacc_accountingevent (timestamp, type, short_jobid, server_id) VALUES (%s,%s,%s,%s)", [timestamp, event, jobid_name, server.id])
-    cursor.execute("SELECT LAST_INSERT_ID()")
-    row = cursor.fetchone()
-    ae_id = row[0]
+    retval = cursor.execute("INSERT IGNORE INTO trqacc_accountingevent (timestamp, type, short_jobid, server_id) VALUES (%s,%s,%s,%s)", [timestamp, event, jobid_name, server.id])
+    if retval==1:
+        # FIXME: I am not sure this is thread safe - should call something like C-API mysql_insert_id();
+        cursor.execute("SELECT LAST_INSERT_ID()")
+        row = cursor.fetchone()
+        ae_id = row[0]
 
-    # already existing accounting event?
-    if ae_id > 0:
         for key,val in attrdir.items():
             ea,created = getEventAttribute(key)
+            logger.debug("INSERT INTO trqacc_eventattributevalue (ae_id, ea_id, value) VALUES (%s,%s,%s)" % (ae_id, ea.id, val))
             cursor.execute("INSERT INTO trqacc_eventattributevalue (ae_id, ea_id, value) VALUES (%s,%s,%s)", [ae_id, ea.id, val])
+    else:
+        logger.warning("Tried to insert already present accounting event - skipping, check your logs for: %s:%s:%s ..." %(date, event, fulljobid))
 
     
 @transaction.commit_manually
@@ -144,8 +161,9 @@ def process_accounting_file(filename, _server):
             if (lineno % 1000)==0:
                 save_server_lasttime()
                 transaction.commit()
-    except BaseException, e:
+    except:
         logger.warning("%s" % (traceback.format_exc()))
+        exc_type, exc_value, exc_traceback = sys.exc_info()
         for l in traceback.format_exception(exc_type, exc_value, exc_traceback):
             logger.critical(l)
         raise e
