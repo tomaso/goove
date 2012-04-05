@@ -60,6 +60,16 @@ Overview Mode
 - Connect to nagios (via mklive)
 
 
+Anomalies detection
+-------------------
+
+This module should check for some patterns that point to
+an incorrect data in torque logs.
+For example:
+- E records with start=0 (such jobs usually lack S corresponding record)
+grep start=0 year2010
+
+
 
 Documentation:
 --------------
