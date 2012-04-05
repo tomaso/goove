@@ -25,3 +25,5 @@ ALTER TABLE trqacc_accountingevent ADD UNIQUE ttj(timestamp,type,short_jobid,ser
 CREATE INDEX `trqacc_job_comp_time` on `trqacc_job` (`comp_time`);
 
 ALTER TABLE trqacc_eventattributevalue ADD UNIQUE ae_attr(ae_id,ea_id);
+
+CREATE INDEX `trqacc_accountingevent_short_jobid_server_id` ON `trqacc_accountingevent` (`short_jobid`,`server_id`);
